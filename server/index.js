@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import mongoose from "mongoose"; 
+import { connectDB } from "./config/db.js";
 
 // Import routes
 // import authRoutes from "./routes/authRoutes.js"; 
@@ -15,29 +15,16 @@ const httpServer = createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
-// --- DB URI Checks ---
-if (!process.env.DB_URI) {
-    console.error("DB_URI is not defined in the environment variables.");
-    process.exit(1);
-}
-
-// just in case the user forgets to set the DB_URI
-if (process.env.DB_URI == "mongodb+srv://<your_connection_string>"){
-    console.error("🚨 Your mongodb URL is a blank placeholder, please change it now 🚨🤣");
-    process.exit(1);
-}
-
-const DB_URI = process.env.DB_URI;
-
 // Client origin (frontend) - make configurable via .env
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
-// --- Middleware ---
+// --- allow CORS for the frontend ---
 app.use(cors({
     origin: CLIENT_URL,
     credentials: true
 }));
 
+// add middleware to parse cookies and JSON bodies
 app.use(cookieParser());
 app.use(express.json());
 
@@ -66,11 +53,12 @@ io.on("connection", (socket) => {
 });
 
 // --- Database Connection & Server Start ---
-mongoose
-  .connect(DB_URI)
-  .then(() => {
-      console.log("DB Connected");
-      // Only start the server if the database connects successfully
-      httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => console.log(err.message));
+connectDB()
+    .then(() => {
+        // Only start the server if the database connects successfully
+        httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+        console.error(err?.message ?? err);
+        process.exit(1);
+    });
