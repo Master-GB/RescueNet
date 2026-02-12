@@ -1,6 +1,6 @@
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io"; 
+import { setupSocketIO } from "./lib/socket.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -12,7 +12,6 @@ import { connectDB } from "./config/db.js";
 dotenv.config();
 const app = express();
 const httpServer = createServer(app);
-
 const PORT = process.env.PORT || 5000;
 
 // Client origin (frontend) - make configurable via .env
@@ -23,34 +22,15 @@ app.use(cors({
     origin: CLIENT_URL,
     credentials: true
 }));
-
-// add middleware to parse cookies and JSON bodies
 app.use(cookieParser());
 app.use(express.json());
 
 // --- Routes ---
 // app.use("/api/auth", authRoutes); 
 
-// Temporary test route so you can verify the server is up
-app.get("/", (req, res) => {
-    res.send("RescueNet API is running!");
-});
 
-// --- Socket.IO Setup ---
-const io = new Server(httpServer, {
-    cors: {
-        origin: CLIENT_URL,
-        credentials: true
-    }
-});
-
-io.on("connection", (socket) => {
-    console.log("A user connected to RescueNet:", socket.id);
-    
-    socket.on("disconnect", () => {
-        console.log("User disconnected:", socket.id);
-    });
-});
+// Start socketio, commented it out since we dont use socketIO yet
+// setupSocketIO(httpServer, CLIENT_URL);
 
 // --- Database Connection & Server Start ---
 connectDB()
