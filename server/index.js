@@ -1,15 +1,18 @@
 import express from "express";
 import { createServer } from "http";
-import { setupSocketIO } from "./lib/socket.js";
+import { setupSocketIO } from "./src/lib/socket.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./config/db.js";
+import { connectDB } from "./src/config/db.js";
+import helpRoutes from "./src/routes/helpRoutes.js";
+import weatherRoutes from "./src/routes/weatherRoutes.js";
 
 // Import routes
 // import authRoutes from "./routes/authRoutes.js"; 
 
-dotenv.config();
+// Load env from multiple locations: root and src
+dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
@@ -23,7 +26,8 @@ app.use(cors({
     credentials: true
 }));
 app.use(cookieParser());
-app.use(express.json());
+// Increase JSON body limit to allow base64 media payloads
+app.use(express.json({ limit: "25mb" }));
 
 // --- Routes ---
 // app.use("/api/auth", authRoutes); 
@@ -42,3 +46,7 @@ connectDB()
         console.error(err?.message ?? err);
         process.exit(1);
     });
+
+// --- API Routes ---
+app.use("/api/help", helpRoutes);
+app.use("/api/weather", weatherRoutes);
