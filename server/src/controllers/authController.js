@@ -10,6 +10,7 @@ const signToken = (user) =>
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
   );
 
+
 export const registerUser = async (req, res) => {
   const { firstName, lastName, email, password, role } = req.body;
 
@@ -57,6 +58,7 @@ export const registerUser = async (req, res) => {
     });
   }
 };
+
 
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
