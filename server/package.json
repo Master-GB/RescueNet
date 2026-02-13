@@ -2,13 +2,14 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "MediFlow – Smart Clinic & Patient Management System (with AI)",
-  "main": "server.js",
-  "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
-  },
+  "main": "src/index.js",
   "type": "module",
-  "author": "Gihan",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+},
+  "keywords": [],
+  "author": "",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
