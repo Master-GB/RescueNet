@@ -1,5 +1,5 @@
 import HelpRequest from "../models/HelpRequest.js";
-import getWeather from "../utils/weatherService.js";
+import getWeather from "../utils/WeatherService.js";
 
 export async function createHelpRequest(req, res) {
   try {

@@ -1,12 +1,13 @@
 import express from "express";
 import { createServer } from "http";
-import { setupSocketIO } from "./src/lib/socket.js";
+import { setupSocketIO } from "./lib/socket.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./src/config/db.js";
-import helpRoutes from "./src/routes/helpRoutes.js";
-import weatherRoutes from "./src/routes/weatherRoutes.js";
+import { connectDB } from "./config/db.js";
+import helpRoutes from "./routes/HelpRoutes.js";
+import weatherRoutes from "./routes/WeatherRoutes.js";
+import locationRoutes from "./routes/locationRoutes.js";
 
 // Import routes
 // import authRoutes from "./routes/authRoutes.js"; 
@@ -33,8 +34,8 @@ app.use(express.json({ limit: "25mb" }));
 // app.use("/api/auth", authRoutes); 
 
 
-// Start socketio, commented it out since we dont use socketIO yet
-// setupSocketIO(httpServer, CLIENT_URL);
+// Start socketio for real-time location tracking
+setupSocketIO(httpServer, CLIENT_URL);
 
 // --- Database Connection & Server Start ---
 connectDB()
@@ -50,3 +51,4 @@ connectDB()
 // --- API Routes ---
 app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);
+app.use("/api/location", locationRoutes);
