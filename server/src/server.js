@@ -1,12 +1,12 @@
 import express from "express";
 import { createServer } from "http";
-import { setupSocketIO } from "./src/lib/socket.js";
+import { setupSocketIO } from "./lib/socket.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./src/config/db.js";
-import helpRoutes from "./src/routes/helpRoutes.js";
-import weatherRoutes from "./src/routes/weatherRoutes.js";
+import { connectDB } from "./config/db.js";
+import helpRoutes from "./routes/helpRoutes.js";
+import weatherRoutes from "./routes/weatherRoutes.js";
 
 // Import routes
 // import authRoutes from "./routes/authRoutes.js"; 

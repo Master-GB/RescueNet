@@ -1,29 +1,25 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
+  "description": "MediFlow – Smart Clinic & Patient Management System (with AI)",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon server.js",
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "type": "module",
+  "author": "Gihan",
   "license": "ISC",
-  "description": "",
   "dependencies": {
-    "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
-    "cloudinary": "^2.9.0",
-    "cookie": "^1.1.1",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.2.1",
+    "mongoose": "^9.0.1",
     "multer": "^2.0.2",
-    "socket.io": "^4.8.3"
+    "nodemailer": "^7.0.11"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
