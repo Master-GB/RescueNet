@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
 import helpRoutes from "./routes/helpRoutes.js";
 import weatherRoutes from "./routes/weatherRoutes.js";
+import adminHelpRoutes from "./routes/adminHelpRoutes.js";
 
 // Import routes
 // import authRoutes from "./routes/authRoutes.js"; 
@@ -50,3 +51,4 @@ connectDB()
 // --- API Routes ---
 app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);
+app.use("/api/admin/help-requests", adminHelpRoutes);
