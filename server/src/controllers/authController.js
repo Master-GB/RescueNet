@@ -324,7 +324,7 @@ export const resetPassword = async (req, res) => {
     }
 
     const hashedPassword = await hashPassword(newPassword);
-    user.password = hashedPassword;
+    user.passwordHash = hashedPassword;
     user.resetOtp = "";
     user.resetOtpExpiry = 0;
     await user.save();

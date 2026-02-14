@@ -25,7 +25,7 @@ export const sendOTPTemplate = (userName, otp, verifyUrl) => {
                 <p style="margin:0 0 14px; font-size:16px;">Hi ${userName ?? "there"},</p>
 
                 <p style="margin:0 0 18px; font-size:15px; line-height:1.6; color:#4b5563;">
-                  Thank you for creating an account with <strong>MediFlow</strong>.
+                  Thank you for creating an account with <strong>RescueNet</strong>.
                   To complete your registration, please use the verification code below. This code will expire in <strong> 3 minutes</strong>.
                 </p>
 
