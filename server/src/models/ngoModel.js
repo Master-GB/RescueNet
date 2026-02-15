@@ -91,7 +91,7 @@ const organizationSchema = new mongoose.Schema(
 );
 
 // Index for faster lookups
-organizationSchema.index({ userId: 1 });
+// organizationSchema.index({ userId: 1 }); // Unique index on userId is already enforced by the schema
 organizationSchema.index({ approvalStatus: 1 });
 organizationSchema.index({ availabilityStatus: 1 });
 
