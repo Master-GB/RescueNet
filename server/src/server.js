@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
 import helpRoutes from "./routes/helpRoutes.js";
 import weatherRoutes from "./routes/weatherRoutes.js";
+import adminHelpRoutes from "./routes/adminHelpRoutes.js";
+import adminNgoRoutes from "./routes/adminNgoRoutes.js";
 
 // Import routes
 
@@ -14,6 +16,12 @@ import authRoutes from "./routes/authRoutes.js" ;
 
 // Load env from multiple locations: root and src
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
+
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined in .env file");
+  process.exit(1);
+}
+
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
@@ -51,3 +59,5 @@ connectDB()
 // --- API Routes ---
 app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);
+app.use("/api/admin/help-requests", adminHelpRoutes);
+app.use("/api/admin/ngos", adminNgoRoutes);
