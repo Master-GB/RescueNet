@@ -16,6 +16,7 @@ import authRoutes from "./routes/authRoutes.js" ;
 import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRoutes.js";
 import volunteerProfileRoutes from "./routes/userManagementRoutes/volunteerProfileRoutes.js";
 import ngoProfileRoutes from "./routes/userManagementRoutes/ngoProfileRoutes.js";
+import adminUserRoutes from "./routes/userManagementRoutes/adminUserRoutes.js";
 
 // Load env from multiple locations: root and src
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
@@ -46,6 +47,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/citizen", citizenProfileRoutes);
 app.use("/api/volunteer", volunteerProfileRoutes);
 app.use("/api/ngo", ngoProfileRoutes);
+app.use("/api/adminUser", adminUserRoutes);
 
 
 // Start socketio, commented it out since we dont use socketIO yet
