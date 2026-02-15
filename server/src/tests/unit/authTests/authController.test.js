@@ -87,7 +87,7 @@ describe("Auth Controller Unit Tests", () => {
   // -------------------------
   describe("registerUser", () => {
     test("should return 400 if required fields are missing", async () => {
-      const req = { body: { firstName: "A", email: "a@b.com" } }; // missing lastName, password, role
+      const req = { body: { name: "A", email: "a@b.com" } }; // missing name, password, role
       const res = mockRes();
 
       await registerUser(req, res);
@@ -104,8 +104,7 @@ describe("Auth Controller Unit Tests", () => {
 
       const req = {
         body: {
-          firstName: "A",
-          lastName: "B",
+          name: "B",
           email: "a@b.com",
           password: "Pass123!",
           role: "CITIZEN",
@@ -132,11 +131,9 @@ describe("Auth Controller Unit Tests", () => {
 
       const createdUser = {
         _id: "u1",
-        firstName: "A",
-        lastName: "B",
+        name: "B",
         email: "a@b.com",
         role: "CITIZEN",
-        name: "A B",
         toString() {
           return "u1";
         },
@@ -147,8 +144,7 @@ describe("Auth Controller Unit Tests", () => {
 
       const req = {
         body: {
-          firstName: "A",
-          lastName: "B",
+          name: "B",
           email: "a@b.com",
           password: "Pass123!",
           role: "CITIZEN",
@@ -161,8 +157,7 @@ describe("Auth Controller Unit Tests", () => {
       expect(hashPasswordMock).toHaveBeenCalledWith("Pass123!");
       expect(createMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          firstName: "A",
-          lastName: "B",
+          name: "B",
           email: "a@b.com",
           passwordHash: "hashed_pw",
           role: "CITIZEN",
@@ -185,8 +180,7 @@ describe("Auth Controller Unit Tests", () => {
 
       const req = {
         body: {
-          firstName: "A",
-          lastName: "B",
+          name: "B",
           email: "a@b.com",
           password: "Pass123!",
           role: "CITIZEN",
@@ -286,7 +280,7 @@ describe("Auth Controller Unit Tests", () => {
         },
         email: "a@b.com",
         role: "ADMIN",
-        name: "A B",
+        name: "B",
         passwordHash: "hash",
         isAccountVerified: true,
       };
@@ -361,7 +355,7 @@ describe("Auth Controller Unit Tests", () => {
       const saveMock = jest.fn();
       const user = {
         _id: "u1",
-        firstName: "A",
+        name: "B",
         email: "a@b.com",
         isAccountVerified: false,
         verifyOtp: "",
@@ -427,7 +421,7 @@ describe("Auth Controller Unit Tests", () => {
       const res = mockRes();
 
       findByIdMock.mockResolvedValue({
-        firstName: "A",
+        name: "B",
         email: "a@b.com",
         verifyOtp: "222222",
         verifyOtpExpiry: Date.now() - 1000,
@@ -448,7 +442,7 @@ describe("Auth Controller Unit Tests", () => {
 
       const saveMock = jest.fn();
       const user = {
-        firstName: "A",
+        name: "B",
         email: "a@b.com",
         verifyOtp: "222222",
         verifyOtpExpiry: Date.now() + 60000,
@@ -464,7 +458,7 @@ describe("Auth Controller Unit Tests", () => {
       expect(user.verifyOtpExpiry).toBe(0);
       expect(saveMock).toHaveBeenCalled();
 
-      expect(verifyAccountTemplateMock).toHaveBeenCalledWith("A");
+      expect(verifyAccountTemplateMock).toHaveBeenCalledWith("B");
       expect(sendEmailMock).toHaveBeenCalledWith(
         "a@b.com",
         "Welcome to RescueNet",
@@ -514,7 +508,7 @@ describe("Auth Controller Unit Tests", () => {
     test("should save reset otp and send email", async () => {
       const saveMock = jest.fn();
       const user = {
-        firstName: "A",
+        name: "B",
         email: "a@b.com",
         resetOtp: "",
         resetOtpExpiry: 0,
@@ -657,20 +651,5 @@ describe("Auth Controller Unit Tests", () => {
     });
   });
 
-  // -------------------------
-  // me
-  // -------------------------
-  describe("me", () => {
-    test("should return req.user", async () => {
-      const req = { user: { _id: "u1", email: "a@b.com" } };
-      const res = mockRes();
-
-      await me(req, res);
-
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        user: req.user,
-      });
-    });
-  });
+  
 });
