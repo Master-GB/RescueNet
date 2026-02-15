@@ -1,8 +1,7 @@
 import Joi from "joi";
 
 export const registerSchema = Joi.object({
-  firstName: Joi.string().max(60).required(),
-  lastName: Joi.string().max(60).required(),
+  name: Joi.string().max(60).required(),
   email: Joi.string().email().pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).required(),
   password: Joi.string().min(8).max(64).required(),
   role: Joi.string().valid("ADMIN", "VOLUNTEER", "NGO", "CITIZEN").optional(),

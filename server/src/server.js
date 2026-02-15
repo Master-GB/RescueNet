@@ -5,14 +5,17 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
-import helpRoutes from "./routes/helpRoutes.js";
-import weatherRoutes from "./routes/weatherRoutes.js";
-import adminHelpRoutes from "./routes/adminHelpRoutes.js";
-import adminNgoRoutes from "./routes/adminNgoRoutes.js";
+
 
 // Import routes
-
+import adminHelpRoutes from "./routes/adminHelpRoutes.js";
+import adminNgoRoutes from "./routes/adminNgoRoutes.js";
+import helpRoutes from "./routes/helpRoutes.js";
+import weatherRoutes from "./routes/weatherRoutes.js";
 import authRoutes from "./routes/authRoutes.js" ;
+import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRoutes.js";
+import volunteerProfileRoutes from "./routes/userManagementRoutes/volunteerProfileRoutes.js";
+import ngoProfileRoutes from "./routes/userManagementRoutes/ngoProfileRoutes.js";
 
 // Load env from multiple locations: root and src
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
@@ -40,6 +43,9 @@ app.use(express.json({ limit: "25mb" }));
 
 // --- Routes ---
 app.use("/api/auth", authRoutes); 
+app.use("/api/citizen", citizenProfileRoutes);
+app.use("/api/volunteer", volunteerProfileRoutes);
+app.use("/api/ngo", ngoProfileRoutes);
 
 
 // Start socketio, commented it out since we dont use socketIO yet
