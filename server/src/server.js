@@ -10,7 +10,8 @@ import weatherRoutes from "./routes/weatherRoutes.js";
 import adminHelpRoutes from "./routes/adminHelpRoutes.js";
 
 // Import routes
-// import authRoutes from "./routes/authRoutes.js"; 
+
+import authRoutes from "./routes/authRoutes.js" ;
 
 // Load env from multiple locations: root and src
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
@@ -31,7 +32,7 @@ app.use(cookieParser());
 app.use(express.json({ limit: "25mb" }));
 
 // --- Routes ---
-// app.use("/api/auth", authRoutes); 
+app.use("/api/auth", authRoutes); 
 
 
 // Start socketio, commented it out since we dont use socketIO yet

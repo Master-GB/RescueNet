@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="39" failures="0" errors="0" time="1.907">
+  <testsuite name="Auth Controller Unit Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:46" time="0.794" tests="26">
+    <testcase classname="Auth Controller Unit Tests registerUser should return 400 if required fields are missing" name="Auth Controller Unit Tests registerUser should return 400 if required fields are missing" time="0.003">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests registerUser should return 409 if email already exists" name="Auth Controller Unit Tests registerUser should return 409 if email already exists" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests registerUser should create user, set cookie, and return 201 on success" name="Auth Controller Unit Tests registerUser should create user, set cookie, and return 201 on success" time="0.002">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests registerUser should return 500 if DB throws error" name="Auth Controller Unit Tests registerUser should return 500 if DB throws error" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests loginUser should return 400 if email or password missing" name="Auth Controller Unit Tests loginUser should return 400 if email or password missing" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests loginUser should return 401 if user not found" name="Auth Controller Unit Tests loginUser should return 401 if user not found" time="0.002">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests loginUser should return 401 if password invalid" name="Auth Controller Unit Tests loginUser should return 401 if password invalid" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests loginUser should return 400 if account is not verified" name="Auth Controller Unit Tests loginUser should return 400 if account is not verified" time="0">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests loginUser should set cookie and return 200 on success" name="Auth Controller Unit Tests loginUser should set cookie and return 200 on success" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests logoutUser should clear cookie and return 200" name="Auth Controller Unit Tests logoutUser should clear cookie and return 200" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests sendOTP should return 400 if account already verified" name="Auth Controller Unit Tests sendOTP should return 400 if account already verified" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests sendOTP should generate otp, save user, and send email" name="Auth Controller Unit Tests sendOTP should generate otp, save user, and send email" time="0.007">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if missing id or otp" name="Auth Controller Unit Tests verifyUserAccount should return 400 if missing id or otp" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if invalid otp" name="Auth Controller Unit Tests verifyUserAccount should return 400 if invalid otp" time="0">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if otp expired" name="Auth Controller Unit Tests verifyUserAccount should return 400 if otp expired" time="0">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests verifyUserAccount should verify account and send welcome email" name="Auth Controller Unit Tests verifyUserAccount should verify account and send welcome email" time="0.002">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests sendResetOtp should return 400 if email missing" name="Auth Controller Unit Tests sendResetOtp should return 400 if email missing" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests sendResetOtp should return 400 if user not found" name="Auth Controller Unit Tests sendResetOtp should return 400 if user not found" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests sendResetOtp should save reset otp and send email" name="Auth Controller Unit Tests sendResetOtp should save reset otp and send email" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests verifyResetOtp should return 400 if missing email or code" name="Auth Controller Unit Tests verifyResetOtp should return 400 if missing email or code" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests verifyResetOtp should return 400 if invalid otp" name="Auth Controller Unit Tests verifyResetOtp should return 400 if invalid otp" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests verifyResetOtp should return 200 if otp is valid and not expired" name="Auth Controller Unit Tests verifyResetOtp should return 200 if otp is valid and not expired" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests resetPassword should return 400 if missing email or newPassword" name="Auth Controller Unit Tests resetPassword should return 400 if missing email or newPassword" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests resetPassword should return 400 if user not found" name="Auth Controller Unit Tests resetPassword should return 400 if user not found" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests resetPassword should hash new password, clear otp fields, save user, and return 200" name="Auth Controller Unit Tests resetPassword should hash new password, clear otp fields, save user, and return 200" time="0.001">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests me should return req.user" name="Auth Controller Unit Tests me should return req.user" time="0.005">
+    </testcase>
+  </testsuite>
+  <testsuite name="protect middleware" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:47" time="0.128" tests="4">
+    <testcase classname="protect middleware should return 401 if token cookie is missing" name="protect middleware should return 401 if token cookie is missing" time="0.004">
+    </testcase>
+    <testcase classname="protect middleware should return 401 if jwt.verify throws (invalid/expired token)" name="protect middleware should return 401 if jwt.verify throws (invalid/expired token)" time="0.002">
+    </testcase>
+    <testcase classname="protect middleware should return 401 if user not found in DB" name="protect middleware should return 401 if user not found in DB" time="0.002">
+    </testcase>
+    <testcase classname="protect middleware should set req.user and call next when token valid and user exists" name="protect middleware should set req.user and call next when token valid and user exists" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="Password Service" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:47" time="0.463" tests="3">
+    <testcase classname="Password Service hashPassword should return a different string than plain password" name="Password Service hashPassword should return a different string than plain password" time="0.068">
+    </testcase>
+    <testcase classname="Password Service comparePassword should return true for correct password" name="Password Service comparePassword should return true for correct password" time="0.125">
+    </testcase>
+    <testcase classname="Password Service comparePassword should return false for wrong password" name="Password Service comparePassword should return false for wrong password" time="0.131">
+    </testcase>
+  </testsuite>
+  <testsuite name="validateBody Middleware" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:47" time="0.227" tests="3">
+    <testcase classname="validateBody Middleware should pass when body is valid" name="validateBody Middleware should pass when body is valid" time="0.007">
+    </testcase>
+    <testcase classname="validateBody Middleware should return 400 when body is invalid" name="validateBody Middleware should return 400 when body is invalid" time="0.003">
+    </testcase>
+    <testcase classname="validateBody Middleware should strip unknown fields when stripUnknown is enabled" name="validateBody Middleware should strip unknown fields when stripUnknown is enabled" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="Authorize Middleware (RBAC)" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:48" time="0.1" tests="3">
+    <testcase classname="Authorize Middleware (RBAC) should return 401 if req.user is missing" name="Authorize Middleware (RBAC) should return 401 if req.user is missing" time="0.003">
+    </testcase>
+    <testcase classname="Authorize Middleware (RBAC) should return 403 if role not allowed" name="Authorize Middleware (RBAC) should return 403 if role not allowed" time="0.001">
+    </testcase>
+    <testcase classname="Authorize Middleware (RBAC) should call next if role allowed" name="Authorize Middleware (RBAC) should call next if role allowed" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>

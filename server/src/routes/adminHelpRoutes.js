@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticate } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorizeMiddleware.js";
 import {
   updateHelpRequest,
@@ -14,7 +14,7 @@ import {
 const router = express.Router();
 
 // All routes require authentication and admin role
-router.use(authenticate);
+router.use(protect);
 router.use(authorize("ADMIN"));
 
 // Get all help requests with filtering (admin view)
