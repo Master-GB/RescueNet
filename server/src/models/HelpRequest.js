@@ -29,8 +29,31 @@ const helpRequestSchema = new mongoose.Schema(
         size: Number,
       }
     ],
+
+  // ===== NEW FIELDS FOR TASK MANAGEMENT DONE BY ADMIN =====
+    status: {
+      type: String,
+      enum: ["pending", "verified", "assigned", "in-progress", "resolved", "rejected"],
+      default: "pending"
+    },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",  // Can also be volunteer
+      default: null
+    },
+    adminNotes: { type: String },
+    rejectionReason: { type: String },
+    resolvedAt: { type: Date },
+    publishedToSocial: { type: Boolean, default: false }
   },
+
   { timestamps: true }
 );
+
+// Index for faster queries
+helpRequestSchema.index({ status: 1 });
+helpRequestSchema.index({ assignedTo: 1 });
+helpRequestSchema.index({ disasterType: 1 });
+helpRequestSchema.index({ urgency: 1 });
 
 export default mongoose.model("HelpRequest", helpRequestSchema);
