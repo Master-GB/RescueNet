@@ -1,0 +1,235 @@
+
+{
+  "info": {
+    "_postman_id": "a2f8c6f4-0f9c-4a5d-a1aa-3d5a10a2babc",
+    "name": "RescueNet - Authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "RescueNet Authentication API (cookie-based session): register, login, logout, me, OTP verification and reset password flow."
+  },
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"A.M Gihan\",\n  \"email\": \"gihan@example.com\",\n  \"password\": \"StrongPass123!\",\n  \"role\": \"ADMIN\"\n}\n"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "register" ]
+        },
+        "description": "Registers a user and sets httpOnly cookie session (access_token)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201 or 200', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "pm.test('Response has user', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('user');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"password\": \"StrongPass123!\"\n}\n"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "login" ]
+        },
+        "description": "Logs in and sets httpOnly cookie session (access_token)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.expect(pm.response.code).to.equal(200);",
+              "});",
+              "pm.test('Response has user', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('user');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Me (Session Check)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "me" ]
+        },
+        "description": "Returns the authenticated user using cookie session. Run after Login/Register."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 or 401', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Logout",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/auth/logout",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "logout" ]
+        },
+        "description": "Clears the auth cookie session."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.expect(pm.response.code).to.equal(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "OTP - Send Account Verification OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"gihan@example.com\"\n}\n"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/send-otp",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "send-otp" ]
+        },
+        "description": "Sends OTP to email for account verification."
+      }
+    },
+    {
+      "name": "OTP - Verify Account",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"otp\": \"123456\"\n}\n"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/verify-account",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "verify-account" ]
+        },
+        "description": "Verifies account using OTP."
+      }
+    },
+    {
+      "name": "Reset - Send Reset OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"gihan@example.com\"\n}\n"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/send-reset-otp",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "send-reset-otp" ]
+        },
+        "description": "Sends OTP for password reset."
+      }
+    },
+    {
+      "name": "Reset - Verify Reset OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"otp\": \"123456\"\n}\n"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/verify-reset-otp",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "verify-reset-otp" ]
+        },
+        "description": "Validates reset OTP (optional step)."
+      }
+    },
+    {
+      "name": "Reset - Reset Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewStrongPass123!\"\n}\n"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/reset-password",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "auth", "reset-password" ]
+        },
+        "description": "Resets password using OTP."
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    }
+  ]
+}
