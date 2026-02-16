@@ -8,6 +8,8 @@ import {
   getActiveSessions,
   activateEmergency,
   markSafe,
+  findNearby,
+  findNearbyEmergencies,
 } from "../controllers/locationController.js";
 
 const router = express.Router();
@@ -21,20 +23,41 @@ const router = express.Router();
 router.get("/active", getActiveSessions);
 
 /**
+ * @route   GET /api/location/nearby
+ * @desc    Find nearby users sharing location (geospatial query)
+ * @query   latitude - Center point latitude (required)
+ * @query   longitude - Center point longitude (required)
+ * @query   radius - Search radius in meters (default: 10000 = 10km)
+ * @query   emergencyOnly - Only return emergency sessions (default: false)
+ * @access  Public (should be protected in production)
+ */
+router.get("/nearby", findNearby);
+
+/**
+ * @route   GET /api/location/nearby/emergencies
+ * @desc    Find nearby emergencies (convenience endpoint)
+ * @query   latitude - Center point latitude (required)
+ * @query   longitude - Center point longitude (required)
+ * @query   radius - Search radius in meters (default: 10000 = 10km)
+ * @access  Public (should be protected in production)
+ */
+router.get("/nearby/emergencies", findNearbyEmergencies);
+
+/**
  * @route   POST /api/location/start
  * @desc    Start a new location sharing session
  * @body    { latitude, longitude, accuracy?, altitude?, speed?, heading?,
  *            userName?, contactNumber?, isEmergency?, emergencyType?, emergencyMessage? }
  * @access  Public
  */
-router.post("/start", startSharing);
+router.post("/add/start", startSharing);
 
 /**
  * @route   GET /api/location/:sessionId
  * @desc    Get location data for a session (current + last known)
  * @access  Public
  */
-router.get("/:sessionId", getLocation);
+router.get("/getid/:sessionId", getLocation);
 
 /**
  * @route   PUT /api/location/:sessionId
@@ -42,14 +65,14 @@ router.get("/:sessionId", getLocation);
  * @body    { latitude, longitude, accuracy?, altitude?, speed?, heading? }
  * @access  Public
  */
-router.put("/:sessionId", updateLocation);
+router.put("/update/:sessionId", updateLocation);
 
 /**
  * @route   PUT /api/location/:sessionId/stop
  * @desc    Stop location sharing for a session
  * @access  Public
  */
-router.put("/:sessionId/stop", stopSharing);
+router.put("/update/:sessionId/stop", stopSharing);
 
 /**
  * @route   GET /api/location/:sessionId/history
@@ -57,7 +80,7 @@ router.put("/:sessionId/stop", stopSharing);
  * @query   limit - Number of points to return (default: 50)
  * @access  Public
  */
-router.get("/:sessionId/history", getLocationHistory);
+router.get("/getid/:sessionId/history", getLocationHistory);
 
 /**
  * @route   PUT /api/location/:sessionId/emergency
@@ -65,13 +88,13 @@ router.get("/:sessionId/history", getLocationHistory);
  * @body    { emergencyType?, emergencyMessage? }
  * @access  Public
  */
-router.put("/:sessionId/emergency", activateEmergency);
+router.put("/update/:sessionId/emergency", activateEmergency);
 
 /**
  * @route   PUT /api/location/:sessionId/safe
  * @desc    Mark user as safe (deactivate emergency)
  * @access  Public
  */
-router.put("/:sessionId/safe", markSafe);
+router.put("/update/:sessionId/safe", markSafe);
 
 export default router;

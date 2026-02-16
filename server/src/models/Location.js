@@ -1,9 +1,29 @@
 import mongoose from "mongoose";
 
+// GeoJSON Point schema for geospatial queries
+const geoPointSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
+      required: true,
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude] - GeoJSON format
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
+// Extended location point with metadata
 const locationPointSchema = new mongoose.Schema(
   {
-    latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true },
+    location: {
+      type: geoPointSchema,
+      required: true,
+    },
     accuracy: { type: Number }, // GPS accuracy in meters
     altitude: { type: Number },
     speed: { type: Number }, // Speed in m/s
@@ -23,10 +43,20 @@ const locationSchema = new mongoose.Schema(
     userName: { type: String },
     contactNumber: { type: String },
     
-    // Current/last known location
+    // Current/last known location (GeoJSON Point for geospatial queries)
     currentLocation: {
-      type: locationPointSchema,
+      type: geoPointSchema,
       required: true,
+      index: "2dsphere", // Enable geospatial queries
+    },
+    
+    // Additional current location metadata
+    currentLocationMeta: {
+      accuracy: Number,
+      altitude: Number,
+      speed: Number,
+      heading: Number,
+      timestamp: { type: Date, default: Date.now },
     },
     
     // Location history (stores recent points for tracking path)
@@ -58,11 +88,8 @@ const locationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index for geospatial queries (find nearby users)
-locationSchema.index({
-  "currentLocation.latitude": 1,
-  "currentLocation.longitude": 1,
-});
+// 2dsphere index for geospatial queries (find nearby users)
+locationSchema.index({ currentLocation: "2dsphere" });
 
 // TTL index - auto-delete inactive sessions after 24 hours
 locationSchema.index(
@@ -80,10 +107,93 @@ locationSchema.statics.findEmergencySessions = function () {
   return this.find({ isSharing: true, isEmergency: true });
 };
 
+/**
+ * Find users within a certain distance
+ * @param {number} longitude - Center point longitude
+ * @param {number} latitude - Center point latitude
+ * @param {number} maxDistanceMeters - Maximum distance in meters (default: 10km)
+ * @param {object} additionalFilters - Additional query filters
+ */
+locationSchema.statics.findNearby = function (
+  longitude,
+  latitude,
+  maxDistanceMeters = 10000,
+  additionalFilters = {}
+) {
+  return this.find({
+    currentLocation: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+        $maxDistance: maxDistanceMeters,
+      },
+    },
+    ...additionalFilters,
+  });
+};
+
+/**
+ * Find emergency users within a certain distance
+ * @param {number} longitude - Center point longitude
+ * @param {number} latitude - Center point latitude
+ * @param {number} maxDistanceMeters - Maximum distance in meters
+ */
+locationSchema.statics.findNearbyEmergencies = function (
+  longitude,
+  latitude,
+  maxDistanceMeters = 10000
+) {
+  return this.findNearby(longitude, latitude, maxDistanceMeters, {
+    isEmergency: true,
+    isSharing: true,
+  });
+};
+
+/**
+ * Find active users within a certain distance
+ * @param {number} longitude - Center point longitude
+ * @param {number} latitude - Center point latitude
+ * @param {number} maxDistanceMeters - Maximum distance in meters
+ */
+locationSchema.statics.findNearbyActive = function (
+  longitude,
+  latitude,
+  maxDistanceMeters = 10000
+) {
+  return this.findNearby(longitude, latitude, maxDistanceMeters, {
+    isSharing: true,
+    isOnline: true,
+  });
+};
+
 // Instance method to add location to history (keeps last 100 points)
 locationSchema.methods.addLocationPoint = function (point) {
-  this.currentLocation = point;
-  this.locationHistory.push(point);
+  // point: { latitude, longitude, accuracy, altitude, speed, heading }
+  const geoPoint = {
+    type: "Point",
+    coordinates: [point.longitude, point.latitude], // GeoJSON: [lng, lat]
+  };
+
+  this.currentLocation = geoPoint;
+  this.currentLocationMeta = {
+    accuracy: point.accuracy,
+    altitude: point.altitude,
+    speed: point.speed,
+    heading: point.heading,
+    timestamp: new Date(),
+  };
+
+  this.locationHistory.push({
+    location: geoPoint,
+    accuracy: point.accuracy,
+    altitude: point.altitude,
+    speed: point.speed,
+    heading: point.heading,
+    timestamp: new Date(),
+  });
+
   this.lastActiveAt = new Date();
   this.lastSignalAt = new Date();
   this.isOnline = true;
@@ -95,5 +205,20 @@ locationSchema.methods.addLocationPoint = function (point) {
   
   return this.save();
 };
+
+// Virtual to get latitude/longitude in a friendly format
+locationSchema.virtual("coordinates").get(function () {
+  if (this.currentLocation && this.currentLocation.coordinates) {
+    return {
+      longitude: this.currentLocation.coordinates[0],
+      latitude: this.currentLocation.coordinates[1],
+    };
+  }
+  return null;
+});
+
+// Ensure virtuals are included in JSON output
+locationSchema.set("toJSON", { virtuals: true });
+locationSchema.set("toObject", { virtuals: true });
 
 export default mongoose.model("Location", locationSchema);

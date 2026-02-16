@@ -7,6 +7,27 @@ import crypto from "crypto";
 const generateSessionId = () => crypto.randomUUID();
 
 /**
+ * Helper to create GeoJSON point from lat/lng
+ */
+const createGeoPoint = (longitude, latitude) => ({
+  type: "Point",
+  coordinates: [longitude, latitude], // GeoJSON format: [lng, lat]
+});
+
+/**
+ * Helper to format location response with friendly coordinates
+ */
+const formatLocationResponse = (location) => {
+  const coords = location.currentLocation?.coordinates || [];
+  return {
+    ...location.toObject(),
+    // Add friendly coordinate format
+    latitude: coords[1],
+    longitude: coords[0],
+  };
+};
+
+/**
  * Start sharing location - creates a new location session
  * POST /api/location/start
  */
@@ -32,22 +53,29 @@ export const startSharing = async (req, res) => {
     }
 
     const sessionId = generateSessionId();
-    const locationPoint = {
-      latitude,
-      longitude,
-      accuracy,
-      altitude,
-      speed,
-      heading,
-      timestamp: new Date(),
-    };
+    const geoPoint = createGeoPoint(longitude, latitude);
+    const timestamp = new Date();
 
     const location = await Location.create({
       sessionId,
       userName,
       contactNumber,
-      currentLocation: locationPoint,
-      locationHistory: [locationPoint],
+      currentLocation: geoPoint,
+      currentLocationMeta: {
+        accuracy,
+        altitude,
+        speed,
+        heading,
+        timestamp,
+      },
+      locationHistory: [{
+        location: geoPoint,
+        accuracy,
+        altitude,
+        speed,
+        heading,
+        timestamp,
+      }],
       isEmergency: isEmergency || false,
       emergencyType,
       emergencyMessage,
@@ -59,7 +87,7 @@ export const startSharing = async (req, res) => {
     res.status(201).json({
       success: true,
       sessionId,
-      location,
+      location: formatLocationResponse(location),
       message: isEmergency
         ? "Emergency location sharing started"
         : "Location sharing started",
@@ -305,3 +333,97 @@ export const markSafe = async (req, res) => {
     res.status(500).json({ error: "Failed to mark as safe" });
   }
 };
+
+/**
+ * Find nearby users sharing location
+ * GET /api/location/nearby
+ * @query latitude - Center point latitude (required)
+ * @query longitude - Center point longitude (required)
+ * @query radius - Search radius in meters (default: 10000 = 10km)
+ * @query emergencyOnly - Only return emergency sessions (default: false)
+ */
+export const findNearby = async (req, res) => {
+  try {
+    const { latitude, longitude, radius = 10000, emergencyOnly } = req.query;
+
+    if (latitude == null || longitude == null) {
+      return res.status(400).json({ error: "Latitude and longitude are required" });
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    const maxDistance = parseInt(radius);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      return res.status(400).json({ error: "Invalid coordinates" });
+    }
+
+    let locations;
+    if (emergencyOnly === "true") {
+      locations = await Location.findNearbyEmergencies(lng, lat, maxDistance);
+    } else {
+      locations = await Location.findNearbyActive(lng, lat, maxDistance);
+    }
+
+    // Calculate distance for each result
+    const resultsWithDistance = locations.map((loc) => {
+      const locCoords = loc.currentLocation.coordinates;
+      const distance = calculateDistance(lat, lng, locCoords[1], locCoords[0]);
+      return {
+        ...loc.toObject(),
+        distance: Math.round(distance), // Distance in meters
+        distanceText: formatDistance(distance),
+      };
+    });
+
+    res.json({
+      success: true,
+      count: resultsWithDistance.length,
+      searchCenter: { latitude: lat, longitude: lng },
+      radiusMeters: maxDistance,
+      results: resultsWithDistance,
+    });
+  } catch (error) {
+    console.error("Error finding nearby locations:", error);
+    res.status(500).json({ error: "Failed to find nearby locations" });
+  }
+};
+
+/**
+ * Find nearby emergencies (convenience endpoint)
+ * GET /api/location/nearby/emergencies
+ */
+export const findNearbyEmergencies = async (req, res) => {
+  req.query.emergencyOnly = "true";
+  return findNearby(req, res);
+};
+
+/**
+ * Calculate distance between two points using Haversine formula
+ * @returns Distance in meters
+ */
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Earth's radius in meters
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toRad(deg) {
+  return deg * (Math.PI / 180);
+}
+
+/**
+ * Format distance for display
+ */
+function formatDistance(meters) {
+  if (meters < 1000) {
+    return `${Math.round(meters)}m`;
+  }
+  return `${(meters / 1000).toFixed(1)}km`;
+}
