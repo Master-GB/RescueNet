@@ -98,6 +98,12 @@ export function setupSocketIO(httpServer, clientUrl = process.env.CLIENT_URL) {
           timestamp: new Date(),
         };
 
+        // GeoJSON point for database storage
+        const geoPoint = {
+          type: "Point",
+          coordinates: [longitude, latitude], // GeoJSON: [lng, lat]
+        };
+
         // Create or update location in database
         let location = await Location.findOne({ sessionId });
         if (location) {
@@ -107,8 +113,22 @@ export function setupSocketIO(httpServer, clientUrl = process.env.CLIENT_URL) {
             sessionId,
             userName,
             contactNumber,
-            currentLocation: locationPoint,
-            locationHistory: [locationPoint],
+            currentLocation: geoPoint,
+            currentLocationMeta: {
+              accuracy,
+              altitude,
+              speed,
+              heading,
+              timestamp: new Date(),
+            },
+            locationHistory: [{
+              location: geoPoint,
+              accuracy,
+              altitude,
+              speed,
+              heading,
+              timestamp: new Date(),
+            }],
             isEmergency: isEmergency || false,
             emergencyType,
             emergencyMessage,
@@ -119,7 +139,7 @@ export function setupSocketIO(httpServer, clientUrl = process.env.CLIENT_URL) {
 
         socket.emit("location:started", { sessionId, location });
 
-        // Broadcast to watchers
+        // Broadcast to watchers (use friendly format)
         io.to(`location:${sessionId}`).emit("location:update", {
           sessionId,
           location: locationPoint,
