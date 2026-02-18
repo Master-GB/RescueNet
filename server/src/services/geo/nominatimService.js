@@ -1,4 +1,4 @@
-import { http } from "../lib/httpClient.js";
+import { http } from "../../lib/httpClient.js";
 
 const NOMINATIM_BASE = process.env.NOMINATIM_BASE_URL || "https://nominatim.openstreetmap.org";
 
