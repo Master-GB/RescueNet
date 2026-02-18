@@ -1,4 +1,4 @@
-import { http } from "../lib/httpClient.js";
+import { http } from "../../lib/httpClient.js";
 
 const OSRM_BASE = process.env.OSRM_BASE_URL || "https://router.project-osrm.org";
 

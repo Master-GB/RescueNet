@@ -1,16 +1,12 @@
 import { cache, cacheKey } from "../lib/cache.js";
-import { getRoute } from "../services/osrmService.js";
-import { geocode, reverseGeocode } from "../services/nominatimService.js";
+import { getRoute } from "../services/geo/osrmService.js";
+import { geocode, reverseGeocode } from "../services/geo/nominatimService.js";
 
 /**
  * GET /api/geo/route?fromLng=&fromLat=&toLng=&toLat=&profile=driving&alternatives=true
  */
 export const route = async (req, res) => {
   try {
-    const key = cacheKey(req);
-    const cached = cache.get(key);
-    if (cached) return res.status(200).json({ success: true, source: "cache", data: cached });
-
     const fromLng = Number(req.query.fromLng);
     const fromLat = Number(req.query.fromLat);
     const toLng = Number(req.query.toLng);
@@ -21,6 +17,10 @@ export const route = async (req, res) => {
     if ([fromLng, fromLat, toLng, toLat].some(Number.isNaN)) {
       return res.status(400).json({ success: false, message: "fromLng, fromLat, toLng, toLat are required numbers" });
     }
+
+    const key = cacheKey(req);
+    const cached = cache.get(key);
+    if (cached) return res.status(200).json({ success: true, source: "cache", data: cached });
 
     const data = await getRoute({
       profile,
@@ -41,16 +41,16 @@ export const route = async (req, res) => {
  */
 export const geocodeAddress = async (req, res) => {
   try {
-    const key = cacheKey(req);
-    const cached = cache.get(key);
-    if (cached) return res.status(200).json({ success: true, source: "cache", data: cached });
-
     const q = (req.query.q || "").trim();
     const limit = Number(req.query.limit || 5);
 
     if (!q) {
       return res.status(400).json({ success: false, message: "q (address) is required" });
     }
+
+    const key = cacheKey(req);
+    const cached = cache.get(key);
+    if (cached) return res.status(200).json({ success: true, source: "cache", data: cached });
 
     const data = await geocode({ q, limit });
     cache.set(key, data);
@@ -66,16 +66,16 @@ export const geocodeAddress = async (req, res) => {
  */
 export const reverseAddress = async (req, res) => {
   try {
-    const key = cacheKey(req);
-    const cached = cache.get(key);
-    if (cached) return res.status(200).json({ success: true, source: "cache", data: cached });
-
     const lat = Number(req.query.lat);
     const lng = Number(req.query.lng);
 
     if ([lat, lng].some(Number.isNaN)) {
       return res.status(400).json({ success: false, message: "lat and lng are required numbers" });
     }
+
+    const key = cacheKey(req);
+    const cached = cache.get(key);
+    if (cached) return res.status(200).json({ success: true, source: "cache", data: cached });
 
     const data = await reverseGeocode({ lat, lng });
     cache.set(key, data);
