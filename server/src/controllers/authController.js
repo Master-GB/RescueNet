@@ -4,19 +4,22 @@ import { hashPassword, comparePassword } from "../services/passwordService.js";
 import { setAuthCookie } from "../utils/setAuthCookie.js";
 import {sendOTPTemplate, verifyAccountTemplate, sendResetOTPTemplate} from "../templates/emailTemplates.js";
 import { sendEmail } from "../config/nodeMailer.js";
+import CitizenProfile from "../models/userProfileModel/CitizenProfile.js";
+import VolunteerProfile from "../models/userProfileModel/VolunteerProfile.js";
+import NgoProfile from "../models/userProfileModel/NgoProfile.js";
 
 const signToken = (user) =>
   jwt.sign(
-    { sub: user._id.toString(), role: user.role, email: user.email },
+    { sub: user._id.toString(), name: user.name, role: user.role, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
   );
 
 
 export const registerUser = async (req, res) => {
-  const { firstName, lastName, email, password, role } = req.body;
+  const { name, email, password, role } = req.body;
 
-  if (!firstName || !lastName || !email || !password || !role) {
+  if (!name || !email || !password || !role) {
     return res
       .status(400)
       .json({ success: false, message: "All fields are required" });
@@ -32,8 +35,7 @@ export const registerUser = async (req, res) => {
       });
 
     const user = await User.create({
-      firstName,
-      lastName,
+      name,
       email,
       passwordHash: await hashPassword(password),
       role: role || "CITIZEN",
@@ -164,7 +166,7 @@ export const sendOTP = async (req, res) => {
 
     await user.save();
 
-    const htmlMessage = sendOTPTemplate(user.firstName, otp, verifyUrl);
+    const htmlMessage = sendOTPTemplate(user.name, otp, verifyUrl);
     sendEmail(user.email, "Verify Account", htmlMessage);
     console.log("Verification email sent");
      return res.status(200).json({ 
@@ -212,7 +214,7 @@ export const verifyUserAccount = async (req, res) => {
     user.verifyOtpExpiry = 0;
     await user.save();
 
-    const htmlMessage = verifyAccountTemplate(user.firstName);
+    const htmlMessage = verifyAccountTemplate(user.name);
     sendEmail(user.email, "Welcome to RescueNet", htmlMessage);
     return res
       .status(200)
@@ -254,7 +256,7 @@ export const sendResetOtp = async (req, res) => {
 
     const resetUrl = "google.com";
 
-    const htmlMessage = sendResetOTPTemplate(user.firstName, passOtp, resetUrl);
+    const htmlMessage = sendResetOTPTemplate(user.name, passOtp, resetUrl);
     sendEmail(user.email, "Password Reset OTP", htmlMessage);
     return res
       .status(200)
@@ -344,5 +346,25 @@ export const resetPassword = async (req, res) => {
 };
 
 export const me = async (req, res) => {
-  res.json({ success:true, user: req.user }); // req.user set by auth middleware
+  try {
+    const user = req.user;
+
+    let profile = null;
+
+    if (user.role === "CITIZEN") {
+      profile = await CitizenProfile.findOne({ userId: user._id });
+    } else if (user.role === "VOLUNTEER") {
+      profile = await VolunteerProfile.findOne({ userId: user._id });
+    } else if (user.role === "NGO") {
+      profile = await NgoProfile.findOne({ userId: user._id });
+    }
+
+    return res.status(200).json({ success: true, user, profile });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch profile",
+      error: error.message,
+    });
+  }
 };

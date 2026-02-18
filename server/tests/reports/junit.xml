@@ -1,15 +1,155 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="39" failures="0" errors="0" time="1.907">
-  <testsuite name="Auth Controller Unit Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:46" time="0.794" tests="26">
-    <testcase classname="Auth Controller Unit Tests registerUser should return 400 if required fields are missing" name="Auth Controller Unit Tests registerUser should return 400 if required fields are missing" time="0.003">
+<testsuites name="jest tests" tests="94" failures="0" errors="0" time="3.364">
+  <testsuite name="Admin Verification Controller" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:35" time="0.52" tests="4">
+    <testcase classname="Admin Verification Controller verifyVolunteer should return 400 if user not found or role mismatch" name="Admin Verification Controller verifyVolunteer should return 400 if user not found or role mismatch" time="0.017">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests registerUser should return 409 if email already exists" name="Auth Controller Unit Tests registerUser should return 409 if email already exists" time="0.001">
+    <testcase classname="Admin Verification Controller verifyVolunteer should verify volunteer profile and return 200" name="Admin Verification Controller verifyVolunteer should verify volunteer profile and return 200" time="0.003">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests registerUser should create user, set cookie, and return 201 on success" name="Auth Controller Unit Tests registerUser should create user, set cookie, and return 201 on success" time="0.002">
+    <testcase classname="Admin Verification Controller verifyNgo should return 400 if role mismatch" name="Admin Verification Controller verifyNgo should return 400 if role mismatch" time="0.002">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests registerUser should return 500 if DB throws error" name="Auth Controller Unit Tests registerUser should return 500 if DB throws error" time="0.001">
+    <testcase classname="Admin Verification Controller verifyNgo should verify NGO profile and return 200" name="Admin Verification Controller verifyNgo should verify NGO profile and return 200" time="0.002">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests loginUser should return 400 if email or password missing" name="Auth Controller Unit Tests loginUser should return 400 if email or password missing" time="0.001">
+  </testsuite>
+  <testsuite name="Volunteer Profile Controller" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:35" time="0.659" tests="15">
+    <testcase classname="Volunteer Profile Controller createVolunteerProfile should return 400 if phone missing" name="Volunteer Profile Controller createVolunteerProfile should return 400 if phone missing" time="0.014">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller createVolunteerProfile should return 409 if profile already exists" name="Volunteer Profile Controller createVolunteerProfile should return 409 if profile already exists" time="0.002">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller createVolunteerProfile should create profile and return 201" name="Volunteer Profile Controller createVolunteerProfile should create profile and return 201" time="0.008">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller createVolunteerProfile should return 500 if create throws error" name="Volunteer Profile Controller createVolunteerProfile should return 500 if create throws error" time="0.002">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller getVolunteerProfile should return 404 if profile not found" name="Volunteer Profile Controller getVolunteerProfile should return 404 if profile not found" time="0.001">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller getVolunteerProfile should return 404 if user not found" name="Volunteer Profile Controller getVolunteerProfile should return 404 if user not found" time="0.014">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller getVolunteerProfile should return merged profileData with name and email" name="Volunteer Profile Controller getVolunteerProfile should return merged profileData with name and email" time="0.01">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller updateVolunteerProfile should return 404 if profile not found" name="Volunteer Profile Controller updateVolunteerProfile should return 404 if profile not found" time="0.001">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller updateVolunteerProfile should update and return 200" name="Volunteer Profile Controller updateVolunteerProfile should update and return 200" time="0.002">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller updateAvailabilityStatus should return 400 for invalid status" name="Volunteer Profile Controller updateAvailabilityStatus should return 400 for invalid status" time="0.003">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller updateAvailabilityStatus should return 404 if profile not found" name="Volunteer Profile Controller updateAvailabilityStatus should return 404 if profile not found" time="0.001">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller updateAvailabilityStatus should update status and return 200" name="Volunteer Profile Controller updateAvailabilityStatus should update status and return 200" time="0.04">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller deleteVolunteerProfile should return 404 if user not found" name="Volunteer Profile Controller deleteVolunteerProfile should return 404 if user not found" time="0.002">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller deleteVolunteerProfile should return 404 if profile not found" name="Volunteer Profile Controller deleteVolunteerProfile should return 404 if profile not found" time="0.028">
+    </testcase>
+    <testcase classname="Volunteer Profile Controller deleteVolunteerProfile should delete user + profile, clear cookie, return 200" name="Volunteer Profile Controller deleteVolunteerProfile should delete user + profile, clear cookie, return 200" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="validateBody Middleware" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:35" time="0.852" tests="3">
+    <testcase classname="validateBody Middleware should pass when body is valid" name="validateBody Middleware should pass when body is valid" time="0.023">
+    </testcase>
+    <testcase classname="validateBody Middleware should return 400 when body is invalid" name="validateBody Middleware should return 400 when body is invalid" time="0.005">
+    </testcase>
+    <testcase classname="validateBody Middleware should strip unknown fields when stripUnknown is enabled" name="validateBody Middleware should strip unknown fields when stripUnknown is enabled" time="0.015">
+    </testcase>
+  </testsuite>
+  <testsuite name="NGO Profile Controller" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:36" time="0.256" tests="14">
+    <testcase classname="NGO Profile Controller createNgoProfile should return 409 if profile exists" name="NGO Profile Controller createNgoProfile should return 409 if profile exists" time="0.005">
+    </testcase>
+    <testcase classname="NGO Profile Controller createNgoProfile should return 400 if required fields missing" name="NGO Profile Controller createNgoProfile should return 400 if required fields missing" time="0.003">
+    </testcase>
+    <testcase classname="NGO Profile Controller createNgoProfile should create profile and return 201" name="NGO Profile Controller createNgoProfile should create profile and return 201" time="0.003">
+    </testcase>
+    <testcase classname="NGO Profile Controller getNgoProfile should return 404 if user not found" name="NGO Profile Controller getNgoProfile should return 404 if user not found" time="0.003">
+    </testcase>
+    <testcase classname="NGO Profile Controller getNgoProfile should return 404 if profile not found" name="NGO Profile Controller getNgoProfile should return 404 if profile not found" time="0.001">
+    </testcase>
+    <testcase classname="NGO Profile Controller getNgoProfile should return merged profileData with name and email" name="NGO Profile Controller getNgoProfile should return merged profileData with name and email" time="0.002">
+    </testcase>
+    <testcase classname="NGO Profile Controller updateNgoProfile should return 404 if profile not found" name="NGO Profile Controller updateNgoProfile should return 404 if profile not found" time="0.001">
+    </testcase>
+    <testcase classname="NGO Profile Controller updateNgoProfile should update and return 200" name="NGO Profile Controller updateNgoProfile should update and return 200" time="0.001">
+    </testcase>
+    <testcase classname="NGO Profile Controller updateAvailabilityStatus (NGO) should return 400 for invalid status" name="NGO Profile Controller updateAvailabilityStatus (NGO) should return 400 for invalid status" time="0.002">
+    </testcase>
+    <testcase classname="NGO Profile Controller updateAvailabilityStatus (NGO) should return 404 if profile not found" name="NGO Profile Controller updateAvailabilityStatus (NGO) should return 404 if profile not found" time="0.002">
+    </testcase>
+    <testcase classname="NGO Profile Controller updateAvailabilityStatus (NGO) should update status and return 200" name="NGO Profile Controller updateAvailabilityStatus (NGO) should update status and return 200" time="0.001">
+    </testcase>
+    <testcase classname="NGO Profile Controller deleteNgoProfile should return 404 if user not found" name="NGO Profile Controller deleteNgoProfile should return 404 if user not found" time="0.001">
+    </testcase>
+    <testcase classname="NGO Profile Controller deleteNgoProfile should return 404 if profile not found" name="NGO Profile Controller deleteNgoProfile should return 404 if profile not found" time="0.009">
+    </testcase>
+    <testcase classname="NGO Profile Controller deleteNgoProfile should delete user + profile, clear cookie, return 200" name="NGO Profile Controller deleteNgoProfile should delete user + profile, clear cookie, return 200" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="protect middleware" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:36" time="0.243" tests="4">
+    <testcase classname="protect middleware should return 401 if token cookie is missing" name="protect middleware should return 401 if token cookie is missing" time="0.013">
+    </testcase>
+    <testcase classname="protect middleware should return 401 if jwt.verify throws (invalid/expired token)" name="protect middleware should return 401 if jwt.verify throws (invalid/expired token)" time="0.006">
+    </testcase>
+    <testcase classname="protect middleware should return 401 if user not found in DB" name="protect middleware should return 401 if user not found in DB" time="0.015">
+    </testcase>
+    <testcase classname="protect middleware should set req.user and call next when token valid and user exists" name="protect middleware should set req.user and call next when token valid and user exists" time="0.02">
+    </testcase>
+  </testsuite>
+  <testsuite name="Authorize Middleware (RBAC)" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:36" time="0.207" tests="3">
+    <testcase classname="Authorize Middleware (RBAC) should return 401 if req.user is missing" name="Authorize Middleware (RBAC) should return 401 if req.user is missing" time="0.005">
+    </testcase>
+    <testcase classname="Authorize Middleware (RBAC) should return 403 if role not allowed" name="Authorize Middleware (RBAC) should return 403 if role not allowed" time="0.002">
+    </testcase>
+    <testcase classname="Authorize Middleware (RBAC) should call next if role allowed" name="Authorize Middleware (RBAC) should call next if role allowed" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Password Service" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:35" time="1.133" tests="3">
+    <testcase classname="Password Service hashPassword should return a different string than plain password" name="Password Service hashPassword should return a different string than plain password" time="0.209">
+    </testcase>
+    <testcase classname="Password Service comparePassword should return true for correct password" name="Password Service comparePassword should return true for correct password" time="0.221">
+    </testcase>
+    <testcase classname="Password Service comparePassword should return false for wrong password" name="Password Service comparePassword should return false for wrong password" time="0.188">
+    </testcase>
+  </testsuite>
+  <testsuite name="Shelter Controller - Unit Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:35" time="1.303" tests="16">
+    <testcase classname="Shelter Controller - Unit Tests createShelter should return 400 if required fields are missing" name="Shelter Controller - Unit Tests createShelter should return 400 if required fields are missing" time="0.012">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests createShelter should return 400 if location.coordinates is invalid" name="Shelter Controller - Unit Tests createShelter should return 400 if location.coordinates is invalid" time="0.002">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests createShelter should return 201, create shelter, and emit shelter:created" name="Shelter Controller - Unit Tests createShelter should return 201, create shelter, and emit shelter:created" time="0.003">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests createShelter should return 500 if DB throws" name="Shelter Controller - Unit Tests createShelter should return 500 if DB throws" time="0.002">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests getShelterById should return 400 if id param missing" name="Shelter Controller - Unit Tests getShelterById should return 400 if id param missing" time="0.003">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests getShelterById should return 404 if shelter not found" name="Shelter Controller - Unit Tests getShelterById should return 404 if shelter not found" time="0.002">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests getShelterById should return 200 if shelter found" name="Shelter Controller - Unit Tests getShelterById should return 200 if shelter found" time="0.002">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests listShelters should return 200 with shelters + total" name="Shelter Controller - Unit Tests listShelters should return 200 with shelters + total" time="0.002">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests listShelters should return 500 on error" name="Shelter Controller - Unit Tests listShelters should return 500 on error" time="0.001">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests nearbyShelters should return 400 if lng/lat invalid" name="Shelter Controller - Unit Tests nearbyShelters should return 400 if lng/lat invalid" time="0.001">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests nearbyShelters should return 200 with nearby shelters" name="Shelter Controller - Unit Tests nearbyShelters should return 200 with nearby shelters" time="0.003">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests updateShelter should return 404 if shelter not found" name="Shelter Controller - Unit Tests updateShelter should return 404 if shelter not found" time="0.001">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests updateShelter should update and emit shelter:updated and return updated doc" name="Shelter Controller - Unit Tests updateShelter should update and emit shelter:updated and return updated doc" time="0.002">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests deleteShelter should return 400 if id missing" name="Shelter Controller - Unit Tests deleteShelter should return 400 if id missing" time="0.001">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests deleteShelter should return 404 if shelter not found" name="Shelter Controller - Unit Tests deleteShelter should return 404 if shelter not found" time="0.001">
+    </testcase>
+    <testcase classname="Shelter Controller - Unit Tests deleteShelter should delete and emit shelter:deleted" name="Shelter Controller - Unit Tests deleteShelter should delete and emit shelter:deleted" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="Auth Controller Unit Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:35" time="1.467" tests="25">
+    <testcase classname="Auth Controller Unit Tests registerUser should return 400 if required fields are missing" name="Auth Controller Unit Tests registerUser should return 400 if required fields are missing" time="0.008">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests registerUser should return 409 if email already exists" name="Auth Controller Unit Tests registerUser should return 409 if email already exists" time="0.003">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests registerUser should create user, set cookie, and return 201 on success" name="Auth Controller Unit Tests registerUser should create user, set cookie, and return 201 on success" time="0.003">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests registerUser should return 500 if DB throws error" name="Auth Controller Unit Tests registerUser should return 500 if DB throws error" time="0.002">
+    </testcase>
+    <testcase classname="Auth Controller Unit Tests loginUser should return 400 if email or password missing" name="Auth Controller Unit Tests loginUser should return 400 if email or password missing" time="0.002">
     </testcase>
     <testcase classname="Auth Controller Unit Tests loginUser should return 401 if user not found" name="Auth Controller Unit Tests loginUser should return 401 if user not found" time="0.002">
     </testcase>
@@ -17,75 +157,55 @@
     </testcase>
     <testcase classname="Auth Controller Unit Tests loginUser should return 400 if account is not verified" name="Auth Controller Unit Tests loginUser should return 400 if account is not verified" time="0">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests loginUser should set cookie and return 200 on success" name="Auth Controller Unit Tests loginUser should set cookie and return 200 on success" time="0.001">
+    <testcase classname="Auth Controller Unit Tests loginUser should set cookie and return 200 on success" name="Auth Controller Unit Tests loginUser should set cookie and return 200 on success" time="0.002">
     </testcase>
     <testcase classname="Auth Controller Unit Tests logoutUser should clear cookie and return 200" name="Auth Controller Unit Tests logoutUser should clear cookie and return 200" time="0.001">
     </testcase>
     <testcase classname="Auth Controller Unit Tests sendOTP should return 400 if account already verified" name="Auth Controller Unit Tests sendOTP should return 400 if account already verified" time="0.001">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests sendOTP should generate otp, save user, and send email" name="Auth Controller Unit Tests sendOTP should generate otp, save user, and send email" time="0.007">
+    <testcase classname="Auth Controller Unit Tests sendOTP should generate otp, save user, and send email" name="Auth Controller Unit Tests sendOTP should generate otp, save user, and send email" time="0.024">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if missing id or otp" name="Auth Controller Unit Tests verifyUserAccount should return 400 if missing id or otp" time="0.001">
+    <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if missing id or otp" name="Auth Controller Unit Tests verifyUserAccount should return 400 if missing id or otp" time="0.005">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if invalid otp" name="Auth Controller Unit Tests verifyUserAccount should return 400 if invalid otp" time="0">
+    <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if invalid otp" name="Auth Controller Unit Tests verifyUserAccount should return 400 if invalid otp" time="0.001">
     </testcase>
     <testcase classname="Auth Controller Unit Tests verifyUserAccount should return 400 if otp expired" name="Auth Controller Unit Tests verifyUserAccount should return 400 if otp expired" time="0">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests verifyUserAccount should verify account and send welcome email" name="Auth Controller Unit Tests verifyUserAccount should verify account and send welcome email" time="0.002">
+    <testcase classname="Auth Controller Unit Tests verifyUserAccount should verify account and send welcome email" name="Auth Controller Unit Tests verifyUserAccount should verify account and send welcome email" time="0.001">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests sendResetOtp should return 400 if email missing" name="Auth Controller Unit Tests sendResetOtp should return 400 if email missing" time="0.001">
+    <testcase classname="Auth Controller Unit Tests sendResetOtp should return 400 if email missing" name="Auth Controller Unit Tests sendResetOtp should return 400 if email missing" time="0.002">
     </testcase>
     <testcase classname="Auth Controller Unit Tests sendResetOtp should return 400 if user not found" name="Auth Controller Unit Tests sendResetOtp should return 400 if user not found" time="0.001">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests sendResetOtp should save reset otp and send email" name="Auth Controller Unit Tests sendResetOtp should save reset otp and send email" time="0.001">
+    <testcase classname="Auth Controller Unit Tests sendResetOtp should save reset otp and send email" name="Auth Controller Unit Tests sendResetOtp should save reset otp and send email" time="0">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests verifyResetOtp should return 400 if missing email or code" name="Auth Controller Unit Tests verifyResetOtp should return 400 if missing email or code" time="0.001">
+    <testcase classname="Auth Controller Unit Tests verifyResetOtp should return 400 if missing email or code" name="Auth Controller Unit Tests verifyResetOtp should return 400 if missing email or code" time="0">
     </testcase>
     <testcase classname="Auth Controller Unit Tests verifyResetOtp should return 400 if invalid otp" name="Auth Controller Unit Tests verifyResetOtp should return 400 if invalid otp" time="0.001">
     </testcase>
     <testcase classname="Auth Controller Unit Tests verifyResetOtp should return 200 if otp is valid and not expired" name="Auth Controller Unit Tests verifyResetOtp should return 200 if otp is valid and not expired" time="0.001">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests resetPassword should return 400 if missing email or newPassword" name="Auth Controller Unit Tests resetPassword should return 400 if missing email or newPassword" time="0.001">
+    <testcase classname="Auth Controller Unit Tests resetPassword should return 400 if missing email or newPassword" name="Auth Controller Unit Tests resetPassword should return 400 if missing email or newPassword" time="0">
     </testcase>
     <testcase classname="Auth Controller Unit Tests resetPassword should return 400 if user not found" name="Auth Controller Unit Tests resetPassword should return 400 if user not found" time="0.001">
     </testcase>
     <testcase classname="Auth Controller Unit Tests resetPassword should hash new password, clear otp fields, save user, and return 200" name="Auth Controller Unit Tests resetPassword should hash new password, clear otp fields, save user, and return 200" time="0.001">
     </testcase>
-    <testcase classname="Auth Controller Unit Tests me should return req.user" name="Auth Controller Unit Tests me should return req.user" time="0.005">
-    </testcase>
   </testsuite>
-  <testsuite name="protect middleware" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:47" time="0.128" tests="4">
-    <testcase classname="protect middleware should return 401 if token cookie is missing" name="protect middleware should return 401 if token cookie is missing" time="0.004">
+  <testsuite name="Citizen Profile Controller" errors="0" failures="0" skipped="0" timestamp="2026-02-16T10:54:35" time="2.835" tests="7">
+    <testcase classname="Citizen Profile Controller getCitizenProfile should return profile" name="Citizen Profile Controller getCitizenProfile should return profile" time="0.948">
     </testcase>
-    <testcase classname="protect middleware should return 401 if jwt.verify throws (invalid/expired token)" name="protect middleware should return 401 if jwt.verify throws (invalid/expired token)" time="0.002">
+    <testcase classname="Citizen Profile Controller getCitizenProfile should return 500 on error" name="Citizen Profile Controller getCitizenProfile should return 500 on error" time="0.266">
     </testcase>
-    <testcase classname="protect middleware should return 401 if user not found in DB" name="protect middleware should return 401 if user not found in DB" time="0.002">
+    <testcase classname="Citizen Profile Controller createCitizenProfile should return 409 if profile already exists" name="Citizen Profile Controller createCitizenProfile should return 409 if profile already exists" time="0.263">
     </testcase>
-    <testcase classname="protect middleware should set req.user and call next when token valid and user exists" name="protect middleware should set req.user and call next when token valid and user exists" time="0.002">
+    <testcase classname="Citizen Profile Controller createCitizenProfile should create profile and return 201" name="Citizen Profile Controller createCitizenProfile should create profile and return 201" time="0.228">
     </testcase>
-  </testsuite>
-  <testsuite name="Password Service" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:47" time="0.463" tests="3">
-    <testcase classname="Password Service hashPassword should return a different string than plain password" name="Password Service hashPassword should return a different string than plain password" time="0.068">
+    <testcase classname="Citizen Profile Controller createCitizenProfile should return 500 if create fails" name="Citizen Profile Controller createCitizenProfile should return 500 if create fails" time="0.221">
     </testcase>
-    <testcase classname="Password Service comparePassword should return true for correct password" name="Password Service comparePassword should return true for correct password" time="0.125">
+    <testcase classname="Citizen Profile Controller updateCitizenProfile should return 404 if profile not found" name="Citizen Profile Controller updateCitizenProfile should return 404 if profile not found" time="0.219">
     </testcase>
-    <testcase classname="Password Service comparePassword should return false for wrong password" name="Password Service comparePassword should return false for wrong password" time="0.131">
-    </testcase>
-  </testsuite>
-  <testsuite name="validateBody Middleware" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:47" time="0.227" tests="3">
-    <testcase classname="validateBody Middleware should pass when body is valid" name="validateBody Middleware should pass when body is valid" time="0.007">
-    </testcase>
-    <testcase classname="validateBody Middleware should return 400 when body is invalid" name="validateBody Middleware should return 400 when body is invalid" time="0.003">
-    </testcase>
-    <testcase classname="validateBody Middleware should strip unknown fields when stripUnknown is enabled" name="validateBody Middleware should strip unknown fields when stripUnknown is enabled" time="0.002">
-    </testcase>
-  </testsuite>
-  <testsuite name="Authorize Middleware (RBAC)" errors="0" failures="0" skipped="0" timestamp="2026-02-14T18:57:48" time="0.1" tests="3">
-    <testcase classname="Authorize Middleware (RBAC) should return 401 if req.user is missing" name="Authorize Middleware (RBAC) should return 401 if req.user is missing" time="0.003">
-    </testcase>
-    <testcase classname="Authorize Middleware (RBAC) should return 403 if role not allowed" name="Authorize Middleware (RBAC) should return 403 if role not allowed" time="0.001">
-    </testcase>
-    <testcase classname="Authorize Middleware (RBAC) should call next if role allowed" name="Authorize Middleware (RBAC) should call next if role allowed" time="0.001">
+    <testcase classname="Citizen Profile Controller updateCitizenProfile should update and return 200" name="Citizen Profile Controller updateCitizenProfile should update and return 200" time="0.196">
     </testcase>
   </testsuite>
 </testsuites>
