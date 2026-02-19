@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const missingPersonSchema = new mongoose.Schema(
   {
@@ -213,4 +213,4 @@ missingPersonSchema.virtual('daysMissing').get(function() {
 
 const MissingPerson = mongoose.model('MissingPerson', missingPersonSchema);
 
-module.exports = MissingPerson;
+export default MissingPerson;

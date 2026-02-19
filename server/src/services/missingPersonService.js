@@ -1,4 +1,4 @@
-const MissingPerson = require('../models/MissingPerson');
+import MissingPerson from '../models/MissingPerson.js';
 
 class MissingPersonService {
   // Create new missing person report
@@ -190,4 +190,4 @@ class MissingPersonService {
   }
 }
 
-module.exports = new MissingPersonService();
+export default new MissingPersonService();

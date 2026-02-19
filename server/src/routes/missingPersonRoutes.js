@@ -1,14 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const missingPersonController = require('../controllers/missingPersonController');
-const {
+import express from 'express';
+import missingPersonController from '../controllers/missingPersonController.js';
+import {
   createReportValidation,
   updateReportValidation,
   getByIdValidation,
   queryValidation,
   addSightingValidation,
   handleValidationErrors
-} = require('../validators/missingPersonValidator');
+} from '../validators/missingPersonValidator.js';
+
+const router = express.Router();
 
 // Note: Authentication middleware will be added later
 // const { protect, authorize } = require('../middleware/auth');
@@ -81,4 +82,4 @@ router.post(
   missingPersonController.addSighting
 );
 
-module.exports = router;
+export default router;

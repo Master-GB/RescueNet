@@ -1,4 +1,4 @@
-const { body, param, query, validationResult } = require('express-validator');
+import { body, param, query, validationResult } from 'express-validator';
 
 // Validation rules for creating a missing person report
 const createReportValidation = [
@@ -155,7 +155,7 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-module.exports = {
+export {
   createReportValidation,
   updateReportValidation,
   getByIdValidation,

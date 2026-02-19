@@ -1,4 +1,4 @@
-const missingPersonService = require('../services/missingPersonService');
+import missingPersonService from '../services/missingPersonService.js';
 
 class MissingPersonController {
   // Create new missing person report
@@ -179,4 +179,4 @@ class MissingPersonController {
   }
 }
 
-module.exports = new MissingPersonController();
+export default new MissingPersonController();
