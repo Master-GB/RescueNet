@@ -1,7 +1,7 @@
 import { http } from "../../lib/httpClient.js";
 
 const BASE = process.env.RELIEFWEB_BASE_URL ||"https://api.reliefweb.int/v1";
-const APPNAME = process.env.RELIEFWEB_APPNAME || "RescueNet";
+const APPNAME = process.env.RELIEFWEB_APPNAME || "H67vXT-RescueNetHgTNcdRMnTux";
 
 export async function fetchReliefWebReports({ query = "Sri Lanka", limit = 20 }) {
   const url = `${BASE}/reports`;
