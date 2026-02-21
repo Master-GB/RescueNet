@@ -157,7 +157,6 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // Find help request
     const helpRequest = await HelpRequest.findById(id);
     if (!helpRequest) {
       return res.status(404).json({
@@ -166,7 +165,6 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // Find NGO profile
     const organization = await NgoProfile.findById(organizationId);
     if (!organization) {
       return res.status(404).json({
@@ -182,7 +180,6 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // NgoProfile uses UPPERCASE availability enum; OFFLINE means unavailable
     if (organization.availabilityStatus === "OFFLINE") {
       return res.status(400).json({
         success: false,
@@ -196,15 +193,18 @@ export const assignHelpRequest = async (req, res) => {
     helpRequest.status = "assigned";
     await helpRequest.save();
 
-    // Add to organization's assigned requests
-    if (!organization.assignedRequests.includes(id)) {
+    // Fix: compare as strings since assignedRequests contains ObjectIds
+    const alreadyAssigned = organization.assignedRequests.some(
+      (reqId) => reqId.toString() === id
+    );
+    if (!alreadyAssigned) {
       organization.assignedRequests.push(id);
       await organization.save();
     }
 
     const updatedRequest = await HelpRequest.findById(id).populate(
       "assignedTo",
-      "organizationName type contactPerson phone availabilityStatus"
+      "organizationName type contactPerson contactPhone availabilityStatus"
     );
 
     res.json({
@@ -399,7 +399,7 @@ export const getAdminHelpRequests = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit))
-        .populate("assignedTo", "organizationName type contactPerson phone availabilityStatus"),
+        .populate("assignedTo", "organizationName type contactPerson contactPhone availabilityStatus"),
       HelpRequest.countDocuments(filter),
     ]);
 
@@ -439,7 +439,7 @@ export const getAdminHelpRequestById = async (req, res) => {
 
     const helpRequest = await HelpRequest.findById(id).populate(
       "assignedTo",
-      "organizationName type contactPerson officialEmail phone address capabilities availabilityStatus"
+      "organizationName type contactPerson officialEmail contactPhone address services serviceDistricts availabilityStatus"
     );
 
     if (!helpRequest) {

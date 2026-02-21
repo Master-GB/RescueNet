@@ -18,16 +18,12 @@ router.use(authorize("ADMIN"));
 // Get all NGO profiles (admin)
 router.get("/", getAllNgos);
 
-// ✅ Get single NGO by ID
-router.get("/:id", getNgoById);
-
-// Update NGO profile details (admin)
-router.patch("/:id", updateNgo);
-
-// Delete NGO profile (admin)
-router.delete("/:id", deleteNgo);
-
-// Register a new NGO
+// Register a new NGO — must be before /:id to avoid route conflict
 router.post("/register", registerNgo);
+
+// Single NGO operations
+router.get("/:id", getNgoById);
+router.patch("/:id", updateNgo);
+router.delete("/:id", deleteNgo);
 
 export default router;

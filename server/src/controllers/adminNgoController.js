@@ -6,28 +6,42 @@ import mongoose from "mongoose";
 
 /**
  * Register a new NGO Profile (Admin Only)
- * Links an existing user account to a new Organization profile
  * POST /api/admin/ngos/register
  */
 export const registerNgo = async (req, res) => {
   try {
-    // Extract NGO details from request body
     const {
-      userEmail, // The email of the user who will manage this NGO
+      userEmail,
       organizationName,
       registrationNumber,
       type,
       contactPerson,
       officialEmail,
-      phone,
-      address,
-      capabilities,
-      serviceArea,
-      // Also accept model-native names directly
       contactPhone,
+      address,
       services,
       serviceDistricts,
     } = req.body;
+
+    // Validate required fields before hitting the DB
+    if (!userEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "userEmail is required.",
+      });
+    }
+    if (!registrationNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "registrationNumber is required.",
+      });
+    }
+    if (!contactPhone) {
+      return res.status(400).json({
+        success: false,
+        message: "contactPhone is required.",
+      });
+    }
 
     // 1. Find the user by email
     const user = await User.findOne({ email: userEmail.toLowerCase() });
@@ -48,14 +62,12 @@ export const registerNgo = async (req, res) => {
     }
 
     // 3. Check if registration number is unique
-    if (registrationNumber) {
-      const duplicateReg = await NgoProfile.findOne({ registrationNumber });
-      if (duplicateReg) {
-        return res.status(400).json({
-          success: false,
-          message: "Organization with this registration number already exists.",
-        });
-      }
+    const duplicateReg = await NgoProfile.findOne({ registrationNumber });
+    if (duplicateReg) {
+      return res.status(400).json({
+        success: false,
+        message: "Organization with this registration number already exists.",
+      });
     }
 
     // 4. Create the NgoProfile (admin-registered NGOs are auto-approved)
@@ -66,13 +78,10 @@ export const registerNgo = async (req, res) => {
       type,
       contactPerson,
       officialEmail,
-      // Support both field name conventions; model requires contactPhone
-      contactPhone: contactPhone || phone,
+      contactPhone,
       address,
-      // Support both field name conventions
-      services: services || capabilities || [],
-      serviceDistricts: serviceDistricts || serviceArea || [],
-      // Admin-registered NGOs are auto-approved; both flags set for consistency
+      services: services || [],
+      serviceDistricts: serviceDistricts || [],
       approvalStatus: "approved",
       verifiedByAdmin: true,
       approvedBy: req.user._id,
@@ -244,17 +253,6 @@ export const updateNgo = async (req, res) => {
       "isActive",
       "notes",
     ];
-
-    // Support legacy field name aliases from request body
-    if (req.body.phone !== undefined && req.body.contactPhone === undefined) {
-      req.body.contactPhone = req.body.phone;
-    }
-    if (req.body.capabilities !== undefined && req.body.services === undefined) {
-      req.body.services = req.body.capabilities;
-    }
-    if (req.body.serviceArea !== undefined && req.body.serviceDistricts === undefined) {
-      req.body.serviceDistricts = req.body.serviceArea;
-    }
 
     const updateData = {};
     for (const field of allowedFields) {
