@@ -65,7 +65,7 @@ function createFindChain(result) {
 
 describe("adminHelpController", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     objectIdIsValidMock.mockReturnValue(true);
   });
 
@@ -122,11 +122,7 @@ describe("adminHelpController", () => {
   describe("assignHelpRequest", () => {
     test("rejects offline organizations", async () => {
       const helpRequest = { _id: "h1", save: jest.fn() };
-      const populateMock = jest.fn().mockResolvedValue({ _id: "h1" });
-
-      helpRequestFindByIdMock
-        .mockResolvedValueOnce(helpRequest)
-        .mockReturnValueOnce({ populate: populateMock });
+      helpRequestFindByIdMock.mockResolvedValueOnce(helpRequest);
 
       ngoFindByIdMock.mockResolvedValue({
         approvalStatus: "approved",
