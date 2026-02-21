@@ -1,5 +1,6 @@
 import HelpRequest from "../models/HelpRequest.js";
-import Organization from "../models/ngoModel.js";
+// Switched to unified NgoProfile model
+import NgoProfile from "../models/userProfileModel/NgoProfile.js";
 import mongoose from "mongoose";
 
 /**
@@ -73,7 +74,7 @@ export const updateHelpRequest = async (req, res) => {
           });
         }
 
-        const organization = await Organization.findById(assignedTo);
+        const organization = await NgoProfile.findById(assignedTo);
         if (!organization) {
           return res.status(404).json({
             success: false,
@@ -165,8 +166,8 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // Find organization
-    const organization = await Organization.findById(organizationId);
+    // Find NGO profile
+    const organization = await NgoProfile.findById(organizationId);
     if (!organization) {
       return res.status(404).json({
         success: false,
@@ -181,7 +182,8 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    if (organization.availabilityStatus === "unavailable" || organization.availabilityStatus === "offline") {
+    // NgoProfile uses UPPERCASE availability enum; OFFLINE means unavailable
+    if (organization.availabilityStatus === "OFFLINE") {
       return res.status(400).json({
         success: false,
         message: `Organization is currently ${organization.availabilityStatus}`,
@@ -350,7 +352,7 @@ export const resolveHelpRequest = async (req, res) => {
 
     // Update organization's completed tasks if assigned
     if (helpRequest.assignedTo) {
-      await Organization.findByIdAndUpdate(helpRequest.assignedTo, {
+      await NgoProfile.findByIdAndUpdate(helpRequest.assignedTo, {
         $inc: { completedTasks: 1 },
       });
     }

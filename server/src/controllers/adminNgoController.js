@@ -1,4 +1,5 @@
-import Organization from "../models/ngoModel.js";
+// Switched from ngoModel.js (Organization) to the unified NgoProfile model
+import NgoProfile from "../models/userProfileModel/NgoProfile.js";
 import User from "../models/user.js";
 import HelpRequest from "../models/HelpRequest.js";
 import mongoose from "mongoose";
@@ -22,6 +23,10 @@ export const registerNgo = async (req, res) => {
       address,
       capabilities,
       serviceArea,
+      // Also accept model-native names directly
+      contactPhone,
+      services,
+      serviceDistricts,
     } = req.body;
 
     // 1. Find the user by email
@@ -34,7 +39,7 @@ export const registerNgo = async (req, res) => {
     }
 
     // 2. Check if this user already has an NGO profile
-    const existingNgo = await Organization.findOne({ userId: user._id });
+    const existingNgo = await NgoProfile.findOne({ userId: user._id });
     if (existingNgo) {
       return res.status(400).json({
         success: false,
@@ -44,7 +49,7 @@ export const registerNgo = async (req, res) => {
 
     // 3. Check if registration number is unique
     if (registrationNumber) {
-      const duplicateReg = await Organization.findOne({ registrationNumber });
+      const duplicateReg = await NgoProfile.findOne({ registrationNumber });
       if (duplicateReg) {
         return res.status(400).json({
           success: false,
@@ -53,23 +58,26 @@ export const registerNgo = async (req, res) => {
       }
     }
 
-    // 4. Create the Organization
-    const newNgo = await Organization.create({
+    // 4. Create the NgoProfile (admin-registered NGOs are auto-approved)
+    const newNgo = await NgoProfile.create({
       userId: user._id,
       organizationName,
       registrationNumber,
       type,
       contactPerson,
       officialEmail,
-      phone,
+      // Support both field name conventions; model requires contactPhone
+      contactPhone: contactPhone || phone,
       address,
-      capabilities,
-      serviceArea,
-      // Auto-approve since Admin is creating it
+      // Support both field name conventions
+      services: services || capabilities || [],
+      serviceDistricts: serviceDistricts || serviceArea || [],
+      // Admin-registered NGOs are auto-approved; both flags set for consistency
       approvalStatus: "approved",
-      approvedBy: req.user._id, // The admin performing this action
+      verifiedByAdmin: true,
+      approvedBy: req.user._id,
       approvedAt: new Date(),
-      availabilityStatus: "available",
+      availabilityStatus: "AVAILABLE",
     });
 
     // 5. Update User Role to NGO
@@ -128,12 +136,12 @@ export const getAllNgos = async (req, res) => {
     const skip = (pageNumber - 1) * limitNumber;
 
     const [ngos, total] = await Promise.all([
-      Organization.find(filter)
+      NgoProfile.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNumber)
         .populate("userId", "name email role"),
-      Organization.countDocuments(filter),
+      NgoProfile.countDocuments(filter),
     ]);
 
     res.json({
@@ -170,9 +178,9 @@ export const getNgoById = async (req, res) => {
       });
     }
 
-    const ngo = await Organization.findById(id)
-      .populate("userId", "firstName lastName email role isAccountVerified")
-      .populate("approvedBy", "firstName lastName email");
+    const ngo = await NgoProfile.findById(id)
+      .populate("userId", "name email role isAccountVerified")
+      .populate("approvedBy", "name email");
 
     if (!ngo) {
       return res.status(404).json({
@@ -211,7 +219,7 @@ export const updateNgo = async (req, res) => {
       });
     }
 
-    const ngo = await Organization.findById(id);
+    const ngo = await NgoProfile.findById(id);
     if (!ngo) {
       return res.status(404).json({
         success: false,
@@ -225,18 +233,28 @@ export const updateNgo = async (req, res) => {
       "type",
       "contactPerson",
       "officialEmail",
-      "phone",
+      "contactPhone",
       "alternatePhone",
       "address",
-      "capabilities",
-      "serviceArea",
-      "resources",
+      "services",
+      "serviceDistricts",
       "availabilityStatus",
       "approvalStatus",
       "rejectionReason",
       "isActive",
       "notes",
     ];
+
+    // Support legacy field name aliases from request body
+    if (req.body.phone !== undefined && req.body.contactPhone === undefined) {
+      req.body.contactPhone = req.body.phone;
+    }
+    if (req.body.capabilities !== undefined && req.body.services === undefined) {
+      req.body.services = req.body.capabilities;
+    }
+    if (req.body.serviceArea !== undefined && req.body.serviceDistricts === undefined) {
+      req.body.serviceDistricts = req.body.serviceArea;
+    }
 
     const updateData = {};
     for (const field of allowedFields) {
@@ -249,7 +267,7 @@ export const updateNgo = async (req, res) => {
       updateData.registrationNumber &&
       updateData.registrationNumber !== ngo.registrationNumber
     ) {
-      const duplicateReg = await Organization.findOne({
+      const duplicateReg = await NgoProfile.findOne({
         registrationNumber: updateData.registrationNumber,
         _id: { $ne: id },
       });
@@ -266,12 +284,16 @@ export const updateNgo = async (req, res) => {
       updateData.approvedBy = req.user._id;
       updateData.approvedAt = new Date();
       updateData.rejectionReason = "";
+      // Keep verifiedByAdmin in sync when admin approves via approvalStatus
+      updateData.verifiedByAdmin = true;
+    } else if (updateData.approvalStatus === "rejected" || updateData.approvalStatus === "suspended") {
+      updateData.verifiedByAdmin = false;
     }
 
-    const updatedNgo = await Organization.findByIdAndUpdate(id, updateData, {
+    const updatedNgo = await NgoProfile.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
-    }).populate("userId", "firstName lastName email role");
+    }).populate("userId", "name email role");
 
     res.json({
       success: true,
@@ -302,7 +324,7 @@ export const deleteNgo = async (req, res) => {
       });
     }
 
-    const ngo = await Organization.findById(id);
+    const ngo = await NgoProfile.findById(id);
     if (!ngo) {
       return res.status(404).json({
         success: false,
@@ -310,6 +332,7 @@ export const deleteNgo = async (req, res) => {
       });
     }
 
+    // Un-assign all help requests that referenced this NGO
     await HelpRequest.updateMany(
       { assignedTo: ngo._id },
       {
@@ -328,7 +351,7 @@ export const deleteNgo = async (req, res) => {
       }
     }
 
-    await Organization.findByIdAndDelete(id);
+    await NgoProfile.findByIdAndDelete(id);
 
     res.json({
       success: true,
