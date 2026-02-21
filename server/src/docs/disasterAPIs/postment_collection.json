@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "RescueNet - Disaster Module (USGS + FIRMS + GDACS + ReliefWeb)",
-    "description": "Disaster aggregation endpoints for map layers and heatmap-ready points.\n\nCovers:\n- /api/disasters/map (GeoJSON FeatureCollection)\n- /api/disasters/heatmap (heatmap-ready points)\n- /api/disasters/updates (ReliefWeb updates)\n\nIncludes example requests for each type: EARTHQUAKE, FIRE, FLOOD, TSUNAMI, CYCLONE, STORM, VOLCANO, DROUGHT.\n\nNote: ReliefWeb may require an approved appname.",
+    "description": "Disaster aggregation endpoints for map layers and heatmap-ready points.\n\nCovers:\n- /api/disasters/map (GeoJSON FeatureCollection)\n- /api/disasters/heatmap (heatmap-ready points)\n- /api/disasters/updates (ReliefWeb updates)\n\nIncludes example requests for each type: EARTHQUAKE, FIRE, FLOOD, TSUNAMI, CYCLONE, STORM, VOLCANO, DROUGHT.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -36,6 +36,14 @@
     {
       "key": "limit",
       "value": "20"
+    },
+    {
+      "key": "limitSmall",
+      "value": "5"
+    },
+    {
+      "key": "defaultQuery",
+      "value": "Sri Lanka"
     },
     {
       "key": "q",
@@ -320,7 +328,7 @@
                 "disasters",
                 "map"
               ],
-              "query": [              
+              "query": [
                 {
                   "key": "types",
                   "value": "DROUGHT"
@@ -698,170 +706,179 @@
       ]
     },
     {
-      "name": "C) Disaster Updates - Default Country (Sri Lanka)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/disasters/updates?q={{defaultQuery}}&limit={{limitLarge}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "disasters",
-            "updates"
-          ],
-          "query": [
-            {
-              "key": "q",
-              "value": "{{defaultQuery}}"
+      "name": "C) Disaster Updates (Get Current Updates from ReliefWeb)",
+      "item": [
+        {
+          "name": "Updates - Default Country (Sri Lanka)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q={{defaultQuery}}&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{defaultQuery}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
             },
-            {
-              "key": "limit",
-              "value": "{{limitLarge}}"
-            }
-          ]
-        },
-        "description": "Fetch latest disaster updates for Sri Lanka with default limit."
-      }
-    },
-    {
-      "name": "Updates - Small Limit (5 items)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json"
+            "description": "Fetch latest disaster updates for Sri Lanka with default limit."
           }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/disasters/updates?q={{defaultQuery}}&limit={{limitSmall}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "disasters",
-            "updates"
-          ],
-          "query": [
-            {
-              "key": "q",
-              "value": "{{defaultQuery}}"
+        },
+        {
+          "name": "Updates - Small Limit (5 items)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q={{defaultQuery}}&limit={{limitSmall}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{defaultQuery}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limitSmall}}"
+                }
+              ]
             },
-            {
-              "key": "limit",
-              "value": "{{limitSmall}}"
-            }
-          ]
-        },
-        "description": "Fetch limited number of disaster updates (limit=5)."
-      }
-    },
-    {
-      "name": "Updates - Different Country (India)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json"
+            "description": "Fetch limited number of disaster updates (limit=5)."
           }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/disasters/updates?q=India&limit={{limitLarge}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "disasters",
-            "updates"
-          ],
-          "query": [
-            {
-              "key": "q",
-              "value": "India"
+        },
+        {
+          "name": "Updates - Different Country (India)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q=India&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "India"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
             },
-            {
-              "key": "limit",
-              "value": "{{limitLarge}}"
-            }
-          ]
-        },
-        "description": "Fetch disaster updates for India."
-      }
-    },
-    {
-      "name": "Updates - Broad Keyword (Flood)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json"
+            "description": "Fetch disaster updates for India."
           }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/disasters/updates?q=Flood&limit={{limitLarge}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "disasters",
-            "updates"
-          ],
-          "query": [
-            {
-              "key": "q",
-              "value": "Flood"
+        },
+        {
+          "name": "Updates - Broad Keyword (Flood)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q=Flood&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Flood"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
             },
-            {
-              "key": "limit",
-              "value": "{{limitLarge}}"
-            }
-          ]
-        },
-        "description": "Fetch disaster updates filtered by keyword 'Flood'."
-      }
-    },
-    {
-      "name": "Updates - No Query Parameter (Edge Case)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json"
+            "description": "Fetch disaster updates filtered by keyword 'Flood'."
           }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/disasters/updates?limit={{limitLarge}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "disasters",
-            "updates"
-          ],
-          "query": [
-            {
-              "key": "limit",
-              "value": "{{limitLarge}}"
-            }
-          ]
         },
-        "description": "Test behavior when q parameter is missing. Should use default or return validation error depending on implementation."
-      }
+        {
+          "name": "Updates - Multiple Query Parameter ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q=Sri Lanka AND Flood&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                },
+                {
+                  "key": "q",
+                  "value": "Sri Lanka AND Flood"
+                }
+              ]
+            },
+            "description": "ReliefWeb supports text-based searching, so can simply combine the words to search for multiple terms."
+          }
+        }
+      ]
     }
   ]
 }
