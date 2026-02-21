@@ -1,5 +1,6 @@
 import HelpRequest from "../models/HelpRequest.js";
-import Organization from "../models/ngoModel.js";
+// Switched to unified NgoProfile model
+import NgoProfile from "../models/userProfileModel/NgoProfile.js";
 import mongoose from "mongoose";
 
 /**
@@ -73,7 +74,7 @@ export const updateHelpRequest = async (req, res) => {
           });
         }
 
-        const organization = await Organization.findById(assignedTo);
+        const organization = await NgoProfile.findById(assignedTo);
         if (!organization) {
           return res.status(404).json({
             success: false,
@@ -156,7 +157,6 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // Find help request
     const helpRequest = await HelpRequest.findById(id);
     if (!helpRequest) {
       return res.status(404).json({
@@ -165,8 +165,7 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // Find organization
-    const organization = await Organization.findById(organizationId);
+    const organization = await NgoProfile.findById(organizationId);
     if (!organization) {
       return res.status(404).json({
         success: false,
@@ -181,7 +180,7 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    if (organization.availabilityStatus === "unavailable" || organization.availabilityStatus === "offline") {
+    if (organization.availabilityStatus === "OFFLINE") {
       return res.status(400).json({
         success: false,
         message: `Organization is currently ${organization.availabilityStatus}`,
@@ -194,15 +193,18 @@ export const assignHelpRequest = async (req, res) => {
     helpRequest.status = "assigned";
     await helpRequest.save();
 
-    // Add to organization's assigned requests
-    if (!organization.assignedRequests.includes(id)) {
+    // Fix: compare as strings since assignedRequests contains ObjectIds
+    const alreadyAssigned = organization.assignedRequests.some(
+      (reqId) => reqId.toString() === id
+    );
+    if (!alreadyAssigned) {
       organization.assignedRequests.push(id);
       await organization.save();
     }
 
     const updatedRequest = await HelpRequest.findById(id).populate(
       "assignedTo",
-      "organizationName type contactPerson phone availabilityStatus"
+      "organizationName type contactPerson contactPhone availabilityStatus"
     );
 
     res.json({
@@ -350,7 +352,7 @@ export const resolveHelpRequest = async (req, res) => {
 
     // Update organization's completed tasks if assigned
     if (helpRequest.assignedTo) {
-      await Organization.findByIdAndUpdate(helpRequest.assignedTo, {
+      await NgoProfile.findByIdAndUpdate(helpRequest.assignedTo, {
         $inc: { completedTasks: 1 },
       });
     }
@@ -397,7 +399,7 @@ export const getAdminHelpRequests = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit))
-        .populate("assignedTo", "organizationName type contactPerson phone availabilityStatus"),
+        .populate("assignedTo", "organizationName type contactPerson contactPhone availabilityStatus"),
       HelpRequest.countDocuments(filter),
     ]);
 
@@ -437,7 +439,7 @@ export const getAdminHelpRequestById = async (req, res) => {
 
     const helpRequest = await HelpRequest.findById(id).populate(
       "assignedTo",
-      "organizationName type contactPerson officialEmail phone address capabilities availabilityStatus"
+      "organizationName type contactPerson officialEmail contactPhone address services serviceDistricts availabilityStatus"
     );
 
     if (!helpRequest) {

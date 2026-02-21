@@ -38,7 +38,7 @@ const helpRequestSchema = new mongoose.Schema(
     },
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Organization",  // Can also be volunteer
+      ref: "NgoProfiles", // Updated: references unified NgoProfile model
       default: null
     },
     adminNotes: { type: String },
