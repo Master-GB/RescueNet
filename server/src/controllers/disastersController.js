@@ -64,12 +64,6 @@ function getSingleType(req) {
   return { type };
 }
 
-/**
- * GET /api/disasters/map
- * REQUIRED:
- *  - start=YYYY-MM-DD&end=YYYY-MM-DD
- *  - types=EARTHQUAKE | FIRE | FLOOD | TSUNAMI  (ONE ONLY)
- */
 export const disastersMap = async (req, res) => {
   try {
     console.log("DISASTERS MAP HIT - TYPES:", req.query.types);
@@ -149,12 +143,6 @@ export const disastersMap = async (req, res) => {
   }
 };
 
-/**
- * GET /api/disasters/heatmap
- * REQUIRED:
- *  - start=YYYY-MM-DD&end=YYYY-MM-DD
- *  - types=EARTHQUAKE | FIRE | FLOOD | TSUNAMI  (ONE ONLY)
- */
 export const disastersHeatmap = async (req, res) => {
   try {
     const start = req.query.start;
@@ -244,10 +232,7 @@ export const disastersHeatmap = async (req, res) => {
   }
 };
 
-/**
- * GET /api/disasters/updates
- * (ReliefWeb list for UI panel)
- */
+
 export const disasterUpdates = async (req, res) => {
   try {
     const key = cacheKey(req);
