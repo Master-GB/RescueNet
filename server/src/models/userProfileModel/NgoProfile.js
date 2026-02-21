@@ -9,7 +9,6 @@ const ngoProfileSchema = new mongoose.Schema(
       unique: true,
     },
 
-    // ===== USER-SIDE FIELDS (managed by NGO user) =====
     registrationNumber: { type: String, required: true },
 
     contactPhone: { type: String, required: true },
