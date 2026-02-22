@@ -1,16 +1,42 @@
 import MissingPerson from '../models/MissingPerson.js';
+import geocodingService from '../utils/geocoding.js'; 
 
 class MissingPersonService {
   // Create new missing person report
   async createReport(reportData) {
-    try {
-      const missingPerson = new MissingPerson(reportData);
-      await missingPerson.save();
-      return missingPerson;
-    } catch (error) {
-      throw new Error(`Error creating report: ${error.message}`);
+  try {
+    // If coordinates are not provided, geocode the address
+    if (!reportData.lastSeenLocation.coordinates?.coordinates) {
+      const fullAddress = `${reportData.lastSeenLocation.address}, ${reportData.lastSeenLocation.city}`;
+      
+      const geocodeResult = await geocodingService.geocodeAddress(fullAddress);
+      
+      if (geocodeResult.success) {
+        // Set coordinates from geocoding result
+        reportData.lastSeenLocation.coordinates = {
+          type: 'Point',
+          coordinates: geocodeResult.coordinates // [longitude, latitude]
+        };
+        
+        // Optionally update address with formatted address
+        reportData.lastSeenLocation.address = geocodeResult.formattedAddress;
+        
+        // Update city if available
+        if (geocodeResult.city !== 'Unknown') {
+          reportData.lastSeenLocation.city = geocodeResult.city;
+        }
+      } else {
+        throw new Error(`Failed to geocode address: ${geocodeResult.error}`);
+      }
     }
+
+    const missingPerson = new MissingPerson(reportData);
+    await missingPerson.save();
+    return missingPerson;
+  } catch (error) {
+    throw new Error(`Error creating report: ${error.message}`);
   }
+}
 
   // Get all reports with filters and pagination
   async getAllReports(filters = {}, options = {}) {
