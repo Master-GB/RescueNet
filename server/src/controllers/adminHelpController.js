@@ -111,7 +111,7 @@ export const updateHelpRequest = async (req, res) => {
 export const assignHelpRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { organizationId } = req.body;
+    const { organizationId, taskType } = req.body;
 
     // check if id and organizationId are valid ObjectIds
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -171,7 +171,11 @@ export const assignHelpRequest = async (req, res) => {
     );
     if (!alreadyAssignedToRequest) {
       helpRequest.assignments = assignments;
-      helpRequest.assignments.push({ ngoId: organizationId, status: "assigned" });
+      helpRequest.assignments.push({
+        ngoId: organizationId,
+        status: "assigned",
+        taskType: taskType || "General Relief",
+      });
     }
     helpRequest.status = "assigned";
     await helpRequest.save();
@@ -419,6 +423,7 @@ export const resolveHelpRequest = async (req, res) => {
     const assignedNgoIds = (Array.isArray(helpRequest.assignments)
       ? helpRequest.assignments
       : [])
+      .filter((assignment) => assignment.status === "completed")
       .map((assignment) => assignment.ngoId)
       .filter(Boolean);
     if (assignedNgoIds.length > 0) {

@@ -214,6 +214,25 @@ describe("adminHelpController", () => {
         { $inc: { completedTasks: 1 } }
       );
     });
+
+    test("does not increment completedTasks for non-completed assignments", async () => {
+      const saveMock = jest.fn();
+      const helpRequest = {
+        _id: "h1",
+        assignments: [{ ngoId: "ngo1", status: "assigned" }],
+        adminNotes: "",
+        save: saveMock,
+      };
+
+      helpRequestFindByIdMock.mockResolvedValue(helpRequest);
+
+      await resolveHelpRequest(
+        { params: { id: "h1" }, body: { adminNotes: "done" } },
+        mockRes()
+      );
+
+      expect(ngoUpdateManyMock).not.toHaveBeenCalled();
+    });
   });
 
   describe("rejectHelpRequest", () => {
