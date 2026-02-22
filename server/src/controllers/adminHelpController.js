@@ -65,7 +65,7 @@ export const updateHelpRequest = async (req, res) => {
     // Update assignedTo (verify NGO exists)
     if (assignedTo !== undefined) {
       if (assignedTo === null) {
-        updateData.assignedTo = null;
+        updateData.assignedTo = []; // Clear array instead of null
       } else {
         if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
           return res.status(400).json({
@@ -89,7 +89,8 @@ export const updateHelpRequest = async (req, res) => {
           });
         }
 
-        updateData.assignedTo = assignedTo;
+        updateData.$addToSet = { assignedTo: assignedTo };
+        delete updateData.assignedTo;
 
         // Auto-update status to 'assigned' if assigning an organization
         if (!status) {
@@ -143,6 +144,7 @@ export const assignHelpRequest = async (req, res) => {
     const { id } = req.params;
     const { organizationId } = req.body;
 
+    // check if id and organizationId are valid ObjectIds
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -150,6 +152,7 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
+    // check if organizationId is provided and valid
     if (!organizationId || !mongoose.Types.ObjectId.isValid(organizationId)) {
       return res.status(400).json({
         success: false,
@@ -157,6 +160,7 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
+    // Find the help request
     const helpRequest = await HelpRequest.findById(id);
     if (!helpRequest) {
       return res.status(404).json({
@@ -165,6 +169,7 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
+    // Find the organization
     const organization = await NgoProfile.findById(organizationId);
     if (!organization) {
       return res.status(404).json({
@@ -189,7 +194,12 @@ export const assignHelpRequest = async (req, res) => {
     }
 
     // Update help request
-    helpRequest.assignedTo = organizationId;
+    const alreadyAssignedToRequest = helpRequest.assignedTo.some(
+      (orgId) => orgId.toString() === organizationId
+    );
+    if (!alreadyAssignedToRequest) {
+      helpRequest.assignedTo.push(organizationId);
+    }
     helpRequest.status = "assigned";
     await helpRequest.save();
 
@@ -351,10 +361,11 @@ export const resolveHelpRequest = async (req, res) => {
     await helpRequest.save();
 
     // Update organization's completed tasks if assigned
-    if (helpRequest.assignedTo) {
-      await NgoProfile.findByIdAndUpdate(helpRequest.assignedTo, {
-        $inc: { completedTasks: 1 },
-      });
+    if (helpRequest.assignedTo && helpRequest.assignedTo.length > 0) {
+      await NgoProfile.updateMany(
+        { _id: { $in: helpRequest.assignedTo } },
+        { $inc: { completedTasks: 1 } }
+      );
     }
 
     res.json({
