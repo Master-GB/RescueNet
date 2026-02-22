@@ -68,6 +68,42 @@ export const updateHelpRequest = async (req, res) => {
       }
     }
 
+    // Update assignedTo (verify NGO exists)
+    if (assignedTo !== undefined) {
+      if (assignedTo === null) {
+        updateData.assignedTo = null;
+      } else {
+        if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid organization ID",
+          });
+        }
+
+        const organization = await NgoProfile.findById(assignedTo);
+        if (!organization) {
+          return res.status(404).json({
+            success: false,
+            message: "Organization not found",
+          });
+        }
+
+        if (organization.approvalStatus !== "approved") {
+          return res.status(400).json({
+            success: false,
+            message: "Cannot assign to unapproved organization",
+          });
+        }
+
+        updateData.assignedTo = assignedTo;
+
+        // Auto-update status to 'assigned' if assigning an organization
+        if (!status) {
+          updateData.status = "assigned";
+        }
+      }
+    }
+
     // Update admin notes
     if (adminNotes !== undefined) {
       updateData.adminNotes = adminNotes;
@@ -163,16 +199,7 @@ export const assignHelpRequest = async (req, res) => {
     }
 
     // Update help request
-    const assignments = Array.isArray(helpRequest.assignments)
-      ? helpRequest.assignments
-      : [];
-    const alreadyAssignedToRequest = assignments.some(
-      (assignment) => assignment.ngoId.toString() === organizationId
-    );
-    if (!alreadyAssignedToRequest) {
-      helpRequest.assignments = assignments;
-      helpRequest.assignments.push({ ngoId: organizationId, status: "assigned" });
-    }
+    helpRequest.assignedTo = organizationId;
     helpRequest.status = "assigned";
     await helpRequest.save();
 
@@ -416,16 +443,10 @@ export const resolveHelpRequest = async (req, res) => {
     await helpRequest.save();
 
     // Update organization's completed tasks if assigned
-    const assignedNgoIds = (Array.isArray(helpRequest.assignments)
-      ? helpRequest.assignments
-      : [])
-      .map((assignment) => assignment.ngoId)
-      .filter(Boolean);
-    if (assignedNgoIds.length > 0) {
-      await NgoProfile.updateMany(
-        { _id: { $in: assignedNgoIds } },
-        { $inc: { completedTasks: 1 } }
-      );
+    if (helpRequest.assignedTo) {
+      await NgoProfile.findByIdAndUpdate(helpRequest.assignedTo, {
+        $inc: { completedTasks: 1 },
+      });
     }
 
     res.json({
