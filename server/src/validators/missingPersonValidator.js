@@ -39,13 +39,14 @@ const createReportValidation = [
     .notEmpty().withMessage('City is required'),
 
   body('lastSeenLocation.coordinates.coordinates')
-    .isArray({ min: 2, max: 2 }).withMessage('Coordinates must be an array of [longitude, latitude]')
-    .custom((value) => {
-      const [lng, lat] = value;
-      if (lng < -180 || lng > 180) throw new Error('Longitude must be between -180 and 180');
-      if (lat < -90 || lat > 90) throw new Error('Latitude must be between -90 and 90');
-      return true;
-    }),
+  .optional()  // ADD THIS LINE - makes coordinates optional
+  .isArray({ min: 2, max: 2 }).withMessage('Coordinates must be an array of [longitude, latitude]')
+  .custom((value) => {
+    const [lng, lat] = value;
+    if (lng < -180 || lng > 180) throw new Error('Longitude must be between -180 and 180');
+    if (lat < -90 || lat > 90) throw new Error('Latitude must be between -90 and 90');
+    return true;
+  }),
 
   body('lastSeenDate')
     .notEmpty().withMessage('Last seen date is required')
