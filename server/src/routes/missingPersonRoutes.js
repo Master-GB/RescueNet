@@ -11,16 +11,9 @@ import {
 
 const router = express.Router();
 
-// Note: Authentication middleware will be added later
-// const { protect, authorize } = require('../middleware/auth');
-
-// Public routes (anyone can view)
-router.get(
-  '/',
-  queryValidation,
-  handleValidationErrors,
-  missingPersonController.getAllReports
-);
+// ==========================================
+// SPECIFIC ROUTES FIRST (before /:id)
+// ==========================================
 
 router.get(
   '/statistics',
@@ -32,6 +25,24 @@ router.get(
   missingPersonController.searchByLocation
 );
 
+// ADD THIS ROUTE - Test geocoding
+router.get(
+  '/test-geocode',
+  missingPersonController.testGeocode
+);
+
+// ==========================================
+// GENERAL ROUTES
+// ==========================================
+
+router.get(
+  '/',
+  queryValidation,
+  handleValidationErrors,
+  missingPersonController.getAllReports
+);
+
+// IMPORTANT: /:id must come AFTER specific routes
 router.get(
   '/:id',
   getByIdValidation,
@@ -39,11 +50,12 @@ router.get(
   missingPersonController.getReportById
 );
 
-// Protected routes (requires authentication)
-// For now, these are open - will add authentication later
+// ==========================================
+// PROTECTED ROUTES
+// ==========================================
+
 router.post(
   '/',
-  // protect, // Uncomment when auth is implemented
   createReportValidation,
   handleValidationErrors,
   missingPersonController.createReport
@@ -51,7 +63,6 @@ router.post(
 
 router.put(
   '/:id',
-  // protect, // Uncomment when auth is implemented
   updateReportValidation,
   handleValidationErrors,
   missingPersonController.updateReport
@@ -59,7 +70,6 @@ router.put(
 
 router.patch(
   '/:id',
-  // protect, // Uncomment when auth is implemented
   updateReportValidation,
   handleValidationErrors,
   missingPersonController.updateReport
@@ -67,8 +77,6 @@ router.patch(
 
 router.delete(
   '/:id',
-  // protect, // Uncomment when auth is implemented
-  // authorize('admin', 'reporter'), // Uncomment when auth is implemented
   getByIdValidation,
   handleValidationErrors,
   missingPersonController.deleteReport
@@ -76,7 +84,6 @@ router.delete(
 
 router.post(
   '/:id/sightings',
-  // protect, // Uncomment when auth is implemented
   addSightingValidation,
   handleValidationErrors,
   missingPersonController.addSighting

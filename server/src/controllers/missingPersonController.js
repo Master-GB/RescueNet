@@ -177,6 +177,35 @@ class MissingPersonController {
       });
     }
   }
+
+  // ... other methods above ...
+
+  // Test geocoding functionality
+  async testGeocode(req, res) {
+    try {
+      const { address } = req.query;
+
+      if (!address) {
+        return res.status(400).json({
+          success: false,
+          message: 'Address query parameter is required'
+        });
+      }
+
+      const geocodingService = (await import('../utils/geocoding.js')).default;
+      const result = await geocodingService.geocodeAddress(address);
+
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
 }
 
 export default new MissingPersonController();
