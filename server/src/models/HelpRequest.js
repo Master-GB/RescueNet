@@ -36,11 +36,11 @@ const helpRequestSchema = new mongoose.Schema(
       enum: ["pending", "verified", "assigned", "in-progress", "resolved", "rejected"],
       default: "pending"
     },
-    assignedTo: {
+    assignedTo: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "NgoProfiles", // Updated: references unified NgoProfile model
-      default: null
-    },
+      default: []
+    }],
     adminNotes: { type: String },
     rejectionReason: { type: String },
     resolvedAt: { type: Date },
