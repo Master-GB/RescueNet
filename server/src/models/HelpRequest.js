@@ -36,11 +36,23 @@ const helpRequestSchema = new mongoose.Schema(
       enum: ["pending", "verified", "assigned", "in-progress", "resolved", "rejected"],
       default: "pending"
     },
-    assignedTo: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "NgoProfiles", // Updated: references unified NgoProfile model
-      default: []
-    }],
+    assignments: [
+      {
+        ngoId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "NgoProfiles",
+          required: true,
+        },
+        taskType: { type: String, default: "General Relief" },
+        status: {
+          type: String,
+          enum: ["assigned", "accepted", "declined", "in-progress", "completed"],
+          default: "assigned",
+        },
+        assignedAt: { type: Date, default: Date.now },
+        completedAt: { type: Date },
+      },
+    ],
     adminNotes: { type: String },
     rejectionReason: { type: String },
     resolvedAt: { type: Date },
@@ -52,7 +64,7 @@ const helpRequestSchema = new mongoose.Schema(
 
 // Index for faster queries
 helpRequestSchema.index({ status: 1 });
-helpRequestSchema.index({ assignedTo: 1 });
+helpRequestSchema.index({ "assignments.ngoId": 1 });
 helpRequestSchema.index({ disasterType: 1 });
 helpRequestSchema.index({ urgency: 1 });
 

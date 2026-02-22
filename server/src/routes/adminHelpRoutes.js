@@ -4,6 +4,7 @@ import { authorize } from "../middleware/authorizeMiddleware.js";
 import {
   updateHelpRequest,
   assignHelpRequest,
+  unassignHelpRequest,
   rejectHelpRequest,
   verifyHelpRequest,
   resolveHelpRequest,
@@ -28,6 +29,7 @@ router.patch("/:id", updateHelpRequest);
 
 // Specific action routes
 router.post("/:id/assign", assignHelpRequest);
+router.post(":id/unassign", unassignHelpRequest);
 router.post("/:id/reject", rejectHelpRequest);
 router.post("/:id/verify", verifyHelpRequest);
 router.post("/:id/resolve", resolveHelpRequest);

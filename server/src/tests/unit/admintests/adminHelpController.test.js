@@ -28,12 +28,12 @@ await jest.unstable_mockModule("../../../models/HelpRequest.js", () => ({
 }));
 
 const ngoFindByIdMock = jest.fn();
-const ngoFindByIdAndUpdateMock = jest.fn();
+const ngoUpdateManyMock = jest.fn();
 
 await jest.unstable_mockModule("../../../models/userProfileModel/NgoProfile.js", () => ({
   default: {
     findById: ngoFindByIdMock,
-    findByIdAndUpdate: ngoFindByIdAndUpdateMock,
+    updateMany: ngoUpdateManyMock,
   },
 }));
 
@@ -102,9 +102,8 @@ describe("adminHelpController", () => {
       );
     });
 
-    test("blocks assignment to unapproved organizations", async () => {
+    test("rejects assignment updates via updateHelpRequest", async () => {
       helpRequestFindByIdMock.mockResolvedValue({ _id: "h1" });
-      ngoFindByIdMock.mockResolvedValue({ approvalStatus: "pending" });
 
       const req = { params: { id: "h1" }, body: { assignedTo: "ngo1" } };
       const res = mockRes();
@@ -114,7 +113,7 @@ describe("adminHelpController", () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: "Cannot assign to unapproved organization",
+        message: "Use the assign/unassign endpoints to modify assignments",
       });
     });
   });
@@ -148,7 +147,7 @@ describe("adminHelpController", () => {
       const helpRequest = {
         _id: "h1",
         status: "pending",
-        assignedTo: null,
+        assignments: [],
         save: jest.fn(),
       };
 
@@ -161,7 +160,7 @@ describe("adminHelpController", () => {
         save: jest.fn(),
       };
 
-      const populated = { _id: "h1", assignedTo: "ngo1" };
+      const populated = { _id: "h1", assignments: [{ ngoId: "ngo1" }] };
       const populateMock = jest.fn().mockResolvedValue(populated);
 
       helpRequestFindByIdMock
@@ -175,7 +174,7 @@ describe("adminHelpController", () => {
 
       await assignHelpRequest(req, res);
 
-      expect(helpRequest.assignedTo).toBe("ngo1");
+      expect(helpRequest.assignments).toHaveLength(1);
       expect(helpRequest.status).toBe("assigned");
       expect(helpRequest.save).toHaveBeenCalled();
       expect(ngo.assignedRequests).toContain("h1");
@@ -194,7 +193,7 @@ describe("adminHelpController", () => {
       const saveMock = jest.fn();
       const helpRequest = {
         _id: "h1",
-        assignedTo: "ngo1",
+        assignments: [{ ngoId: "ngo1" }],
         adminNotes: "",
         save: saveMock,
       };
@@ -210,9 +209,10 @@ describe("adminHelpController", () => {
       expect(helpRequest.adminNotes).toBe("done");
       expect(helpRequest.resolvedAt).toBeInstanceOf(Date);
       expect(saveMock).toHaveBeenCalled();
-      expect(ngoFindByIdAndUpdateMock).toHaveBeenCalledWith("ngo1", {
-        $inc: { completedTasks: 1 },
-      });
+      expect(ngoUpdateManyMock).toHaveBeenCalledWith(
+        { _id: { $in: ["ngo1"] } },
+        { $inc: { completedTasks: 1 } }
+      );
     });
   });
 
@@ -285,7 +285,7 @@ describe("adminHelpController", () => {
         query: { assignedTo: "unassigned", page: 1, limit: 10 },
       }, res);
 
-      expect(helpRequestFindMock).toHaveBeenCalledWith({ assignedTo: null });
+      expect(helpRequestFindMock).toHaveBeenCalledWith({ assignments: { $size: 0 } });
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
