@@ -1,7 +1,9 @@
 import axios from "axios";
 
-const PROVIDER = (process.env.WEATHER_API_PROVIDER || "open-meteo").toLowerCase();
-const UNITS = (process.env.WEATHER_UNITS || "metric").toLowerCase(); // metric | imperial
+// const PROVIDER = (process.env.WEATHER_API_PROVIDER || "open-meteo").toLowerCase();
+// const UNITS = (process.env.WEATHER_UNITS || "metric").toLowerCase(); // metric | imperial
+
+// Providers and Units are now read inside the function to allow dynamic changes (useful for testing)
 
 const codeMap = {
   0: "Clear",
@@ -34,16 +36,16 @@ const codeMap = {
   99: "Thunderstorm with heavy hail",
 };
 
-function toUnits(valueC) {
-  if (UNITS === "imperial") {
+function toUnits(valueC, units = "metric") {
+  if (units === "imperial") {
     // Celsius to Fahrenheit
     return (valueC * 9) / 5 + 32;
   }
   return valueC; // metric default
 }
 
-function windToUnits(ms) {
-  if (UNITS === "imperial") {
+function windToUnits(ms, units = "metric") {
+  if (units === "imperial") {
     // m/s to mph
     return ms * 2.236936;
   }
@@ -51,15 +53,18 @@ function windToUnits(ms) {
   return ms * 3.6;
 }
 
-export async function getWeatherData({ city, lat, lon } = {}) {
+export async function getWeatherData({ city, lat, lon, units: argUnits, provider: argProvider } = {}) {
+  const provider = (argProvider || process.env.WEATHER_API_PROVIDER || "open-meteo").toLowerCase();
+  const units = (argUnits || process.env.WEATHER_UNITS || "metric").toLowerCase();
+
   try {
-    if (PROVIDER === "open-meteo") {
+    if (provider === "open-meteo") {
       let latitude = lat;
       let longitude = lon;
       let locationInfo = {};
 
       // Geocode city name if coords not provided
-      if ((!latitude || !longitude) && city) {
+      if ((latitude === undefined || longitude === undefined) && city) {
         const geo = await axios.get(
           `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
         );
@@ -76,7 +81,7 @@ export async function getWeatherData({ city, lat, lon } = {}) {
         }
       }
 
-      if (!latitude || !longitude) {
+      if (latitude === undefined || longitude === undefined) {
         throw new Error("Latitude/longitude required for Open-Meteo when city geocoding fails.");
       }
 
@@ -88,12 +93,12 @@ export async function getWeatherData({ city, lat, lon } = {}) {
       const code = cur.weather_code;
       const condition = codeMap[code] || "Unknown";
 
-      const temp = toUnits(tempC);
-      const wind = windToUnits(typeof windMs === "number" ? windMs / 3.6 : 0); // if km/h -> m/s back to unit converter
+      const temp = toUnits(tempC, units);
+      const wind = windToUnits(typeof windMs === "number" ? windMs / 3.6 : 0, units); // if km/h -> m/s back to unit converter
 
       return {
         provider: "open-meteo",
-        units: UNITS,
+        units: units,
         location: locationInfo,
         current: {
           temperature: temp,
@@ -109,7 +114,7 @@ export async function getWeatherData({ city, lat, lon } = {}) {
     const apiKey = process.env.WEATHER_API_KEY;
     if (!city) throw new Error("City name required for OpenWeatherMap provider.");
     const ow = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=${UNITS === "imperial" ? "imperial" : "metric"}`
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=${units === "imperial" ? "imperial" : "metric"}`
     );
     const main = ow.data?.weather?.[0]?.main || "Unknown";
     const temp = ow.data?.main?.temp;
@@ -117,7 +122,7 @@ export async function getWeatherData({ city, lat, lon } = {}) {
 
     return {
       provider: "openweather",
-      units: UNITS,
+      units: units,
       location: {
         name: ow.data?.name,
         country: ow.data?.sys?.country,
@@ -133,8 +138,8 @@ export async function getWeatherData({ city, lat, lon } = {}) {
     };
   } catch (err) {
     return {
-      provider: PROVIDER,
-      units: UNITS,
+      provider: provider,
+      units: units,
       error: err?.message || String(err),
     };
   }
