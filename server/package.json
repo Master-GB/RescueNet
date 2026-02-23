@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit",
+    "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +26,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
     "multer": "^2.0.2",
+    "nodemailer": "^6.10.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3"
   },
