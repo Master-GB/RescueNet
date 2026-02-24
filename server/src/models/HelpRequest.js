@@ -49,6 +49,7 @@ const helpRequestSchema = new mongoose.Schema(
           enum: ["assigned", "accepted", "declined", "in-progress", "completed"],
           default: "assigned",
         },
+        declineReason: { type: String },
         assignedAt: { type: Date, default: Date.now },
         completedAt: { type: Date },
       },

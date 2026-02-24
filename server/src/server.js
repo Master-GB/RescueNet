@@ -13,6 +13,7 @@ import adminHelpRoutes from "./routes/adminHelpRoutes.js";
 import adminNgoRoutes from "./routes/adminNgoRoutes.js";
 import helpRoutes from "./routes/helpRoutes.js";
 import weatherRoutes from "./routes/weatherRoutes.js";
+import ngoHelpRoutes from "./routes/ngoHelpRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRoutes.js";
@@ -75,6 +76,7 @@ app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);
 app.use("/api/admin/help-requests", adminHelpRoutes);
 app.use("/api/admin/ngos", adminNgoRoutes);
+app.use("/api/ngo/help-requests", ngoHelpRoutes);
 
 // Start
 connectDB()
