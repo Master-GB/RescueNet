@@ -25,11 +25,6 @@ router.get(
   missingPersonController.searchByLocation
 );
 
-// ADD THIS ROUTE - Test geocoding
-router.get(
-  '/test-geocode',
-  missingPersonController.testGeocode
-);
 
 // ==========================================
 // GENERAL ROUTES
