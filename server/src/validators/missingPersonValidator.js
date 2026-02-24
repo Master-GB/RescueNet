@@ -39,7 +39,6 @@ const createReportValidation = [
     .notEmpty().withMessage('City is required'),
 
   body('lastSeenLocation.coordinates.coordinates')
-  .optional()  // ADD THIS LINE - makes coordinates optional
   .isArray({ min: 2, max: 2 }).withMessage('Coordinates must be an array of [longitude, latitude]')
   .custom((value) => {
     const [lng, lat] = value;
