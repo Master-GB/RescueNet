@@ -21,6 +21,9 @@ import volunteerProfileRoutes from "./routes/userManagementRoutes/volunteerProfi
 import ngoProfileRoutes from "./routes/userManagementRoutes/ngoProfileRoutes.js";
 import adminUserRoutes from "./routes/userManagementRoutes/adminUserRoutes.js";
 import shelterRouter from "./routes/shelterRoutes.js";
+import geoRoutes from "./routes/geoRoutes.js";
+import disastersRoutes from "./routes/disastersRoutes.js";
+
 
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
 
@@ -71,6 +74,9 @@ app.use("/api/ngo", ngoProfileRoutes);
 app.use("/api/adminUser", adminUserRoutes);
 
 app.use("/api/shelters", shelterRouter);
+app.use("/api/geo", geoRoutes);
+app.use("/api/disasters", disastersRoutes);
+
 
 app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);

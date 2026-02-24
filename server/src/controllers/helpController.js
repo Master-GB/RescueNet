@@ -1,5 +1,5 @@
 import HelpRequest from "../models/HelpRequest.js";
-import getWeather from "../utils/weatherService.js";
+import getWeather from "../utils/WeatherService.js";
 
 export async function createHelpRequest(req, res) {
   try {
@@ -79,5 +79,96 @@ export async function getAllRequests(req, res) {
     res.json(requests);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
+  }
+}
+
+export async function getHelpRequestById(req, res) {
+  try {
+    const { id } = req.params;
+    const helpRequest = await HelpRequest.findById(id);
+    
+    if (!helpRequest) {
+      return res.status(404).json({ message: "Help request not found" });
+    }
+    
+    res.json(helpRequest);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+}
+
+export async function updateHelpRequest(req, res) {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      location,
+      disasterType,
+      message,
+      contactNumber,
+      realLocation,
+      urgency,
+      voiceMessage,
+      images,
+    } = req.body;
+
+    const helpRequest = await HelpRequest.findById(id);
+    
+    if (!helpRequest) {
+      return res.status(404).json({ message: "Help request not found" });
+    }
+
+    // Update fields if provided
+    if (name) helpRequest.name = name;
+    if (location) helpRequest.location = location;
+    if (disasterType) helpRequest.disasterType = disasterType;
+    if (message) helpRequest.message = message;
+    if (contactNumber) helpRequest.contactNumber = contactNumber;
+    if (realLocation) helpRequest.realLocation = realLocation;
+    if (urgency) helpRequest.urgency = urgency;
+
+    // Handle voice message update
+    if (voiceMessage?.data) {
+      const buf = Buffer.from(voiceMessage.data, "base64");
+      helpRequest.voiceMessage = {
+        data: buf,
+        mimeType: voiceMessage.mimeType || "audio/mpeg",
+        size: buf.length,
+      };
+    }
+
+    // Handle images update
+    if (Array.isArray(images) && images.length > 0) {
+      helpRequest.images = images
+        .filter((img) => img?.data)
+        .map((img) => {
+          const buf = Buffer.from(img.data, "base64");
+          return {
+            data: buf,
+            mimeType: img.mimeType || "image/jpeg",
+            size: buf.length,
+          };
+        });
+    }
+
+    await helpRequest.save();
+    res.json({ message: "Help request updated", helpRequest });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+}
+
+export async function deleteHelpRequest(req, res) {
+  try {
+    const { id } = req.params;
+    const helpRequest = await HelpRequest.findByIdAndDelete(id);
+    
+    if (!helpRequest) {
+      return res.status(404).json({ message: "Help request not found" });
+    }
+    
+    res.json({ message: "Help request deleted successfully", id });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 }
