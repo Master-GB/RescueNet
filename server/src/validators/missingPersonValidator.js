@@ -38,7 +38,8 @@ const createReportValidation = [
     .trim()
     .notEmpty().withMessage('City is required'),
 
-  body('lastSeenLocation.coordinates.coordinates')
+  body('geoLocation.coordinates')
+  .optional()
   .isArray({ min: 2, max: 2 }).withMessage('Coordinates must be an array of [longitude, latitude]')
   .custom((value) => {
     const [lng, lat] = value;
