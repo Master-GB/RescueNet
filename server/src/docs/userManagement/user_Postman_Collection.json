@@ -413,6 +413,30 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Delete User(CITIZEN,NGO,VOLUNTEER) by Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/adminUser/delete-user/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "adminUser",
+                "delete-user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }
