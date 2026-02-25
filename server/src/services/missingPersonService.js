@@ -4,14 +4,17 @@ import socketService from './socketService.js';
 class MissingPersonService {
   // Create new missing person report
   async createReport(reportData) {
-  try {
-    const missingPerson = new MissingPerson(reportData);
-    await missingPerson.save();
-    return missingPerson;
-  } catch (error) {
-    throw new Error(`Error creating report: ${error.message}`);
+    try {
+      const missingPerson = new MissingPerson(reportData);
+      await missingPerson.save();
+
+      socketService.broadcastNewReport(missingPerson);
+
+      return missingPerson;
+    } catch (error) {
+      throw new Error(`Error creating report: ${error.message}`);
+    }
   }
-}
 
   // Get all reports with filters and pagination
   async getAllReports(filters = {}, options = {}) {
@@ -44,7 +47,6 @@ class MissingPersonService {
           .sort(sortBy)
           .skip(skip)
           .limit(parseInt(limit))
-          .populate('reportedBy', 'name email')
           .lean(),
         MissingPerson.countDocuments(query)
       ]);
@@ -67,7 +69,6 @@ class MissingPersonService {
   async getReportById(id) {
     try {
       const report = await MissingPerson.findById(id)
-        .populate('reportedBy', 'name email phone');
       
       if (!report) {
         throw new Error('Missing person report not found');
@@ -81,74 +82,74 @@ class MissingPersonService {
 
   // Update report
   async updateReport(id, updateData, userId) {
-  try {
-    const report = await MissingPerson.findById(id);
+    try {
+      const report = await MissingPerson.findById(id);
 
-    if (!report) {
-      throw new Error('Missing person report not found');
+      if (!report) {
+        throw new Error('Missing person report not found');
+      }
+
+      // Check if status changed to Found
+      const wasFound = updateData.status === 'Found' && report.status !== 'Found';
+
+      Object.assign(report, updateData);
+      await report.save();
+
+      // OUTGOING: Broadcast appropriate update
+      if (wasFound) {
+        socketService.broadcastPersonFound(report);
+      } else {
+        socketService.broadcastStatusUpdate(report);
+      }
+
+      return report;
+    } catch (error) {
+      throw new Error(`Error updating report: ${error.message}`);
     }
-
-    // Check if status changed to Found
-    const wasFound = updateData.status === 'Found' && report.status !== 'Found';
-
-    Object.assign(report, updateData);
-    await report.save();
-
-    // OUTGOING: Broadcast appropriate update
-    if (wasFound) {
-      socketService.broadcastPersonFound(report);
-    } else {
-      socketService.broadcastStatusUpdate(report);
-    }
-
-    return report;
-  } catch (error) {
-    throw new Error(`Error updating report: ${error.message}`);
   }
-}
 
   // Delete report (soft delete)
   async deleteReport(id, userId) {
-  try {
-    const report = await MissingPerson.findById(id);
+    try {
+      const report = await MissingPerson.findById(id);
 
-    if (!report) {
-      throw new Error('Missing person report not found');
+      if (!report) {
+        throw new Error('Missing person report not found');
+      }
+
+      // Soft delete
+      report.isActive = false;
+      await report.save();
+
+      // OUTGOING: Broadcast deletion to all connected clients
+      socketService.broadcastReportDeleted(id);
+
+      return { message: 'Report deleted successfully' };
+    } catch (error) {
+      throw new Error(`Error deleting report: ${error.message}`);
     }
-
-    // Soft delete
-    report.isActive = false;
-    await report.save();
-
-    // OUTGOING: Broadcast deletion to all connected clients
-    socketService.broadcastReportDeleted(id);
-
-    return { message: 'Report deleted successfully' };
-  } catch (error) {
-    throw new Error(`Error deleting report: ${error.message}`);
   }
-}
 
   // Add sighting to a report
   async addSighting(reportId, sightingData) {
-  try {
-    const report = await MissingPerson.findById(reportId);
+    try {
+      const report = await MissingPerson.findById(reportId);
 
-    if (!report) {
-      throw new Error('Missing person report not found');
+      if (!report) {
+        throw new Error('Missing person report not found');
+      }
+
+      report.sightings.push(sightingData);
+      await report.save();
+
+      // OUTGOING: Broadcast new sighting to all connected clients
+      socketService.broadcastNewSighting(report, sightingData);
+
+      return report;
+    } catch (error) {
+      throw new Error(`Error adding sighting: ${error.message}`);
     }
-
-    report.sightings.push(sightingData);
-    await report.save();
-
-    // OUTGOING: Broadcast new sighting to all connected clients
-    socketService.broadcastNewSighting(report, sightingData);
-
-    return report;
-  } catch (error) {
-    throw new Error(`Error adding sighting: ${error.message}`);
   }
-}
 
   // Search reports by location radius
   async searchByLocation(longitude, latitude, radiusInKm = 10) {
@@ -156,7 +157,7 @@ class MissingPersonService {
       const radiusInMeters = radiusInKm * 1000;
 
       const reports = await MissingPerson.find({
-        'lastSeenLocation.coordinates': {
+        'geoLocation': {
           $near: {
             $geometry: {
               type: 'Point',
@@ -177,35 +178,35 @@ class MissingPersonService {
 
   // Get statistics
   async getStatistics() {
-  try {
-    const [total, active, found, byPriority] = await Promise.all([
-      MissingPerson.countDocuments({ isActive: true }),
-      MissingPerson.countDocuments({ status: 'Active', isActive: true }),
-      MissingPerson.countDocuments({ status: 'Found', isActive: true }),
-      MissingPerson.aggregate([
-        { $match: { isActive: true } },
-        { $group: { _id: '$priority', count: { $sum: 1 } } }
-      ])
-    ]);
+    try {
+      const [total, active, found, byPriority] = await Promise.all([
+        MissingPerson.countDocuments({ isActive: true }),
+        MissingPerson.countDocuments({ status: 'Active', isActive: true }),
+        MissingPerson.countDocuments({ status: 'Found', isActive: true }),
+        MissingPerson.aggregate([
+          { $match: { isActive: true } },
+          { $group: { _id: '$priority', count: { $sum: 1 } } }
+        ])
+      ]);
 
-    const stats = {
-      total,
-      active,
-      found,
-      closed: total - active - found,
-      byPriority: byPriority.reduce((acc, item) => {
-        acc[item._id] = item.count;
-        return acc;
-      }, {})
-    };
+      const stats = {
+        total,
+        active,
+        found,
+        closed: total - active - found,
+        byPriority: byPriority.reduce((acc, item) => {
+          acc[item._id] = item.count;
+          return acc;
+        }, {})
+      };
 
-    // OUTGOING: Broadcast statistics update (optional)
-    socketService.broadcastStatisticsUpdate(stats);
+      // OUTGOING: Broadcast statistics update (optional)
+      socketService.broadcastStatisticsUpdate(stats);
 
-    return stats;
-  } catch (error) {
-    throw new Error(`Error fetching statistics: ${error.message}`);
-  }
+      return stats;
+    } catch (error) {
+      throw new Error(`Error fetching statistics: ${error.message}`);
+    }
   }
 }
 
