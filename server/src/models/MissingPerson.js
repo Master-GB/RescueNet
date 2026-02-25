@@ -5,8 +5,7 @@ const missingPersonSchema = new mongoose.Schema(
     // Reporter Information
     reportedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'Reporter information is required']
+      ref: 'User'
     },
     reporterName: {
       type: String,
@@ -95,18 +94,21 @@ const missingPersonSchema = new mongoose.Schema(
         required: [true, 'City is required'],
         trim: true
       },
+    },
+      // GeoJSON point - kept separate from address fields
+    geoLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point'
+      },
       coordinates: {
-        type: {
-          type: String,
-          enum: ['Point'],
-          default: 'Point'
-        },
-        coordinates: {
-          type: [Number], // [longitude, latitude]
-          required: [true, 'Coordinates are required']
-        }
+        type: [Number],  // [longitude, latitude]
+        default: undefined
       }
     },
+    
+
     lastSeenDate: {
       type: Date,
       required: [true, 'Last seen date is required'],
@@ -189,17 +191,16 @@ const missingPersonSchema = new mongoose.Schema(
 );
 
 // Indexes for better query performance
-missingPersonSchema.index({ lastSeenLocation: '2dsphere' }); // Geospatial index
+missingPersonSchema.index({ geoLocation: '2dsphere' });
 missingPersonSchema.index({ status: 1, createdAt: -1 });
 missingPersonSchema.index({ fullName: 'text', circumstances: 'text' }); // Text search
 
 // Generate unique case number before saving
-missingPersonSchema.pre('save', async function(next) {
+missingPersonSchema.pre('save', async function() {
   if (!this.caseNumber) {
     const count = await mongoose.model('MissingPerson').countDocuments();
     this.caseNumber = `MP-${Date.now()}-${count + 1}`;
   }
-  next();
 });
 
 // Virtual for days missing
@@ -212,5 +213,10 @@ missingPersonSchema.virtual('daysMissing').get(function() {
 });
 
 const MissingPerson = mongoose.model('MissingPerson', missingPersonSchema);
+
+// Force index creation on startup
+MissingPerson.createIndexes()
+  .then(() => console.log('✅ Missing Person indexes created'))
+  .catch(err => console.error('❌ Error creating indexes:', err));
 
 export default MissingPerson;
