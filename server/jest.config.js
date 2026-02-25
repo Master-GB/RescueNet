@@ -1,6 +1,6 @@
 export default {
   testEnvironment: "node",
-  testMatch: ["**/tests/unit/**/*.test.js"],
+  testMatch: ["**/tests/unit/**/*.test.js","**/tests/apiTest/**/*.test.js"],
   collectCoverage: true,
   coverageDirectory: "tests/coverage",
   reporters: [
