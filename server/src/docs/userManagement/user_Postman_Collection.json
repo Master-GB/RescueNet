@@ -5,6 +5,17 @@
     "description": "Citizen/Volunteer/NGO profile endpoints + Admin verification. Uses cookie-based auth (access_token). Set {{baseUrl}} to your backend API base, e.g. http://localhost:5000/api.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+
+    },
+     {
+      "key": "userId",
+      "value": "PUT_USER_ID_HERE"
+    }
+  ],
   "item": [
     {
       "name": "Citizen Profile",
@@ -20,13 +31,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/citizens/profile-create",
+              "raw": "{{baseUrl}}/citizen/profile-create",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "citizens",
-                "profile"
+                "citizen",
+                "profile-create"
               ]
             },
             "body": {
@@ -42,13 +53,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/citizens/profile-get",
+              "raw": "{{baseUrl}}/citizen/profile-get",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "citizens",
-                "profile"
+                "citizen",
+                "profile-get"
               ]
             }
           },
@@ -65,18 +76,41 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/citizens/profile-update",
+              "raw": "{{baseUrl}}/citizen/profile-update",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "citizens",
-                "profile"
+                "citizen",
+                "profile-update"
               ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"phone\": \"+94761234567\",\n  \"address\": {\n    \"street\": \"45 Lake Road\",\n    \"city\": \"Kandy\",\n    \"province\": \"Central\"\n  },\n  \"location\": \"Kandy Town\",\n  \"emergencyContactName\": \"Nimal Perera\",\n  \"emergencyContactPhone\": \"+94779876543\",\n  \"savedShelters\": [\n    \"65f1ab34c8d1234567890abc\"\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Citizen Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/citizen/profile-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "citizen",
+                "profile-delete"
+              ]
             }
           },
           "response": []
@@ -97,13 +131,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/volunteers/profile-create",
+              "raw": "{{baseUrl}}/volunteer/profile-create",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "volunteers",
-                "profile"
+                "volunteer",
+                "profile-create"
               ]
             },
             "body": {
@@ -119,13 +153,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/volunteers/profile-get",
+              "raw": "{{baseUrl}}/volunteer/profile-get",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "volunteers",
-                "profile"
+                "volunteer",
+                "profile-get"
               ]
             }
           },
@@ -142,13 +176,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/volunteers/profile-update",
+              "raw": "{{baseUrl}}/volunteer/profile-update",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "volunteers",
-                "profile"
+                "volunteer",
+                "profile-update"
               ]
             },
             "body": {
@@ -169,19 +203,42 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/volunteers/profile/status-update",
+              "raw": "{{baseUrl}}/volunteer/profile/status-update",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "volunteers",
+                "volunteer",
                 "profile",
-                "status"
+                "status-update"
               ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"availabilityStatus\": \"AVAILABLE\"\n}"
+            }
+          },
+          "response": []
+        },
+         {
+          "name": "Delete Volunteer Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/volunteer/profile-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "volunteer",
+                "profile-delete"
+              ]
             }
           },
           "response": []
@@ -202,13 +259,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/ngos/profile-create",
+              "raw": "{{baseUrl}}/ngo/profile-create",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "ngos",
-                "profile"
+                "ngo",
+                "profile-create"
               ]
             },
             "body": {
@@ -224,13 +281,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/ngos/profile-get",
+              "raw": "{{baseUrl}}/ngo/profile-get",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "ngos",
-                "profile"
+                "ngo",
+                "profile-get"
               ]
             }
           },
@@ -247,18 +304,69 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/ngos/profile-update",
+              "raw": "{{baseUrl}}/ngo/profile-update",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "ngos",
-                "profile"
+                "ngo",
+                "profile-update"
               ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"contactPhone\": \"+94119876543\",\n  \"services\": [\n    \"FOOD\",\n    \"WATER\"\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update NGO Availability Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/profile/status-update",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ngo",
+                "profile",
+                "status-update"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availabilityStatus\": \"AVAILABLE\"\n}"
+            }
+          },
+          "response": []
+        },
+         {
+          "name": "Delete NGO Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/profile-delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ngo",
+                "profile-delete"
+              ]
             }
           },
           "response": []
@@ -269,17 +377,17 @@
       "name": "Admin Verification",
       "item": [
         {
-          "name": "Verify Volunteer (Admin)",
+          "name": "Verify Volunteer by  Admin",
           "request": {
             "method": "PATCH",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/verify-volunteer/{{userId}}",
+              "raw": "{{baseUrl}}/adminUser/verify-volunteer/{{userId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "admin",
+                "adminUser",
                 "verify-volunteer",
                 "{{userId}}"
               ]
@@ -293,12 +401,12 @@
             "method": "PATCH",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/verify-ngo/{{userId}}",
+              "raw": "{{baseUrl}}/adminUser/verify-ngo/{{userId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "admin",
+                "adminUser",
                 "verify-ngo",
                 "{{userId}}"
               ]
@@ -307,16 +415,6 @@
           "response": []
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:5000/api"
-    },
-    {
-      "key": "userId",
-      "value": "PUT_USER_ID_HERE"
     }
   ]
 }

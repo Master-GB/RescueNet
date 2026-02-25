@@ -6,6 +6,12 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": "RescueNet Authentication API (cookie-based session): register, login, logout, me, OTP verification and reset password flow."
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+    }
+  ],
   "item": [
     {
       "name": "Auth - Register",
@@ -16,7 +22,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"A.M Gihan\",\n  \"email\": \"gihan@example.com\",\n  \"password\": \"StrongPass123!\",\n  \"role\": \"ADMIN\"\n}\n"
+          "raw": "{\n  \"name\": \"A.M Gihan\",\n  \"email\": \"gihan@example.com\",\n  \"password\": \"12345678\",\n  \"role\": \"ADMIN\"\n}\n"
         },
         "url": {
           "raw": "{{baseUrl}}/auth/register",
@@ -52,14 +58,14 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"password\": \"StrongPass123!\"\n}\n"
+          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"password\": \"12345678\"\n}\n"
         },
         "url": {
           "raw": "{{baseUrl}}/auth/login",
           "host": [ "{{baseUrl}}" ],
           "path": [ "auth", "login" ]
         },
-        "description": "Logs in and sets httpOnly cookie session (access_token)."
+        "description": "Logs in and sets httpOnly cookie session (access_token).before log in accoutn must be registered and verified"
       },
       "event": [
         {
@@ -195,7 +201,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"otp\": \"123456\"\n}\n"
+          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"code\": \"123456\"\n}\n"
         },
         "url": {
           "raw": "{{baseUrl}}/auth/verify-reset-otp",
@@ -214,7 +220,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewStrongPass123!\"\n}\n"
+          "raw": "{\n  \"email\": \"gihan@example.com\",\n  \"newPassword\": \"NewStrongPass123!\"\n}\n"
         },
         "url": {
           "raw": "{{baseUrl}}/auth/reset-password",
@@ -223,13 +229,6 @@
         },
         "description": "Resets password using OTP."
       }
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:5000/api",
-      "type": "string"
     }
   ]
 }
