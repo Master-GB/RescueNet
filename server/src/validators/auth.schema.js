@@ -26,7 +26,7 @@ export const sendResetOTPSchema = Joi.object({
 
 export const verifyResetOTPSchema = Joi.object({
   email: Joi.string().email().required(),
-  otp: Joi.string().length(6).pattern(/^[0-9]+$/).required(),
+  code: Joi.string().length(6).pattern(/^[0-9]+$/).required(),
 });
 
 export const resetPasswordSchema = Joi.object({
