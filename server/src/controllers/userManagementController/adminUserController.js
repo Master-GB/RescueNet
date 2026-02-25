@@ -1,6 +1,8 @@
+import User from "../../models/user.js";
 import VolunteerProfile from "../../models/userProfileModel/VolunteerProfile.js";
 import NgoProfile from "../../models/userProfileModel/NgoProfile.js";
-import User from "../../models/user.js";
+import CitizenProfile from "../../models/userProfileModel/CitizenProfile.js";
+
 
 export const verifyVolunteer = async (req, res) => {
   try {
@@ -41,5 +43,74 @@ export const verifyNgo = async (req, res) => {
     return res.status(200).json({ success: true, message: "NGO verified", profile });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Verification failed", error: error.message });
+  }
+};
+
+
+export const deleteUserAccount = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Prevent admin deleting themselves
+    if (req.user._id.toString() === userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Admin cannot delete their own account",
+      });
+    }
+
+    switch (user.role) {
+      case "CITIZEN":
+        await CitizenProfile.findOneAndDelete({ userId });
+        break;
+
+      case "VOLUNTEER":
+        await VolunteerProfile.findOneAndDelete({ userId });
+        break;
+
+      case "NGO":
+        await NgoProfile.findOneAndDelete({ userId });
+        break;
+
+      case "ADMIN":
+        return res.status(403).json({
+          success: false,
+          message: "Cannot delete another admin account",
+        });
+
+      default:
+        break;
+    }
+
+    // Delete user account
+    await User.findByIdAndDelete(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "User account and profile deleted successfully",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Delete user failed",
+      error: error.message,
+    });
   }
 };
