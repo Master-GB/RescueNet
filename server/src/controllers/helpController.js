@@ -1,5 +1,10 @@
 import HelpRequest from "../models/HelpRequest.js";
 import getWeather from "../utils/WeatherService.js";
+import translate from "google-translate-api-x";
+import { HfInference } from "@huggingface/inference";
+
+// Initialize with the token directly.
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY || "");
 
 export async function createHelpRequest(req, res) {
   try {
@@ -53,18 +58,107 @@ export async function createHelpRequest(req, res) {
         });
     }
 
-    // 4. Save to DB
+    // 4. Translate Message asynchronously (don't fail request if translation fails)
+    let translatedMessageText = "";
+    if (message) {
+        try {
+            const res = await translate(message, { to: 'en' });
+            translatedMessageText = res.text;
+        } catch (error) {
+            console.error("Translation error:", error);
+        }
+    }
+
+    // 4.5 Transcribe Voice Message asynchronously
+    let voiceTranscriptionText = "";
+    if (voicePayload && voicePayload.data && process.env.HUGGINGFACE_API_KEY) {
+        try {
+            // Extract buffer
+            let rawData = voicePayload.data;
+            if (rawData.type === "Buffer" && Array.isArray(rawData.data)) {
+                rawData = Buffer.from(rawData.data);
+            }
+            
+            const blob = new Blob([rawData], { type: voicePayload.mimeType || "audio/mpeg" });
+            
+            // Initialize HfInference with the token dynamically so it picks up the .env key properly
+            const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+            
+            const result = await hf.automaticSpeechRecognition({
+                model: 'openai/whisper-large-v3-turbo',
+                data: blob
+            }, {
+                use_cache: false,
+                wait_for_model: true
+            });
+            
+            voiceTranscriptionText = result.text;
+        } catch (error) {
+            console.error("Voice transcription error (Detailed):", error);
+        }
+    }
+    // 4. Image Severity Analysis (Hugging Face Phase 3)
+    let detectedImageLabels = [];
+    if (imagePayloads && imagePayloads.length > 0 && process.env.HUGGINGFACE_API_KEY) {
+        try {
+            const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+            
+            // Just scan the first image for now to save latency
+            const firstImage = imagePayloads[0];
+            let rawData = firstImage.data;
+            if (rawData.type === "Buffer" && Array.isArray(rawData.data)) {
+                rawData = Buffer.from(rawData.data);
+            }
+            
+            const blob = new Blob([rawData], { type: firstImage.mimeType || "image/jpeg" });
+            
+            const result = await hf.imageClassification({
+                data: blob,
+                model: 'google/vit-base-patch16-224'
+            }, {
+                use_cache: false,
+                wait_for_model: true
+            });
+            
+            // result is an array of { label: "...", score: 0.98 }
+            if (Array.isArray(result)) {
+                detectedImageLabels = result.map(r => r.label);
+                
+                // If the image looks dangerous, escalate urgency! (Uses ImageNet-1K specific classes)
+                const dangerousKeywords = [
+                    "flood", "fire", "smoke", "accident", "water", "river", "storm", 
+                    "hurricane", "crash", "car", "wreck", "ambulance", "police", 
+                    "lakeside", "lakeshore", "seashore", "coast", "volcano", "dam", 
+                    "breakwater", "valley", "stone wall", "lumbermill"
+                ];
+                const hasDanger = detectedImageLabels.some(label => 
+                    dangerousKeywords.some(danger => label.toLowerCase().includes(danger))
+                );
+                
+                if (hasDanger) {
+                    urgency = "high";
+                }
+            }
+        } catch (error) {
+            console.error("Image classification error:", error.message);
+        }
+    }
+
+    // 5. Save to DB
     const helpRequest = await HelpRequest.create({
       name,
       location,
       disasterType,
       message,
+      translatedMessage: translatedMessageText,
       contactNumber,
       realLocation,
       urgency,
       weatherCondition: weather,
       voiceMessage: voicePayload,
+      voiceTranscription: voiceTranscriptionText,
       images: imagePayloads,
+      imageLabels: detectedImageLabels
     });
 
     res.status(201).json(helpRequest);
