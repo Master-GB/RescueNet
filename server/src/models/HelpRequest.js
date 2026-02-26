@@ -13,6 +13,7 @@ const helpRequestSchema = new mongoose.Schema(
       required: true,
     },
     message: { type: String, required: true },
+    translatedMessage: { type: String },
     urgency: { type: String, enum: ["low", "medium", "high"], default: "low" },
     weatherCondition: String,
     // Optional voice message stored directly in DB (no multer)
@@ -21,6 +22,7 @@ const helpRequestSchema = new mongoose.Schema(
       mimeType: String,
       size: Number,
     },
+    voiceTranscription: { type: String },
     // Optional images stored directly in DB (no multer)
     images: [
       {
@@ -29,6 +31,7 @@ const helpRequestSchema = new mongoose.Schema(
         size: Number,
       }
     ],
+    imageLabels: [{ type: String }],
 
   // ===== NEW FIELDS FOR TASK MANAGEMENT DONE BY ADMIN =====
     status: {

@@ -1,0 +1,57 @@
+[
+  {
+    "endpoint": "POST /api/help/add",
+    "description": "Create a new Help Request with multiple media and translation.",
+    "payload": {
+      "name": "Jane Test",
+      "location": "Flood Zone",
+      "realLocation": "Test City",
+      "contactNumber": "+1-555-9999",
+      "disasterType": "flood",
+      "message": "¡El agua está subiendo muy rápido!",
+      "images": [
+        {
+          "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          "mimeType": "image/png"
+        }
+      ],
+      "voiceMessage": {
+        "data": "SGVsbG8gV29ybGQh",
+        "mimeType": "audio/mpeg"
+      }
+    }
+  },
+  {
+    "endpoint": "POST /api/help/add",
+    "description": "Create a minimal text-only Help Request.",
+    "payload": {
+      "name": "John Doe",
+      "location": "Downtown Area",
+      "realLocation": "Mumbai",
+      "contactNumber": "+91-9876543210",
+      "disasterType": "cyclone",
+      "message": "Urgent help needed. Roof collapsed."
+    }
+  },
+  {
+    "endpoint": "PUT /api/help/update/:id",
+    "description": "Update an existing request (e.g., status changed or new media).",
+    "payload": {
+      "message": "Situation improved, water receding. Still need supplies.",
+      "urgency": "medium",
+      "status": "in-progress"
+    }
+  },
+  {
+    "endpoint": "PUT /api/help/update/:id",
+    "description": "Update an existing request exclusively to add new images.",
+    "payload": {
+      "images": [
+        {
+          "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          "mimeType": "image/png"
+        }
+      ]
+    }
+  }
+]
