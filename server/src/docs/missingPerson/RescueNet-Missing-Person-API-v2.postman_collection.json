@@ -210,6 +210,63 @@
       "name": "Protected Endpoints",
       "item": [
         {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"your@email.com\",\r\n  \"password\": \"yourpassword\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Report",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"reporterName\": \"Sarah Johnson\",\r\n    \"reporterContact\": {\r\n        \"phone\": \"0771234567\",\r\n        \"email\": \"sarah@example.com\"\r\n    },\r\n    \"fullName\": \"Emily Johnson\",\r\n    \"age\": 8,\r\n    \"gender\": \"Female\",\r\n    \"lastSeenLocation\": {\r\n        \"address\": \"Galle Face Green\",\r\n        \"city\": \"Colombo\"\r\n    },\r\n    \"geoLocation\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [79.8429, 6.9271]\r\n    },\r\n    \"lastSeenDate\": \"2024-06-15T10:30:00.000Z\",\r\n    \"circumstances\": \"Last seen near the beach\",\r\n    \"priority\": \"Medium\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/missing-persons",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "missing-persons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Update Report (PUT)",
           "request": {
             "method": "PUT",
@@ -309,64 +366,6 @@
               "path": [
                 "699f8250089adb84ca298d30",
                 "sightings"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Report",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"reporterName\": \"Sarah Johnson\",\r\n    \"reporterContact\": {\r\n        \"phone\": \"0771234567\",\r\n        \"email\": \"sarah@example.com\"\r\n    },\r\n    \"fullName\": \"Emily Johnson\",\r\n    \"age\": 8,\r\n    \"gender\": \"Female\",\r\n    \"lastSeenLocation\": {\r\n        \"address\": \"Galle Face Green\",\r\n        \"city\": \"Colombo\"\r\n    },\r\n    \"geoLocation\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [79.8429, 6.9271]\r\n    },\r\n    \"lastSeenDate\": \"2024-06-15T10:30:00.000Z\",\r\n    \"circumstances\": \"Last seen near the beach\",\r\n    \"priority\": \"Medium\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:5000/api/missing-persons",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "5000",
-              "path": [
-                "api",
-                "missing-persons"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "New Request",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"reporterName\": \"Sarah Johnson\",\r\n  \"reporterContact\": {\r\n    \"phone\": \"0771234567\",\r\n    \"email\": \"sarah@example.com\"\r\n  },\r\n  \"fullName\": \"Emily Johnson\",\r\n  \"age\": 8,\r\n  \"gender\": \"Female\",\r\n  \"lastSeenLocation\": {\r\n    \"address\": \"Galle Face Green\",\r\n    \"city\": \"Colombo\",\r\n    \"coordinates\": {\r\n      \"type\": \"Point\",\r\n      \"coordinates\": [79.8429, 6.9271]\r\n    }\r\n  },\r\n  \"lastSeenDate\": \"2026-02-10T15:30:00Z\",\r\n  \"circumstances\": \"Last seen near the beach\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:5000/api/missing-persons",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "5000",
-              "path": [
-                "api",
-                "missing-persons"
               ]
             }
           },
