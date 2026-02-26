@@ -1,142 +1,100 @@
 import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
+import http from "http";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import connectDB from "./config/db.js";
+import { Server } from "socket.io";
 
-// Import routes
+import { connectDB } from "./config/db.js";
+import { registerShelterSocket } from "./sockets/shelter.socket.js";
+
+// Routes
+import adminHelpRoutes from "./routes/adminHelpRoutes.js";
+import adminNgoRoutes from "./routes/adminNgoRoutes.js";
+import helpRoutes from "./routes/helpRoutes.js";
+import weatherRoutes from "./routes/weatherRoutes.js";
+
+import authRoutes from "./routes/authRoutes.js";
+import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRoutes.js";
+import volunteerProfileRoutes from "./routes/userManagementRoutes/volunteerProfileRoutes.js";
+import ngoProfileRoutes from "./routes/userManagementRoutes/ngoProfileRoutes.js";
+import adminUserRoutes from "./routes/userManagementRoutes/adminUserRoutes.js";
+import shelterRouter from "./routes/shelterRoutes.js";
+import geoRoutes from "./routes/geoRoutes.js";
+import disastersRoutes from "./routes/disastersRoutes.js";
+
 import missingPersonRoutes from "./routes/missingPersonRoutes.js";
 import socketRoutes from "./routes/socketRoutes.js";
+import socketService from './services/socketService.js';
 
-dotenv.config();
+
+dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
+
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined");
+  process.exit(1);
+}
 
 const app = express();
-const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
-
-// Client origin (frontend)
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
-// --- Socket.IO Setup ---
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*",  // Allow all origins for testing
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true,
-        allowedHeaders: ["*"]
-    }
+app.use(cookieParser());
+app.use(express.json({ limit: "25mb" }));
+
+const server = http.createServer(app);
+
+// ✅ Socket.IO attached to server
+const io = new Server(server, {
+  cors: {
+    origin: CLIENT_URL,
+    credentials: true,
+  },
 });
 
-// Make io accessible to routes
-app.set('io', io);
+registerShelterSocket(io);
 
-// Initialize Socket.IO service
-import socketService from './services/socketService.js';
-socketService.initialize(io);
+// ✅ make io available in controllers
+app.use("/api/shelters", (req, res, next) => {
+  req.io = io;
+  next();
+}, shelterRouter);
 
-// --- Middleware ---
-app.use(cors({
+
+// Middleware
+app.use(
+  cors({
     origin: CLIENT_URL,
-    credentials: true
-}));
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+    credentials: true,
+  })
+);
 
-// --- Routes ---
+// Routes 
+app.use("/api/auth", authRoutes);
+app.use("/api/citizen", citizenProfileRoutes);
+app.use("/api/volunteer", volunteerProfileRoutes);
+app.use("/api/ngo", ngoProfileRoutes);
+app.use("/api/adminUser", adminUserRoutes);
+
+app.use("/api/shelters", shelterRouter);
+app.use("/api/geo", geoRoutes);
+app.use("/api/disasters", disastersRoutes);
+
+
+app.use("/api/help", helpRoutes);
+app.use("/api/weather", weatherRoutes);
+app.use("/api/admin/help-requests", adminHelpRoutes);
+app.use("/api/admin/ngos", adminNgoRoutes);
+
 app.use("/api/missing-persons", missingPersonRoutes);
 app.use("/api/socket", socketRoutes);
 
-// Health check endpoint
-app.get("/api/health", (req, res) => {
-  res.json({ 
-    success: true,
-    message: "Server is running",
-    timestamp: new Date().toISOString(),
-    socketConnections: io.engine.clientsCount
-  });
-});
-
-// --- Socket.IO Connection Handler ---
-io.on("connection", (socket) => {
-    console.log(`✅ User connected: ${socket.id}`);
-    
-    // Send connection success message
-    socket.emit("connected", {
-        message: "Connected to RescueNet real-time service",
-        socketId: socket.id
-    });
-
-    // INCOMING: User requests all missing persons
-    socket.on("requestMissingPersons", () => {
-        console.log(`📡 User ${socket.id} requested missing persons list`);
-        socket.emit("requestReceived", { message: "Fetching missing persons..." });
-    });
-
-    // INCOMING: User adds a sighting
-    socket.on("addSighting", (data) => {
-        console.log(`👁️ New sighting reported by ${socket.id}:`, data);
-        // This will be handled by the service layer
-        socket.emit("sightingReceived", { message: "Sighting received" });
-    });
-
-    // INCOMING: User updates report status
-    socket.on("updateStatus", (data) => {
-        console.log(`🔄 Status update from ${socket.id}:`, data);
-        socket.emit("statusUpdateReceived", { message: "Status update received" });
-    });
-
-    // Handle disconnection
-    socket.on("disconnect", () => {
-        console.log(`❌ User disconnected: ${socket.id}`);
-    });
-});
-
-// --- Error Handling Middleware ---
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`
-  });
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || "Something went wrong!",
-    error: process.env.NODE_ENV === "development" ? err.stack : undefined
-  });
-});
-
-// --- Database Connection & Server Start ---
+// Start
 connectDB()
-    .then(() => {
-        httpServer.listen(PORT, () => {
-            console.log(`
-╔════════════════════════════════════════╗
-║   Server running on port ${PORT}        ║
-║   Environment: ${process.env.NODE_ENV || 'development'}           ║
-║   Database: Connected ✓                ║
-║   Socket.IO: Active ✓                  ║
-╚════════════════════════════════════════╝
-            `);
-        });
-    })
-    .catch((err) => {
-        console.error("Failed to connect to database:", err?.message ?? err);
-        process.exit(1);
-    });
-
-// Handle unhandled rejections
-process.on("unhandledRejection", (err) => {
-    console.error("Unhandled Promise Rejection:", err);
-    httpServer.close(() => process.exit(1));
-});
-
-export default app;
-export { io }; // Export io for use in other files
+  .then(() => {
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error(err?.message ?? err);
+    process.exit(1);
+  });

@@ -1,16 +1,10 @@
 export default {
-  testEnvironment: 'node',
-  transform: {},
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-  },
-  testMatch: ['**/__tests__/**/*.test.js', '**/?(*.)+(spec|test).js'],
-  collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/index.js',
-    '!src/config/**',
-  ],
-  coverageDirectory: 'coverage',
-  verbose: true,
-  testTimeout: 10000,
+  testEnvironment: "node",
+  testMatch: ["**/tests/unit/**/*.test.js","**/tests/apiTest/**/*.test.js"],
+  collectCoverage: true,
+  coverageDirectory: "tests/coverage",
+  reporters: [
+    "default",
+    ["jest-junit", { outputDirectory: "tests/reports", outputName: "junit.xml" }]
+  ]
 };

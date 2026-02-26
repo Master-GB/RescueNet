@@ -1,0 +1,279 @@
+{
+  "info": {
+    "name": "RescueNet - Help Request Module",
+    "_postman_id": "447883c1-3876-5952-a1d4-d95223f28b1b",
+    "description": "Postman collection for RescueNet Help Request APIs (CRUD). Auto-calculates urgency based on weather and disaster type. Supports voice messages and images as Base64.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+    },
+    {
+      "key": "helpRequestId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Help Requests",
+      "item": [
+        {
+          "name": "Create Help Request (with auto-urgency)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/help/add",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"location\": \"Downtown Area\",\n  \"realLocation\": \"Mumbai\",\n  \"contactNumber\": \"+91-9876543210\",\n  \"disasterType\": \"flood\",\n  \"message\": \"Urgent help needed. Water level rising rapidly. 5 people trapped on rooftop.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create returns 201', function () {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "const id = data?._id || data?.id;",
+                  "if (id) pm.collectionVariables.set('helpRequestId', id);",
+                  "pm.test('helpRequestId stored', function () {",
+                  "  pm.expect(pm.collectionVariables.get('helpRequestId')).to.not.be.empty;",
+                  "});",
+                  "pm.test('Urgency is auto-calculated', function () {",
+                  "  pm.expect(data.urgency).to.be.oneOf(['low', 'medium', 'high']);",
+                  "});",
+                  "pm.test('Weather condition is populated', function () {",
+                  "  pm.expect(data.weatherCondition).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Help Request with Voice Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/help/add",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sarah Johnson\",\n  \"location\": \"Riverside District\",\n  \"realLocation\": \"Kolkata\",\n  \"contactNumber\": \"+91-9123456789\",\n  \"disasterType\": \"cyclone\",\n  \"message\": \"Strong winds, roof damaged, need immediate assistance\",\n  \"voiceMessage\": {\n    \"data\": \"SGVsbG8gV29ybGQh\",\n    \"mimeType\": \"audio/mpeg\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create returns 201', function () {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Voice message is stored', function () {",
+                  "  pm.expect(data.voiceMessage).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Help Request with Images",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/help/add",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Priya Sharma\",\n  \"location\": \"Village Center\",\n  \"realLocation\": \"Patna\",\n  \"contactNumber\": \"+91-8877665544\",\n  \"disasterType\": \"flood\",\n  \"message\": \"Village submerged, 50+ people stranded on rooftops\",\n  \"images\": [\n    {\n      \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n      \"mimeType\": \"image/png\"\n    },\n    {\n      \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIgAAAABJRU5ErkJggg==\",\n      \"mimeType\": \"image/jpeg\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create returns 201', function () {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Images are stored', function () {",
+                  "  pm.expect(data.images).to.be.an('array');",
+                  "  pm.expect(data.images.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Help Requests",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/help/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Response is an array', function () {",
+                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Help Request By Id",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/help/getid/{{helpRequestId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Request has required fields', function () {",
+                  "  pm.expect(data.name).to.exist;",
+                  "  pm.expect(data.location).to.exist;",
+                  "  pm.expect(data.disasterType).to.exist;",
+                  "  pm.expect(data.urgency).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Help Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/help/update/{{helpRequestId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Situation improved, water receding. Still need supplies.\",\n  \"urgency\": \"medium\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Update returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Response contains success message', function () {",
+                  "  let data = pm.response.json();",
+                  "  pm.expect(data.message).to.include('updated');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Help Request - Add Voice Message",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/help/update/{{helpRequestId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"voiceMessage\": {\n    \"data\": \"VXBkYXRlZCB2b2ljZSBtZXNzYWdl\",\n    \"mimeType\": \"audio/webm\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Help Request - Add Images",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/help/update/{{helpRequestId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"images\": [\n    {\n      \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\",\n      \"mimeType\": \"image/png\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Help Request",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/help/delete/{{helpRequestId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Delete returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "pm.test('Response confirms deletion', function () {",
+                  "  let data = pm.response.json();",
+                  "  pm.expect(data.message).to.include('deleted');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+	"info": {
+		"_postman_id": "weather-api-collection",
+		"name": "RescueNet - Weather API",
+		"description": "Collection for testing the Weather API (Open-Meteo & OpenWeatherMap integrations).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Current Weather by City",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/weather/current?city=Colombo",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"weather",
+						"current"
+					],
+					"query": [
+						{
+							"key": "city",
+							"value": "Colombo"
+						}
+					]
+				},
+				"description": "Fetches current weather for a specific city. If using Open-Meteo, the city name will be geocoded automatically."
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('provider');",
+							"    pm.expect(jsonData).to.have.property('current');",
+							"    pm.expect(jsonData.current).to.have.property('temperature');",
+							"    pm.expect(jsonData.current).to.have.property('condition');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"response": []
+		},
+		{
+			"name": "Current Weather by Coordinates",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/weather/current?lat=6.9271&lon=79.8612",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"weather",
+						"current"
+					],
+					"query": [
+						{
+							"key": "lat",
+							"value": "6.9271"
+						},
+						{
+							"key": "lon",
+							"value": "79.8612"
+						}
+					]
+				},
+				"description": "Fetches current weather for specific latitude and longitude. This is the preferred method for Open-Meteo."
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response scales correctly with coordinates\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.provider).to.eql(\"open-meteo\");",
+							"    pm.expect(jsonData.current.temperature).to.be.a('number');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"response": []
+		},
+		{
+			"name": "Current Weather by City (Imperial Units)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/api/weather/current?city=London",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"weather",
+						"current"
+					],
+					"query": [
+						{
+							"key": "city",
+							"value": "London"
+						}
+					]
+				},
+				"description": "Ensure `WEATHER_UNITS=imperial` is set in your `.env` for Fahrenheit results."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:5000",
+			"type": "string"
+		}
+	]
+}
