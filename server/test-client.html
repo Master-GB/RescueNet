@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RescueNet - Socket.IO Test Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-indicator.connected {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .events-log {
+            grid-column: 1 / -1;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .event {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            background: #f3f4f6;
+        }
+
+        .event.new-report {
+            border-left-color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .event.status-update {
+            border-left-color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .event.person-found {
+            border-left-color: #10b981;
+            background: #d1fae5;
+        }
+
+        .event.new-sighting {
+            border-left-color: #3b82f6;
+            background: #dbeafe;
+        }
+
+        .event-type {
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .event-message {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .event-time {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat-item {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 RescueNet - Real-Time Test Client</h1>
+            <div class="status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Connecting...</span>
+                <span style="margin-left: auto;" id="socketId"></span>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>📊 Connection Info</h2>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="eventsReceived">0</div>
+                        <div class="stat-label">Events Received</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="connectionTime">--:--</div>
+                        <div class="stat-label">Connected Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🧪 Test Actions</h2>
+                <button onclick="sendTestRequest()">📡 Send Test Request</button>
+                <button onclick="requestMissingPersons()">📋 Request All Reports</button>
+                <button onclick="clearEvents()">🗑️ Clear Events Log</button>
+            </div>
+
+            <div class="card events-log">
+                <h2>📡 Real-Time Events</h2>
+                <div id="eventsContainer">
+                    <p style="color: #9ca3af; text-align: center; padding: 20px;">
+                        Waiting for events...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        // Connect to Socket.IO server
+        const socket = io('http://localhost:5000');
+
+        let eventsCount = 0;
+        let connectionStartTime = null;
+
+        // Connection successful
+        socket.on('connect', () => {
+            console.log('✅ Connected to server');
+            document.getElementById('statusIndicator').classList.add('connected');
+            document.getElementById('statusText').textContent = 'Connected';
+            document.getElementById('socketId').textContent = `ID: ${socket.id}`;
+            connectionStartTime = Date.now();
+            updateConnectionTime();
+            addEvent('CONNECTED', 'Successfully connected to RescueNet server', 'connected');
+        });
+
+        // Connection message from server
+        socket.on('connected', (data) => {
+            console.log('Server message:', data);
+        });
+
+        // INCOMING: New missing person report
+        socket.on('newMissingPerson', (data) => {
+            console.log('🚨 New missing person:', data);
+            eventsCount++;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+            addEvent('NEW REPORT', data.message, 'new-report', data);
+        });
+
+        // INCOMING: Status update
+        socket.on('statusUpdate', (data) => {
+            console.log('🔄 Status update:', data);
+            eventsCount++;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+            addEvent('STATUS UPDATE', data.message, 'status-update', data);
+        });
+
+        // INCOMING: Person found
+        socket.on('personFound', (data) => {
+            console.log('🎉 Person found:', data);
+            eventsCount++;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+            addEvent('PERSON FOUND', data.message, 'person-found', data);
+        });
+
+        // INCOMING: New sighting
+        socket.on('newSighting', (data) => {
+            console.log('👁️ New sighting:', data);
+            eventsCount++;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+            addEvent('NEW SIGHTING', data.message, 'new-sighting', data);
+        });
+
+        // INCOMING: Report deleted
+        socket.on('reportDeleted', (data) => {
+            console.log('🗑️ Report deleted:', data);
+            eventsCount++;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+            addEvent('REPORT DELETED', data.message, 'report-deleted', data);
+        });
+
+        // INCOMING: Statistics update
+        socket.on('statisticsUpdate', (data) => {
+            console.log('📊 Statistics update:', data);
+            eventsCount++;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+            addEvent('STATISTICS', 'Statistics updated', 'statistics', data);
+        });
+
+        // INCOMING: Test message
+        socket.on('testMessage', (data) => {
+            console.log('🧪 Test message:', data);
+            eventsCount++;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+            addEvent('TEST MESSAGE', data.message, 'test', data);
+        });
+
+        // Disconnection
+        socket.on('disconnect', () => {
+            console.log('❌ Disconnected from server');
+            document.getElementById('statusIndicator').classList.remove('connected');
+            document.getElementById('statusText').textContent = 'Disconnected';
+            addEvent('DISCONNECTED', 'Disconnected from server', 'disconnected');
+        });
+
+        // Add event to log
+        function addEvent(type, message, className, data = null) {
+            const container = document.getElementById('eventsContainer');
+            
+            // Remove "waiting" message if exists
+            if (container.children.length === 1 && container.children[0].tagName === 'P') {
+                container.innerHTML = '';
+            }
+
+            const event = document.createElement('div');
+            event.className = `event ${className}`;
+            event.innerHTML = `
+                <div class="event-type">${type}</div>
+                <div class="event-message">${message}</div>
+                ${data ? `<div class="event-time">${new Date(data.timestamp || Date.now()).toLocaleTimeString()}</div>` : ''}
+            `;
+            
+            container.insertBefore(event, container.firstChild);
+            
+            // Keep only last 50 events
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        // OUTGOING: Send test request
+        function sendTestRequest() {
+            socket.emit('requestMissingPersons');
+            addEvent('SENT', 'Requested missing persons list', 'sent');
+        }
+
+        // OUTGOING: Request all missing persons
+        function requestMissingPersons() {
+            socket.emit('requestMissingPersons');
+            addEvent('SENT', 'Requested all missing persons', 'sent');
+        }
+
+        // Clear events log
+        function clearEvents() {
+            document.getElementById('eventsContainer').innerHTML = `
+                <p style="color: #9ca3af; text-align: center; padding: 20px;">
+                    Waiting for events...
+                </p>
+            `;
+            eventsCount = 0;
+            document.getElementById('eventsReceived').textContent = eventsCount;
+        }
+
+        // Update connection time
+        function updateConnectionTime() {
+            if (!connectionStartTime) return;
+            
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - connectionStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('connectionTime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
