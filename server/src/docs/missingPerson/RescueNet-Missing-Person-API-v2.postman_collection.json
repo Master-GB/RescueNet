@@ -1,0 +1,444 @@
+{
+  "info": {
+    "_postman_id": "7602ff15-ff4b-4b3a-97fb-9d62e44b7adb",
+    "name": "RescueNet - Missing Person API",
+    "description": "API endpoints for reporting and managing missing persons during disasters.\n\nIncludes auto-geocoding, geospatial search, and community sightings.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52629348",
+    "_collection_link": "https://go.postman.co/collection/52629348-7602ff15-ff4b-4b3a-97fb-9d62e44b7adb?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Public Endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}?page=1&limit=10&status=Active&priority=High&city=Colombo",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "type": "text"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Results per page",
+                  "type": "text"
+                },
+                {
+                  "key": "status",
+                  "value": "Active",
+                  "description": "Filter by status",
+                  "type": "text"
+                },
+                {
+                  "key": "priority",
+                  "value": "High",
+                  "description": "Filter by priority",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "Colombo",
+                  "description": "Filter by city",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Report by ID",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/699f874d0d3a992ebdab01bf",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "path": [
+                "699f874d0d3a992ebdab01bf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/statistics",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "path": [
+                "statistics"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search by Location",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Basic validation + helpful logging for debugging 5xx responses",
+                  "let json;",
+                  "try {",
+                  "  json = pm.response.json();",
+                  "  console.log('Search by Location response JSON:', json);",
+                  "} catch (e) {",
+                  "  console.log('Search by Location response (non-JSON):', pm.response.text());",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('success === true (if present)', function () {",
+                  "  if (json && Object.prototype.hasOwnProperty.call(json, 'success')) {",
+                  "    pm.expect(json.success, 'response.success').to.eql(true);",
+                  "  } else {",
+                  "    pm.expect(true).to.eql(true); // no-op if field not present",
+                  "  }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/search-location?longitude=79.8612&latitude=6.9271&radius=10",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "path": [
+                "search-location"
+              ],
+              "query": [
+                {
+                  "key": "longitude",
+                  "value": "79.8612"
+                },
+                {
+                  "key": "latitude",
+                  "value": "6.9271"
+                },
+                {
+                  "key": "radius",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Protected Endpoints",
+      "item": [
+        {
+          "name": "Update Report (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"status\": \"Found\",\r\n  \"priority\": \"Low\",\r\n  \"circumstances\": \"Found safe at grandmother's house\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/699f8250089adb84ca298d30",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "path": [
+                "699f8250089adb84ca298d30"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Report (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"status\": \"Active\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Report",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"reportedBy\": \"Mike Wilson\",\r\n  \"location\": \"Colombo Fort Railway Station\",\r\n  \"dateTime\": \"2026-02-21T10:30:00Z\",\r\n  \"description\": \"Saw someone matching the description wearing similar clothing near platform 3\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/699f8250089adb84ca298d30",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "path": [
+                "699f8250089adb84ca298d30"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Sighting",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"reportedBy\": \"Mike Wilson\",\r\n  \"location\": \"Colombo Fort Railway Station\",\r\n  \"dateTime\": \"2026-02-21T10:30:00Z\",\r\n  \"description\": \"Saw someone matching the description wearing similar clothing near platform 3\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/699f8250089adb84ca298d30/sightings",
+              "host": [
+                "{{baseUrl}}{{apiPath}}"
+              ],
+              "path": [
+                "699f8250089adb84ca298d30",
+                "sightings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Report",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"reporterName\": \"Sarah Johnson\",\r\n    \"reporterContact\": {\r\n        \"phone\": \"0771234567\",\r\n        \"email\": \"sarah@example.com\"\r\n    },\r\n    \"fullName\": \"Emily Johnson\",\r\n    \"age\": 8,\r\n    \"gender\": \"Female\",\r\n    \"lastSeenLocation\": {\r\n        \"address\": \"Galle Face Green\",\r\n        \"city\": \"Colombo\"\r\n    },\r\n    \"geoLocation\": {\r\n        \"type\": \"Point\",\r\n        \"coordinates\": [79.8429, 6.9271]\r\n    },\r\n    \"lastSeenDate\": \"2024-06-15T10:30:00.000Z\",\r\n    \"circumstances\": \"Last seen near the beach\",\r\n    \"priority\": \"Medium\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/missing-persons",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "missing-persons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"reporterName\": \"Sarah Johnson\",\r\n  \"reporterContact\": {\r\n    \"phone\": \"0771234567\",\r\n    \"email\": \"sarah@example.com\"\r\n  },\r\n  \"fullName\": \"Emily Johnson\",\r\n  \"age\": 8,\r\n  \"gender\": \"Female\",\r\n  \"lastSeenLocation\": {\r\n    \"address\": \"Galle Face Green\",\r\n    \"city\": \"Colombo\",\r\n    \"coordinates\": {\r\n      \"type\": \"Point\",\r\n      \"coordinates\": [79.8429, 6.9271]\r\n    }\r\n  },\r\n  \"lastSeenDate\": \"2026-02-10T15:30:00Z\",\r\n  \"circumstances\": \"Last seen near the beach\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/missing-persons",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "missing-persons"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Socket.IO Endpoints",
+      "item": [
+        {
+          "name": "Socket.IO Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/socket/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "socket",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Broadcast",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"message\": \"This is a test broadcast from Postman!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/socket/test-broadcast",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "socket",
+                "test-broadcast"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "{{baseUrl}}",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}",
+          "host": [
+            "{{baseUrl}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
