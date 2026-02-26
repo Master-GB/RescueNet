@@ -2,6 +2,7 @@ import HelpRequest from "../models/HelpRequest.js";
 // Switched to unified NgoProfile model
 import NgoProfile from "../models/userProfileModel/NgoProfile.js";
 import mongoose from "mongoose";
+import { sendNgoTaskSMS } from "../services/smsService.js";
 
 /**
  * Update help request admin fields
@@ -188,6 +189,9 @@ export const assignHelpRequest = async (req, res) => {
       organization.assignedRequests.push(id);
       await organization.save();
     }
+
+    // Notify the NGO via SMS about the new task assignment
+    await sendNgoTaskSMS(organization.contactPhone, taskType || "General Relief");
 
     const updatedRequest = await HelpRequest.findById(id).populate(
       "assignments.ngoId",
