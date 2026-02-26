@@ -1,5 +1,7 @@
 import express from 'express';
 import missingPersonController from '../controllers/missingPersonController.js';
+import { protect } from '../middleware/authMiddleware.js';
+import { authorize } from '../middleware/authorizeMiddleware.js';
 import {
   createReportValidation,
   updateReportValidation,
@@ -49,15 +51,20 @@ router.get(
 // PROTECTED ROUTES
 // ==========================================
 
+// Any logged-in user can create a report
 router.post(
   '/',
+  protect,
   createReportValidation,
   handleValidationErrors,
   missingPersonController.createReport
 );
 
+// Only admin or citizen can update
 router.put(
   '/:id',
+  protect,
+  authorize('CITIZEN'),
   updateReportValidation,
   handleValidationErrors,
   missingPersonController.updateReport
@@ -65,20 +72,27 @@ router.put(
 
 router.patch(
   '/:id',
+  protect,
+  authorize('CITIZEN'),
   updateReportValidation,
   handleValidationErrors,
   missingPersonController.updateReport
 );
 
+// Only admin can delete
 router.delete(
   '/:id',
+  protect,
+  authorize('CITIZEN'),
   getByIdValidation,
   handleValidationErrors,
   missingPersonController.deleteReport
 );
 
+// Any logged-in user can add a sighting
 router.post(
   '/:id/sightings',
+  protect,
   addSightingValidation,
   handleValidationErrors,
   missingPersonController.addSighting
