@@ -39,14 +39,13 @@ class SocketController {
         });
       }
 
-      // Get io from app
-      const io = req.app.get('io');
-      
-      io.emit('testMessage', {
+      // ✅ Use socketService instead of req.app.get('io')
+      socketService.sendToRoom('/', 'testMessage', {  
         type: 'TEST',
         message: message,
         timestamp: new Date().toISOString()
       });
+      // OR just: socketService.io.emit('testMessage', {...})
 
       res.status(200).json({
         success: true,

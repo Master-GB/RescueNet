@@ -6,7 +6,7 @@ class MissingPersonController {
     try {
       const reportData = {
         ...req.body,
-        reportedBy: req.user?.id || null // Will be set properly when auth is implemented
+        reportedBy: req.user?.id
       };
 
       const report = await missingPersonService.createReport(reportData);
@@ -71,7 +71,7 @@ class MissingPersonController {
   async updateReport(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.user?.id; // Will be set properly when auth is implemented
+      const userId = req.user.id;
 
       const report = await missingPersonService.updateReport(id, req.body, userId);
 
@@ -92,7 +92,7 @@ class MissingPersonController {
   async deleteReport(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      const userId = req.user.id;
 
       const result = await missingPersonService.deleteReport(id, userId);
 
