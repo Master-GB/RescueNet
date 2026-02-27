@@ -1,0 +1,947 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "RescueNet — Admin Task Management",
+    "description": "Admin-only endpoints for managing help request lifecycle and NGO profiles in RescueNet.\n\n**Setup:**\n1. Create an environment with the variables listed below.\n2. Log in via `POST /api/auth/login` and paste the returned token into the `token` variable.\n3. Run requests in order or independently.\n\n**Required Environment Variables:**\n- `baseUrl` — e.g. `http://localhost:5000`\n- `token` — JWT from admin login\n- `helpRequestId` — ObjectId of a help request to test against\n- `ngoId` — ObjectId of an NGO profile to test against",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string",
+      "description": "Base URL of the RescueNet API server"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token obtained from POST /api/auth/login"
+    },
+    {
+      "key": "helpRequestId",
+      "value": "665f1a2b3c4d5e6f7a8b9c0d",
+      "type": "string",
+      "description": "Sample help request ObjectId — replace with a real one"
+    },
+    {
+      "key": "ngoId",
+      "value": "665a0b1c2d3e4f5a6b7c8d9e",
+      "type": "string",
+      "description": "Sample NGO profile ObjectId — replace with a real one"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Help Request Management",
+      "description": "Endpoints for triaging, verifying, assigning, and resolving citizen help requests.",
+      "item": [
+        {
+          "name": "Get All Help Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests?status=pending&urgency=high&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status: pending | verified | assigned | in-progress | resolved | rejected"
+                },
+                {
+                  "key": "urgency",
+                  "value": "high",
+                  "description": "Filter by urgency: low | medium | high"
+                },
+                {
+                  "key": "disasterType",
+                  "value": "flood",
+                  "description": "Filter by disaster type: flood | tsunami | landslide | cyclone | other",
+                  "disabled": true
+                },
+                {
+                  "key": "assignedTo",
+                  "value": "unassigned",
+                  "description": "Filter by NGO ObjectId or 'unassigned' for unassigned requests",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Results per page (default: 20)"
+                }
+              ]
+            },
+            "description": "Returns a paginated, filterable list of all help requests. Supports filtering by status, disasterType, urgency, and assignedTo NGO."
+          },
+          "response": [
+            {
+              "name": "200 OK — Paginated list",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests?status=pending&urgency=high&page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests"],
+                  "query": [
+                    { "key": "status", "value": "pending" },
+                    { "key": "urgency", "value": "high" },
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n      \"name\": \"John Silva\",\n      \"location\": \"Colombo, Sri Lanka\",\n      \"contactNumber\": \"+94771234567\",\n      \"realLocation\": \"6.9271,79.8612\",\n      \"disasterType\": \"flood\",\n      \"message\": \"Water level rising, need immediate evacuation.\",\n      \"urgency\": \"high\",\n      \"status\": \"pending\",\n      \"assignments\": [],\n      \"publishedToSocial\": false,\n      \"createdAt\": \"2026-02-20T08:30:00.000Z\",\n      \"updatedAt\": \"2026-02-20T08:30:00.000Z\"\n    }\n  ],\n  \"pagination\": {\n    \"total\": 54,\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 6\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single Help Request",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests", "{{helpRequestId}}"]
+            },
+            "description": "Returns full details of a single help request including populated NGO assignment data."
+          },
+          "response": [
+            {
+              "name": "200 OK — Full details",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n    \"name\": \"John Silva\",\n    \"location\": \"Colombo, Sri Lanka\",\n    \"contactNumber\": \"+94771234567\",\n    \"realLocation\": \"6.9271,79.8612\",\n    \"disasterType\": \"flood\",\n    \"message\": \"Water level rising, need immediate evacuation.\",\n    \"urgency\": \"high\",\n    \"status\": \"assigned\",\n    \"adminNotes\": \"Confirmed via field team.\",\n    \"assignments\": [\n      {\n        \"ngoId\": {\n          \"_id\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n          \"organizationName\": \"Relief Sri Lanka\",\n          \"type\": \"rescue\",\n          \"contactPerson\": \"Nimal Perera\",\n          \"contactPhone\": \"+94777654321\",\n          \"availabilityStatus\": \"AVAILABLE\"\n        },\n        \"taskType\": \"Flood Rescue\",\n        \"status\": \"assigned\",\n        \"assignedAt\": \"2026-02-20T09:15:00.000Z\"\n      }\n    ],\n    \"publishedToSocial\": false,\n    \"createdAt\": \"2026-02-20T08:30:00.000Z\",\n    \"updatedAt\": \"2026-02-20T09:15:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Invalid ID",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/invalid-id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "invalid-id"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid help request ID\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/000000000000000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "000000000000000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Help request not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Help Request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in-progress\",\n  \"adminNotes\": \"NGO team is on-site. Monitoring closely.\",\n  \"publishedToSocial\": true\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests", "{{helpRequestId}}"]
+            },
+            "description": "Updates admin-controlled fields. Do NOT send `assignedTo` or `assignments` — use the dedicated assign/unassign endpoints instead.\n\nAllowed status values: `pending`, `verified`, `assigned`, `in-progress`, `resolved`, `rejected`.\n\nSetting `status: 'resolved'` auto-sets `resolvedAt`."
+          },
+          "response": [
+            {
+              "name": "200 OK — Updated",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in-progress\",\n  \"adminNotes\": \"NGO team is on-site. Monitoring closely.\",\n  \"publishedToSocial\": true\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Help request updated successfully\",\n  \"data\": {\n    \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n    \"status\": \"in-progress\",\n    \"adminNotes\": \"NGO team is on-site. Monitoring closely.\",\n    \"publishedToSocial\": true\n  }\n}"
+            },
+            {
+              "name": "400 — Assignment fields blocked",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"assignments\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Use the assign/unassign endpoints to modify assignments\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Help Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "verify"]
+            },
+            "description": "Marks a help request as verified. Only requests currently in `pending` status can be verified."
+          },
+          "response": [
+            {
+              "name": "200 OK — Verified",
+              "originalRequest": {
+                "method": "POST",
+                "body": { "mode": "raw", "raw": "{}" },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/verify",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "verify"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Help request verified\",\n  \"data\": {\n    \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n    \"status\": \"verified\"\n  }\n}"
+            },
+            {
+              "name": "400 — Not in pending status",
+              "originalRequest": {
+                "method": "POST",
+                "body": { "mode": "raw", "raw": "{}" },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/verify",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "verify"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot verify request with status: assigned\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reject Help Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Duplicate submission. Original request #665f1a2b is already being processed.\"\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "reject"]
+            },
+            "description": "Rejects a help request. The `reason` field is required and cannot be empty."
+          },
+          "response": [
+            {
+              "name": "200 OK — Rejected",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Duplicate submission.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/reject",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "reject"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Help request rejected\",\n  \"data\": {\n    \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n    \"status\": \"rejected\",\n    \"rejectionReason\": \"Duplicate submission.\"\n  }\n}"
+            },
+            {
+              "name": "400 — Reason missing",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/reject",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "reject"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Rejection reason is required\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Assign Help Request to NGO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationId\": \"{{ngoId}}\",\n  \"taskType\": \"Flood Rescue\"\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "assign"]
+            },
+            "description": "Assigns a help request to an approved, non-OFFLINE NGO. Triggers an SMS notification to the NGO. Setting `taskType` is optional (defaults to 'General Relief'). Multiple NGOs can be assigned; duplicate assignments are silently skipped."
+          },
+          "response": [
+            {
+              "name": "200 OK — Assigned",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"organizationId\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n  \"taskType\": \"Flood Rescue\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/assign",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "assign"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Help request assigned to Relief Sri Lanka\",\n  \"data\": {\n    \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n    \"status\": \"assigned\",\n    \"assignments\": [\n      {\n        \"ngoId\": {\n          \"_id\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n          \"organizationName\": \"Relief Sri Lanka\",\n          \"type\": \"rescue\",\n          \"contactPerson\": \"Nimal Perera\",\n          \"contactPhone\": \"+94777654321\",\n          \"availabilityStatus\": \"AVAILABLE\"\n        },\n        \"taskType\": \"Flood Rescue\",\n        \"status\": \"assigned\",\n        \"assignedAt\": \"2026-02-20T09:15:00.000Z\"\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "400 — NGO unapproved",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"organizationId\": \"665a0b1c2d3e4f5a6b7c8d9e\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/assign",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "assign"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot assign to unapproved organization\"\n}"
+            },
+            {
+              "name": "400 — NGO offline",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"organizationId\": \"665a0b1c2d3e4f5a6b7c8d9e\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/assign",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "assign"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Organization is currently OFFLINE\",\n  \"warning\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "Unassign Help Request from NGO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationId\": \"{{ngoId}}\"\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/unassign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "unassign"]
+            },
+            "description": "Removes an NGO's assignment from a help request. If this was the last assignment and status was 'assigned', status reverts to 'verified'. Also removes the request from the NGO's assignedRequests and acceptedRequests lists."
+          },
+          "response": [
+            {
+              "name": "200 OK — Unassigned",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"organizationId\": \"665a0b1c2d3e4f5a6b7c8d9e\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/unassign",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "unassign"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Help request unassigned successfully\",\n  \"data\": {\n    \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n    \"status\": \"verified\",\n    \"assignments\": []\n  }\n}"
+            },
+            {
+              "name": "404 — Assignment not found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"organizationId\": \"665a0b1c2d3e4f5a6b7c8d9e\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/unassign",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "unassign"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Assignment not found for organization\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resolve Help Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adminNotes\": \"All affected residents evacuated. Situation stable.\"\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/resolve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "resolve"]
+            },
+            "description": "Marks a help request as resolved. Sets resolvedAt to now. Increments completedTasks on all NGOs whose assignment status is 'completed'. The adminNotes field is optional."
+          },
+          "response": [
+            {
+              "name": "200 OK — Resolved",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"adminNotes\": \"All affected residents evacuated. Situation stable.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/help-requests/{{helpRequestId}}/resolve",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "help-requests", "{{helpRequestId}}", "resolve"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Help request marked as resolved\",\n  \"data\": {\n    \"_id\": \"665f1a2b3c4d5e6f7a8b9c0d\",\n    \"status\": \"resolved\",\n    \"resolvedAt\": \"2026-02-20T14:00:00.000Z\",\n    \"adminNotes\": \"All affected residents evacuated. Situation stable.\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NGO Management",
+      "description": "Endpoints for registering, listing, updating, and deleting NGO profiles.",
+      "item": [
+        {
+          "name": "Register New NGO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userEmail\": \"contact@reliefsl.org\",\n  \"organizationName\": \"Relief Sri Lanka\",\n  \"registrationNumber\": \"NGO-LK-2024-0091\",\n  \"type\": \"rescue\",\n  \"contactPerson\": \"Nimal Perera\",\n  \"officialEmail\": \"official@reliefsl.org\",\n  \"contactPhone\": \"+94777654321\",\n  \"address\": {\n    \"street\": \"12 Galle Rd\",\n    \"city\": \"Colombo\",\n    \"province\": \"Western\",\n    \"postalCode\": \"00300\"\n  },\n  \"services\": [\"FOOD\", \"TRANSPORT\"],\n  \"serviceDistricts\": [\"Colombo\", \"Gampaha\"]\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/ngos/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "ngos", "register"]
+            },
+            "description": "Creates an NGO profile linked to an existing user account (found by userEmail). The NGO is auto-approved; the linked user's role is set to 'NGO'. Required: userEmail, registrationNumber, contactPhone."
+          },
+          "response": [
+            {
+              "name": "201 Created — NGO registered",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userEmail\": \"contact@reliefsl.org\",\n  \"organizationName\": \"Relief Sri Lanka\",\n  \"registrationNumber\": \"NGO-LK-2024-0091\",\n  \"type\": \"rescue\",\n  \"contactPerson\": \"Nimal Perera\",\n  \"officialEmail\": \"official@reliefsl.org\",\n  \"contactPhone\": \"+94777654321\",\n  \"address\": {\n    \"street\": \"12 Galle Rd\",\n    \"city\": \"Colombo\",\n    \"province\": \"Western\",\n    \"postalCode\": \"00300\"\n  },\n  \"services\": [\"FOOD\", \"TRANSPORT\"],\n  \"serviceDistricts\": [\"Colombo\", \"Gampaha\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "register"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"NGO registered successfully\",\n  \"data\": {\n    \"ngo\": {\n      \"_id\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n      \"userId\": \"664e9f8a7b6c5d4e3f2a1b0c\",\n      \"organizationName\": \"Relief Sri Lanka\",\n      \"registrationNumber\": \"NGO-LK-2024-0091\",\n      \"type\": \"rescue\",\n      \"contactPhone\": \"+94777654321\",\n      \"approvalStatus\": \"approved\",\n      \"verifiedByAdmin\": true,\n      \"availabilityStatus\": \"AVAILABLE\",\n      \"services\": [\"FOOD\", \"TRANSPORT\"],\n      \"serviceDistricts\": [\"Colombo\", \"Gampaha\"],\n      \"createdAt\": \"2026-02-20T07:00:00.000Z\"\n    },\n    \"userRole\": \"NGO\"\n  }\n}"
+            },
+            {
+              "name": "400 — User already has an NGO profile",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userEmail\": \"contact@reliefsl.org\",\n  \"registrationNumber\": \"NGO-LK-2024-0091\",\n  \"contactPhone\": \"+94777654321\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "register"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"This user is already linked to an NGO profile.\"\n}"
+            },
+            {
+              "name": "404 — User not found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userEmail\": \"notfound@example.com\",\n  \"registrationNumber\": \"NGO-LK-2024-0092\",\n  \"contactPhone\": \"+94777000000\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "register"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"User with email notfound@example.com not found. Please register the user account first.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All NGOs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/ngos?approvalStatus=approved&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "ngos"],
+              "query": [
+                {
+                  "key": "approvalStatus",
+                  "value": "approved",
+                  "description": "Filter: pending | approved | rejected | suspended"
+                },
+                {
+                  "key": "availabilityStatus",
+                  "value": "AVAILABLE",
+                  "description": "Filter: AVAILABLE | BUSY | OFFLINE",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "rescue",
+                  "description": "Filter: food-bank | medical | shelter | rescue | relief | other",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "relief",
+                  "description": "Search by organization name, registration number, or email",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Results per page (default: 20)"
+                }
+              ]
+            },
+            "description": "Returns a paginated list of all NGO profiles. Supports filtering by approvalStatus, availabilityStatus, type, and a text search query (q)."
+          },
+          "response": [
+            {
+              "name": "200 OK — Paginated list",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos?approvalStatus=approved&page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos"],
+                  "query": [
+                    { "key": "approvalStatus", "value": "approved" },
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n      \"organizationName\": \"Relief Sri Lanka\",\n      \"registrationNumber\": \"NGO-LK-2024-0091\",\n      \"type\": \"rescue\",\n      \"approvalStatus\": \"approved\",\n      \"availabilityStatus\": \"AVAILABLE\",\n      \"userId\": {\n        \"_id\": \"664e9f8a7b6c5d4e3f2a1b0c\",\n        \"name\": \"Nimal Perera\",\n        \"email\": \"contact@reliefsl.org\",\n        \"role\": \"NGO\"\n      }\n    }\n  ],\n  \"pagination\": {\n    \"total\": 12,\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 2\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single NGO",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/ngos/{{ngoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "ngos", "{{ngoId}}"]
+            },
+            "description": "Returns full details of a single NGO profile, including linked user data and approving admin info."
+          },
+          "response": [
+            {
+              "name": "200 OK — Full NGO details",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/{{ngoId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "{{ngoId}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n    \"organizationName\": \"Relief Sri Lanka\",\n    \"registrationNumber\": \"NGO-LK-2024-0091\",\n    \"type\": \"rescue\",\n    \"contactPerson\": \"Nimal Perera\",\n    \"officialEmail\": \"official@reliefsl.org\",\n    \"contactPhone\": \"+94777654321\",\n    \"address\": {\n      \"street\": \"12 Galle Rd\",\n      \"city\": \"Colombo\",\n      \"province\": \"Western\",\n      \"postalCode\": \"00300\"\n    },\n    \"services\": [\"FOOD\", \"TRANSPORT\"],\n    \"serviceDistricts\": [\"Colombo\", \"Gampaha\"],\n    \"approvalStatus\": \"approved\",\n    \"availabilityStatus\": \"AVAILABLE\",\n    \"verifiedByAdmin\": true,\n    \"completedTasks\": 7,\n    \"rating\": 4.5,\n    \"userId\": {\n      \"_id\": \"664e9f8a7b6c5d4e3f2a1b0c\",\n      \"name\": \"Nimal Perera\",\n      \"email\": \"contact@reliefsl.org\",\n      \"role\": \"NGO\",\n      \"isAccountVerified\": true\n    },\n    \"approvedBy\": {\n      \"_id\": \"663d8e7f6a5b4c3d2e1f0a9b\",\n      \"name\": \"Admin User\",\n      \"email\": \"admin@rescuenet.lk\"\n    }\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/000000000000000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "000000000000000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"NGO not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update NGO",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availabilityStatus\": \"BUSY\",\n  \"notes\": \"Handling major flood relief operation in Gampaha.\"\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/ngos/{{ngoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "ngos", "{{ngoId}}"]
+            },
+            "description": "Updates allowed fields on an NGO profile. Setting approvalStatus to 'approved' auto-sets verifiedByAdmin: true and records the approving admin. Setting to 'rejected' or 'suspended' sets verifiedByAdmin: false."
+          },
+          "response": [
+            {
+              "name": "200 OK — Updated",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"availabilityStatus\": \"BUSY\",\n  \"notes\": \"Handling major flood relief operation in Gampaha.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/{{ngoId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "{{ngoId}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"NGO updated successfully\",\n  \"data\": {\n    \"_id\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n    \"availabilityStatus\": \"BUSY\",\n    \"notes\": \"Handling major flood relief operation in Gampaha.\"\n  }\n}"
+            },
+            {
+              "name": "200 OK — Suspend NGO",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"approvalStatus\": \"suspended\",\n  \"rejectionReason\": \"Violation of operational guidelines.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/{{ngoId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "{{ngoId}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"NGO updated successfully\",\n  \"data\": {\n    \"_id\": \"665a0b1c2d3e4f5a6b7c8d9e\",\n    \"approvalStatus\": \"suspended\",\n    \"verifiedByAdmin\": false,\n    \"rejectionReason\": \"Violation of operational guidelines.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete NGO",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/ngos/{{ngoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "ngos", "{{ngoId}}"]
+            },
+            "description": "Permanently deletes the NGO profile. Before deletion: removes all assignments from linked help requests, reverts orphaned help requests to 'verified', and downgrades the linked user's role from 'NGO' to 'CITIZEN'. This action is irreversible."
+          },
+          "response": [
+            {
+              "name": "200 OK — Deleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/{{ngoId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "{{ngoId}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"NGO deleted successfully\",\n  \"data\": {\n    \"id\": \"665a0b1c2d3e4f5a6b7c8d9e\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/ngos/000000000000000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "ngos", "000000000000000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"NGO not found\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

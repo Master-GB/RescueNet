@@ -1,0 +1,206 @@
+{
+  "info": {
+    "name": "RescueNet - Shelter Module",
+    "_postman_id": "336773b0-2765-4841-90c3-c94112e17d0a",
+    "description": "Postman collection for RescueNet Shelter APIs ( CRUD + search/filter/nearby). run Login first so access_token cookie is stored by Postman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+    },
+    {
+      "key": "shelterId",
+      "value": "6992e23069e4e69d97b467f9"
+    },
+    {
+      "key": "adminEmail",
+      "value": "mastergba123@gmail.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "12345678"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Admin/Volunteer/NGO) - sets cookie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login returns 200/201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200,201]);",
+                  "});",
+                  "pm.test('Set-Cookie header exists', function () {",
+                  "  pm.expect(pm.response.headers.has('Set-Cookie')).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shelters",
+      "item": [
+        {
+          "name": "Create Shelter (ADMIN/VOLUNTEER/NGO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/shelters/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Colombo Central Shelter\",\n  \"description\": \"Emergency shelter with medical support and food.\",\n  \"shelterType\": \"SCHOOL\",\n  \"images\": [\n    {\n      \"url\": \"https://example.com/shelter1.jpg\",\n      \"caption\": \"Main entrance\"\n    }\n  ],\n  \"managedBy\": [],\n  \"address\": {\n    \"street\": \"123 Main Street\",\n    \"city\": \"Colombo\",\n    \"province\": \"Western\",\n    \"postalCode\": \"00100\"\n  },\n  \"contact\": {\n    \"phone\": \"+94112223344\",\n    \"email\": \"colombo.shelter@example.com\"\n  },\n  \"location\": {\n    \"type\": \"Point\",\n    \"coordinates\": [\n      79.8612,\n      6.9271\n    ]\n  },\n  \"capacity\": {\n    \"total\": 100\n  },\n  \"occupancy\": {\n    \"current\": 20\n  },\n  \"supports\": {\n    \"disasterTypes\": [\n      \"FLOOD\",\n      \"TSUNAMI\"\n    ],\n    \"wheelchairAccess\": true,\n    \"medical\": true,\n    \"food\": true,\n    \"water\": true,\n    \"power\": true\n  },\n  \"specialSupport\": {\n    \"elderlySupport\": true,\n    \"disabilitySupport\": true,\n    \"pregnancySupport\": false,\n    \"childFriendly\": true,\n    \"petFriendly\": false\n  },\n  \"status\": \"OPEN\",\n  \"verified\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create returns 201', function () {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "const id = data?.shelter?._id || data?.shelter?.id;",
+                  "if (id) pm.collectionVariables.set('shelterId', id);",
+                  "pm.test('shelterId stored', function () {",
+                  "  pm.expect(pm.collectionVariables.get('shelterId')).to.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Shelter By Id (public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/shelters/get/{{shelterId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Shelters (public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/shelters/get-list?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Search Shelters (public) - text search",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/shelters/get-list?search=Colombo"
+          }
+        },
+        {
+          "name": "Filter Shelters (public) - supports + specialSupport",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/shelters/get-list?medical=true&food=true&wheelchairAccess=true&elderlySupport=true&childFriendly=true"
+          }
+        },
+        {
+          "name": "Nearby Shelters (public) - geo",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/shelters/get-nearby?lng=79.8612&lat=6.9271&radiusKm=3"
+          }
+        },
+        {
+          "name": "Update Shelter (ADMIN/VOLUNTEER/NGO)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/shelters/update/{{shelterId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description (Postman).\",\n  \"occupancy\": {\n    \"current\": 75\n  },\n  \"specialSupport\": {\n    \"petFriendly\": true\n  },\n  \"status\": \"OPEN\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Update returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Shelter (ADMIN only)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/shelters/delete/{{shelterId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Delete returns 200/204', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200,204]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

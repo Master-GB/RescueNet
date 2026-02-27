@@ -1,0 +1,884 @@
+{
+  "info": {
+    "name": "RescueNet - Disaster Module (USGS + FIRMS + GDACS + ReliefWeb)",
+    "description": "Disaster aggregation endpoints for map layers and heatmap-ready points.\n\nCovers:\n- /api/disasters/map (GeoJSON FeatureCollection)\n- /api/disasters/heatmap (heatmap-ready points)\n- /api/disasters/updates (ReliefWeb updates)\n\nIncludes example requests for each type: EARTHQUAKE, FIRE, FLOOD, TSUNAMI, CYCLONE, STORM, VOLCANO, DROUGHT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "start",
+      "value": "2026-02-01"
+    },
+    {
+      "key": "end",
+      "value": "2026-02-19"
+    },
+    {
+      "key": "bboxWorld",
+      "value": "-180,-90,180,90"
+    },
+    {
+      "key": "bboxSriLanka",
+      "value": "79.5,5.7,82.1,10.0"
+    },
+    {
+      "key": "minmag",
+      "value": "2.5"
+    },
+    {
+      "key": "firmsDays",
+      "value": "3"
+    },
+    {
+      "key": "limit",
+      "value": "20"
+    },
+    {
+      "key": "limitSmall",
+      "value": "5"
+    },
+    {
+      "key": "defaultQuery",
+      "value": "Sri Lanka"
+    },
+    {
+      "key": "q",
+      "value": "Sri Lanka"
+    }
+  ],
+  "item": [
+    {
+      "name": "A) Disaster Map (GeoJSON)",
+      "item": [
+        {
+          "name": "Map - EARTHQUAKE (USGS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?start={start}&end={end}&types=EARTHQUAKE&bbox={{bboxSriLanka}}&minmag={minmag}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "{{start}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{end}}"
+                },
+                {
+                  "key": "types",
+                  "value": "EARTHQUAKE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                },
+                {
+                  "key": "minmag",
+                  "value": "{{minmag}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=EARTHQUAKE. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - FIRE (FIRMS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=FIRE&bbox={{bboxSriLanka}}&days={firmsDays}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "FIRE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                },
+                {
+                  "key": "days",
+                  "value": "{{firmsDays}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=FIRE. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - FLOOD (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=FLOOD&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "FLOOD"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=FLOOD. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - TSUNAMI (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=TSUNAMI&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "TSUNAMI"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=TSUNAMI. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - CYCLONE (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=CYCLONE&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "CYCLONE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=CYCLONE. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - STORM (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=STORM&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "STORM"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=STORM. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - VOLCANO (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=VOLCANO&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "VOLCANO"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=VOLCANO. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - DROUGHT (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=DROUGHT&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "DROUGHT"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=DROUGHT. Use bboxSriLanka or bboxWorld."
+          }
+        },
+        {
+          "name": "Map - WILDFIRE (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/map?types=WILDFIRE&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "map"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "WILDFIRE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns GeoJSON FeatureCollection for type=FIRE. Use bboxSriLanka or bboxWorld."
+          }
+        }
+      ]
+    },
+    {
+      "name": "B) Disaster Heatmap (Points)",
+      "item": [
+        {
+          "name": "Heatmap - EARTHQUAKE (USGS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?start={start}&end={end}&types=EARTHQUAKE&bbox={{bboxSriLanka}}&minmag={minmag}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "{{start}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{end}}"
+                },
+                {
+                  "key": "types",
+                  "value": "EARTHQUAKE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                },
+                {
+                  "key": "minmag",
+                  "value": "{{minmag}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=EARTHQUAKE. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - FIRE (FIRMS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=FIRE&bbox={{bboxSriLanka}}&days={firmsDays}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "FIRE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                },
+                {
+                  "key": "days",
+                  "value": "{{firmsDays}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=FIRE. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - FLOOD (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=FLOOD&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "FLOOD"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=FLOOD. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - TSUNAMI (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=TSUNAMI&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "TSUNAMI"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=TSUNAMI. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - CYCLONE (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=CYCLONE&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "CYCLONE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=CYCLONE. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - STORM (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=STORM&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "STORM"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=STORM. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - VOLCANO (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=VOLCANO&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "VOLCANO"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=VOLCANO. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - DROUGHT (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=DROUGHT&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "DROUGHT"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=DROUGHT. Each point has lat,lng,intensity,type,meta."
+          }
+        },
+        {
+          "name": "Heatmap - WILDFIRE (GDACS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/heatmap?types=FIRE&bbox={{bboxSriLanka}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "types",
+                  "value": "WILDFIRE"
+                },
+                {
+                  "key": "bbox",
+                  "value": "{{bboxSriLanka}}"
+                }
+              ]
+            },
+            "description": "Returns heatmap-ready points for type=FIRE. Each point has lat,lng,intensity,type,meta."
+          }
+        }
+      ]
+    },
+    {
+      "name": "C) Disaster Updates (Get Current Updates from ReliefWeb)",
+      "item": [
+        {
+          "name": "Updates - Default Country (Sri Lanka)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q={{defaultQuery}}&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{defaultQuery}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
+            },
+            "description": "Fetch latest disaster updates for Sri Lanka with default limit."
+          }
+        },
+        {
+          "name": "Updates - Small Limit (5 items)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q={{defaultQuery}}&limit={{limitSmall}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{defaultQuery}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limitSmall}}"
+                }
+              ]
+            },
+            "description": "Fetch limited number of disaster updates (limit=5)."
+          }
+        },
+        {
+          "name": "Updates - Different Country (India)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q=India&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "India"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
+            },
+            "description": "Fetch disaster updates for India."
+          }
+        },
+        {
+          "name": "Updates - Broad Keyword (Flood)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q=Flood&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Flood"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
+            },
+            "description": "Fetch disaster updates filtered by keyword 'Flood'."
+          }
+        },
+        {
+          "name": "Updates - Multiple Query Parameter ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/disasters/updates?q=Sri Lanka AND Flood&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "disasters",
+                "updates"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                },
+                {
+                  "key": "q",
+                  "value": "Sri Lanka AND Flood"
+                }
+              ]
+            },
+            "description": "ReliefWeb supports text-based searching, so can simply combine the words to search for multiple terms."
+          }
+        }
+      ]
+    }
+  ]
+}
