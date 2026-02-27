@@ -216,7 +216,7 @@ const MissingPerson = mongoose.model('MissingPerson', missingPersonSchema);
 
 // Force index creation on startup
 MissingPerson.createIndexes()
-  .then(() => console.log('✅ Missing Person indexes created'))
+  .then(() => console.log(''))
   .catch(err => console.error('❌ Error creating indexes:', err));
 
 export default MissingPerson;

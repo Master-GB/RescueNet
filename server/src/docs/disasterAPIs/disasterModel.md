@@ -46,37 +46,6 @@ This module aggregates **free third‑party disaster data** into consistent form
 
 ---
 
-## 3) Recommended folder structure
-
-```
-server/src/
-  controllers/
-    disastersController.js
-  routes/
-    disastersRoutes.js
-  services/
-    disasters/
-      usgs.service.js
-      firms.service.js
-      gdacs.rss.service.js
-      reliefweb.service.js
-      normalize.js
-  lib/
-    cache.js
-    bbox.js
-    httpClient.js
-
-server/docs/
-  disasters/
-    disasterModule.md
-    postman_collection.json
-
-server/tests/
-    disasterController.test.js
-```
-
----
-
 ## 4) Environment variables
 
 ### For FIRE

@@ -174,7 +174,7 @@ Designed to assist communities during disasters.
 | Category | Technologies |
 |---------|--------------|
 | **Backend** | Node.js, Express.js, MongoDB, Mongoose, Socket.IO, NodeCache, Axios, Cookie Parser |
-| **Backend External APIs** | USGS Earthquake API, NASA FIRMS API, GDACS RSS, ReliefWeb API, OSRM Routing API, NodeMailer, OpenWeather / Open-Meteo,  Hugging Face Inference API, Google Translate API, Notify.lk SMS Gateway, OpenStreetMap Nominatim |
+| **Backend External APIs** | USGS Earthquake API, NASA FIRMS API, GDACS RSS, ReliefWeb API, OSRM Routing API, NodeMailer, OpenWeather / Open-Meteo,  Hugging Face Inference API, Google Translate API, Notify.lk SMS Gateway, OpenStreetMap Nominatim, Cloudinary |
 | **Frontend** |  |
 | **Frontend External APIs** |  |
 
@@ -225,6 +225,7 @@ Designed to assist communities during disasters.
         ├── jest.config.js
         ├── jest.help-loc.config.js
         ├── package-lock.json
+        ├── .env.example
         └── package.json
     
 ------------------------------------------------------------------------
@@ -294,6 +295,11 @@ Create `.env` file inside `server/`
     NOTIFY_USER_ID=your_user_id
     NOTIFY_API_KEY=your_sms_key
     NOTIFY_SENDER_ID=NotifyDEMO
+
+    # Cloudinary Credentials
+    CLOUDINARY_CLOUD_NAME=dszbqdw4l
+    CLOUDINARY_API_KEY=your_clodinary_id
+    CLOUDINARY_API_SECRET=your_secret_key
 ```
     
 ## 4️⃣ Start Server

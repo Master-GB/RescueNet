@@ -41,7 +41,6 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [CLIENT_URL];
 
 app.use(cookieParser());
 app.use(express.json({ limit: "25mb" }));
@@ -96,6 +95,7 @@ app.use("/api/missing-persons", missingPersonRoutes);
 app.use("/api/socket", socketRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/donations", donationRoutes);
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running" });

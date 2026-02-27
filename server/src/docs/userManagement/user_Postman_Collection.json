@@ -142,7 +142,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"skills\": [\n    \"FIRST_AID\",\n    \"LOGISTICS\"\n  ],\n  \"serviceDistricts\": [\n    \"Colombo\",\n    \"Gampaha\"\n  ],\n  \"availabilityStatus\": \"OFFLINE\"\n}"
+              "raw": "{\n \"phone\": \"0772128963\", \n \"skills\": [\n    \"FIRST_AID\",\n    \"LOGISTICS\"\n  ],\n  \"serviceDistricts\": [\n    \"Colombo\",\n    \"Gampaha\"\n  ],\n  \"availabilityStatus\": \"OFFLINE\"\n}"
             }
           },
           "response": []
