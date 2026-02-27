@@ -330,16 +330,23 @@ export const deleteNgo = async (req, res) => {
       });
     }
 
-    // Un-assign all help requests that referenced this NGO
-    await HelpRequest.updateMany(
-      { assignedTo: ngo._id },
-      {
-        $set: {
-          assignedTo: null,
-          status: "verified",
-        },
-      }
+    const impactedRequests = await HelpRequest.find(
+      { "assignments.ngoId": ngo._id },
+      { _id: 1 }
     );
+    const impactedIds = impactedRequests.map((request) => request._id);
+
+    if (impactedIds.length > 0) {
+      await HelpRequest.updateMany(
+        { _id: { $in: impactedIds } },
+        { $pull: { assignments: { ngoId: ngo._id } } }
+      );
+
+      await HelpRequest.updateMany(
+        { _id: { $in: impactedIds }, assignments: { $size: 0 }, status: "assigned" },
+        { $set: { status: "verified" } }
+      );
+    }
 
     if (ngo.userId) {
       const linkedUser = await User.findById(ngo.userId);

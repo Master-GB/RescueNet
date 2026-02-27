@@ -39,10 +39,12 @@ await jest.unstable_mockModule("../../../models/user.js", () => ({
   },
 }));
 
+const helpRequestFindMock = jest.fn();
 const helpRequestUpdateManyMock = jest.fn();
 
 await jest.unstable_mockModule("../../../models/HelpRequest.js", () => ({
   default: {
+    find: helpRequestFindMock,
     updateMany: helpRequestUpdateManyMock,
   },
 }));
@@ -196,15 +198,22 @@ describe("adminNgoController", () => {
       ngoFindByIdMock.mockResolvedValue({ _id: "ngo1", userId: "u1" });
       userFindByIdMock.mockResolvedValue({ role: "NGO", save: userSaveMock });
 
+      helpRequestFindMock.mockResolvedValue([{ _id: "h1" }]);
       helpRequestUpdateManyMock.mockResolvedValue({});
       ngoFindByIdAndDeleteMock.mockResolvedValue({});
 
       const res = mockRes();
       await deleteNgo({ params: { id: "ngo1" } }, res);
 
-      expect(helpRequestUpdateManyMock).toHaveBeenCalledWith(
-        { assignedTo: "ngo1" },
-        { $set: { assignedTo: null, status: "verified" } }
+      expect(helpRequestUpdateManyMock).toHaveBeenNthCalledWith(
+        1,
+        { _id: { $in: ["h1"] } },
+        { $pull: { assignments: { ngoId: "ngo1" } } }
+      );
+      expect(helpRequestUpdateManyMock).toHaveBeenNthCalledWith(
+        2,
+        { _id: { $in: ["h1"] }, assignments: { $size: 0 }, status: "assigned" },
+        { $set: { status: "verified" } }
       );
       expect(userSaveMock).toHaveBeenCalled();
       expect(ngoFindByIdAndDeleteMock).toHaveBeenCalledWith("ngo1");
