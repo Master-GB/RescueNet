@@ -1,29 +1,25 @@
 # 🌍 RescueNet -- Disaster Response & Emergency Coordination Platform
 
-```{=html}
 <p align="center">
-```
-`<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg" width="80"/>`{=html}
-`<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/express/express-original.svg" width="80"/>`{=html}
-`<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original-wordmark.svg" width="80"/>`{=html}
-`<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original-wordmark.svg" width="80"/>`{=html}
-`<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="80"/>`{=html}
-```{=html}
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg" width="80"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/express/express-original.svg" width="80"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original-wordmark.svg" width="80"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original-wordmark.svg" width="80"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="80"/>
 </p>
-```
 
 ------------------------------------------------------------------------
 
 # 📌 Project Overview
 
-**RescueNet** is a full-stack MERN-based disaster response and emergency
-coordination system developed under **UN SDG 11 -- Sustainable Cities
-and Communities**.
+**RescueNet** is a MERN-based disaster response and emergency coordination platform developed under **UN SDG 11 - Sustainable Cities and Communities**. 
+It integrates real-time disaster intelligence, shelter management, SOS help requests, NGO coordination, routing, and missing person reporting into a unified system designed to improve disaster resilience and response efficiency.
 
-The platform integrates disaster intelligence, emergency shelter
-management, SOS help requests, NGO coordination, missing person
-tracking, real-time notifications, routing, and geospatial analytics
-into a unified system.
+The platform leverages global APIs (USGS, NASA FIRMS, GDACS, ReliefWeb), geospatial indexing, AI-powered triaging, and real-time communication technologies to deliver situational awareness, resource coordination, and structured emergency workflows. Its modular backend architecture ensures scalability, security, and maintainability, making it suitable for real-world deployment in disaster-prone regions.
 
 
 ------------------------------------------------------------------------
@@ -39,17 +35,17 @@ into a unified system.
 -   Role-based access control (ADMIN, CITIZEN, VOLUNTEER, NGO)
 -   Admin account lifecycle management
 
-📄 See detailed documentation: - [Authentication Module Documentation](server/src/docs/auth/auth.md)
+📄 See detailed backend documentation: - [Authentication Module Documentation](server/src/docs/auth/auth.md)
 
 ------------------------------------------------------------------------
-# 👥 User Management Module
+## 👥 User Management Module
 
 -  Each user(CITIZEN, NGO, VOLUNTEER) can create their profile
 -  Each USER can Update their Infomation and can Delete Profile
 -  ADMIN can verfiry NGO and VOLUNTEER account
 -  ADMIN can any USER except other ADMIN
 
-📄 See detailed documentation: - [UserManagement Module Documentation](server/src/docs/usermanagement/user-management.md)
+📄 See detailed backend documentation: - [UserManagement Module Documentation](server/src/docs/userManagement/user-management.md)
 
 ------------------------------------------------------------------------
 
@@ -62,7 +58,7 @@ into a unified system.
 -   Advanced filtering (medical, wheelchair, food, power, etc.)
 -   Real-time Socket.IO updates for shelter changes
 
-📄 See detailed documentation: - [Shelter Module Documentation](server/src/docs/shelter/shelter.md)
+📄 See detailed backend documentation: - [Shelter Module Documentation](server/src/docs/shelter/shelter.md)
 
 ------------------------------------------------------------------------
 
@@ -74,7 +70,7 @@ into a unified system.
 -   Bounding box support (Sri Lanka & global)
 -   Map-ready GeoJSON responses
 
-📄 See detailed documentation: - [Geo Module Documentation](server/src/docs/geoLocation/geo-module.md)
+📄 See detailed backend documentation: - [Geo Module Documentation](server/src/docs/geoLocation/geo-module.md)
 
 ------------------------------------------------------------------------
 
@@ -96,7 +92,7 @@ filtering - Global & Sri Lanka coverage
 -   SMS alerts via Notify.lk API
 -   Web Based Alert
   
-📄 See detailed documentation: - [Disaster Module Documentation](server/src/docs/disasterAPIs/disasterModel.md)
+📄 See detailed backend documentation: - [Disaster Module Documentation](server/src/docs/disasterAPIs/disasterModel.md)
 
 ------------------------------------------------------------------------
 
@@ -116,7 +112,7 @@ disaster situations.
 -   Administrative task escalation
 -   Automated urgency scoring
     
-📄 See detailed documentation: - [Help_Request Module Documentation](server/src/docs/help-request/help-request-api.md)
+📄 See detailed backend documentation: - [Help_Request Module Documentation](server/src/docs/help-request/help-request-api.md)
 
 ------------------------------------------------------------------------
 
@@ -128,7 +124,6 @@ Provides a structured coordination layer between admins and NGOs.
 
 -   Register and promote users to NGO role
 -   Approve / Reject / Suspend NGOs
--   Assign help requests to NGOs
 -   Manage help request lifecycle
 -   Track admin notes and rejection reasons
 -   Monitor NGO performance metrics
@@ -136,18 +131,26 @@ Provides a structured coordination layer between admins and NGOs.
 
 ### NGO and Volunteer Capabilities
 
--   View assigned tasks dashboard
+-   View accepted tasks dashboard
 -   Accept / Decline assignments
 -   Update task progress (In Progress → Completed)
 -   Track performance statistics
 -   Automatic resolution handling when all assignments complete
 
-### Notifications
+📄 See detailed documentation(For ADMIN): - [TaskManagement Module Documentation](server/src/docs/task-management/admin-task-management/admin-taskManagement.md) <br/>
+📄 See detailed backend documentation(For NGO/VOLUNTEER): - [TaskManagement Module Documentation](server/src/docs/task-management/ngo-task-management/ngo-taskManagement.md)
 
--   SMS alerts via Notify.lk API
--   Email notifications via Nodemailer
+------------------------------------------------------------------------
 
-📄 See detailed documentation: - [TaskManagement Module Documentation](server/src/docs/taskManagement/task-management.md)
+## 🎯 Relief Campaigns Module  
+
+  - Campaign creation & publishing (ADMIN / NGO)
+  - Needs & inventory tracking
+  - Donation pledges & confirmations
+  - Campaign map visibility
+  - Filtering & discovery
+
+ 📄 See detailed backend documentation: - [Campaign Module Documentation](server/src/docs/campaignsManagement/campaign-management.md)
 
 ------------------------------------------------------------------------
 
@@ -162,7 +165,7 @@ Designed to assist communities during disasters.
 -   Geospatial search for proximity-based filtering
 -   Live case statistics dashboard
 
-📄 See detailed documentation: - [Missing-Person Module Documentation](server/src/docs/missingPerson/missingPerson.md)
+📄 See detailed backend documentation: - [Missing-Person Module Documentation](server/src/docs/missingPerson/missingPerson.md)
 
 ------------------------------------------------------------------------
 
@@ -177,7 +180,7 @@ Designed to assist communities during disasters.
 
 ---
 
-# 🧩 Other Technologies (Categorized)
+# 🧩 Other Technologies 
 
 ## Security & Auth
 - JWT Authentication (signed tokens)
@@ -237,10 +240,11 @@ Designed to assist communities during disasters.
 
     npm install
 
-## 3️⃣ Environment Variables
+## 3️⃣ Backend Environment Variables
 
 Create `.env` file inside `server/`
 
+  ```env
     PORT=5000
     DM_URL=your_mongodb_connection_string
     CLIENT_URL=http://localhost:5173
@@ -286,43 +290,54 @@ Create `.env` file inside `server/`
     
     HUGGINGFACE_API_KEY=your_hf_key
     
-    GOOGLE_TRANSLATE_API_KEY=your_translate_key
+    # SMS provider Notify.lk
+    NOTIFY_USER_ID=your_user_id
+    NOTIFY_API_KEY=your_sms_key
+    NOTIFY_SENDER_ID=NotifyDEMO
+```
     
-    NOTIFY_LK_API_KEY=your_sms_key
-
 ## 4️⃣ Start Server
 
     npm run dev
 
 ------------------------------------------------------------------------
 
-# 🧪 Testing
+# 🧪 Backend Testing
 
 -   Jest unit testing
 -   Controller & service mocking
 -   Postman collections available for:
-    -   Authentication → See detailed documentation: - [Authentication Postman Collection](server/src/docs/auth/auth_Postman_Collection.json)
-    -   UserMangemnet → See detailed documentation: - [UserManagement Postman Collection](server/src/docs/usermanagement/user_Postman_Collection.json)
-    -   Shelter → See detailed documentation: - [Shelter Postman Collection](server/src/docs/shelter/shelter_Postment_Collection.json)
-    -   Geo APIs → See detailed documentation: - [Geo Postman Collection](server/src/docs/geoLocation/geo_Postment_Collection.json)
-    -   Disaster APIs → See detailed documentation: - [Disaster Postman Collection](server/src/docs/disasterAPIs/disaster_Postment_Collection.json)
-    -   Help Request → See detailed documentation: - [Help_Request Postman Collection](server/src/docs/help-request/Postman_Collection.json)
-    -   weather API → See detailed documentation: - [Help_Request Postman Collection](server/src/docs/help-request/_Postman_Collection.json)
-    -   Missing person → See detailed documentation: - [Missing-Person Postman Collection](server/src/docs/missingPerson/RescueNet-Missing-Person-API-v2.postman_collection.json)
-    -   Task Management → See detailed documentation: - [TaskManagement Postman Collection](server/src/docs/taskManagement/task-management.json)
+    -   Authentication → See json documentation: - [Authentication Postman Collection](server/src/docs/auth/auth_Postman_Collection.json)
+    -   UserMangemnet → See json documentation: - [UserManagement Postman Collection](server/src/docs/userManagement/user_Postman_Collection.json)
+    -   Shelter → See json documentation: - [Shelter Postman Collection](server/src/docs/shelter/shelter_Postmen_Collection.json)
+    -   Geo APIs → See json documentation: - [Geo Postman Collection](server/src/docs/geoLocation/geo_Postment_collection.json)
+    -   Disaster APIs → See json documentation: - [Disaster Postman Collection](server/src/docs/disasterAPIs/disaster_Postment_collection.json)
+    -   Help Request → See json documentation: - [Help_Request Postman Collection](server/src/docs/help-request/Postman_Collection.json)
+    -   weather API → See json documentation: - [Help_Request Postman Collection](server/src/docs/weatherAPI/Postman_Collection.json)
+    -   Missing person → See json documentation: - [Missing-Person Postman Collection](server/src/docs/missingPerson/RescueNet-Missing-Person-API-v2.postman_collection.json)
+    -   Task Management(for ADMIN) → See detailed documentation: - [TaskManagement Postman Collection](server/src/docs/task-management/admin-task-management/Postman_Collection.json)
+    -   Task Management(for NGO/VOLUNTEER) → See detailed documentation: - [TaskManagement Postman Collection](server/src/docs/task-management/ngo-task-management/Postman_Collection.json)
+    -   Campaign Management → See detailed documentation: - [Campaign Postman Collection](server/src/docs/campaignsManagement/campaign_Postman_Collection.json)
+ -  For run Test;
+    -  Run all the test `npm test`
+    -  Run Unit test `npm test:unit`
+    -  Run API test `npm test:api`
 
 ------------------------------------------------------------------------
 
-# 📚 Documentation Links
+# 📚 Backend Documentation Links
 
- ### 🔹 Authentication module → See detailed documentation: - [Authentication Module Documentation](server/src/docs/auth/auth.md)
- ### 🔹 UserManagement module → See detailed documentation: - [UserManagement Module Documentation](server/src/docs/usermanagement/user-management.md)
- ### 🔹 Geo Module → See detailed documentation: - [Geo Module Documentation](server/src/docs/geoLocation/geo-module.md)
- ### 🔹 Disaster Module → See detailed documentation: - [Disaster Module Documentation](server/src/docs/disasterAPIs/disasterModel.md)
- ### 🔹 Shelter Module → See detailed documentation: - [Shelter Module Documentation](server/src/docs/shelter/shelter.md)
- ### 🔹 Help Request Module → See detailed documentation: - [Help_Request Module Documentation](server/src/docs/help-request/help-request-api.md)
- ### 🔹 Task Management Module → See detailed documentation: - [TaskManagement Module Documentation](server/src/docs/taskManagement/task-management.md)
- ### 🔹 Missing Person Module → See detailed documentation: - [Missing-Person Module Documentation](server/src/docs/missingPerson/missingPerson.md)
+ #### 🔹 Authentication module → See detailed documentation: - [Authentication Module Documentation](server/src/docs/auth/auth.md)
+ #### 🔹 UserManagement module → See detailed documentation: - [UserManagement Module Documentation](server/src/docs/userManagement/user-management.md)
+ #### 🔹 Geo Module → See detailed documentation: - [Geo Module Documentation](server/src/docs/geoLocation/geo-module.md)
+ #### 🔹 Disaster Module → See detailed documentation: - [Disaster Module Documentation](server/src/docs/disasterAPIs/disasterModel.md)
+ #### 🔹 Shelter Module → See detailed documentation: - [Shelter Module Documentation](server/src/docs/shelter/shelter.md)
+ #### 🔹 Help Request Module → See detailed documentation: - [Help_Request Module Documentation](server/src/docs/help-request/help-request-api.md)
+ #### 🔹 Task Management Module →
+   -  See detailed documentation(For ADMIN): - [TaskManagement Module Documentation](server/src/docs/task-management/admin-task-management/admin-taskManagement.md)
+   -  See detailed documentation(For NGO/VOLUNTEER): - [TaskManagement Module Documentation](server/src/docs/task-management/ngo-task-management/ngo-taskManagement.md)
+ #### 🔹 Missing Person Module → See detailed backend documentation: - [Missing-Person Module Documentation](server/src/docs/missingPerson/missingPerson.md)
+ #### 🔹 Campaign Management Module → See detailed backend documentation: - [Campaign Module Documentation](server/src/docs/campaignsManagement/campaign-management.md)
 
 ------------------------------------------------------------------------
 
