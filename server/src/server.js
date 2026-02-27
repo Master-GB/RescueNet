@@ -24,6 +24,10 @@ import shelterRouter from "./routes/shelterRoutes.js";
 import geoRoutes from "./routes/geoRoutes.js";
 import disastersRoutes from "./routes/disastersRoutes.js";
 
+import missingPersonRoutes from "./routes/missingPersonRoutes.js";
+import socketRoutes from "./routes/socketRoutes.js";
+import socketService from './services/socketService.js';
+
 
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
 
@@ -35,6 +39,7 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [CLIENT_URL];
 
 app.use(cookieParser());
 app.use(express.json({ limit: "25mb" }));
@@ -50,6 +55,7 @@ const io = new Server(server, {
 });
 
 registerShelterSocket(io);
+socketService.initialize(io);
 
 // ✅ make io available in controllers
 app.use("/api/shelters", (req, res, next) => {
@@ -83,6 +89,13 @@ app.use("/api/weather", weatherRoutes);
 app.use("/api/admin/help-requests", adminHelpRoutes);
 app.use("/api/admin/ngos", adminNgoRoutes);
 app.use("/api/ngo/help-requests", ngoHelpRoutes);
+
+app.use("/api/missing-persons", missingPersonRoutes);
+app.use("/api/socket", socketRoutes);
+// Health check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ success: true, message: "Server is running" });
+});
 
 // Start
 connectDB()

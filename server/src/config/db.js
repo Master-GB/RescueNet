@@ -20,3 +20,5 @@ export async function connectDB(dbUri = process.env.DB_URI) {
     throw new Error(`Failed to connect to MongoDB: ${msg}`, { cause: err });
   }
 }
+
+export default connectDB;

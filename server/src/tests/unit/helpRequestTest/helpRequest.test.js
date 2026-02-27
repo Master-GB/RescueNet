@@ -17,6 +17,11 @@ const findByIdAndDeleteMock = jest.fn();
 // Mock for WeatherService
 const getWeatherMock = jest.fn();
 
+// Mocks for AI Features
+const translateMock = jest.fn();
+const automaticSpeechRecognitionMock = jest.fn();
+const imageClassificationMock = jest.fn();
+
 // IMPORTANT: mock modules BEFORE importing controller
 await jest.unstable_mockModule("../../../models/HelpRequest.js", () => ({
   default: {
@@ -31,6 +36,19 @@ await jest.unstable_mockModule("../../../utils/WeatherService.js", () => ({
   default: getWeatherMock,
 }));
 
+await jest.unstable_mockModule("google-translate-api-x", () => ({
+  default: translateMock,
+}));
+
+await jest.unstable_mockModule("@huggingface/inference", () => {
+  return {
+    HfInference: jest.fn().mockImplementation(() => ({
+      automaticSpeechRecognition: automaticSpeechRecognitionMock,
+      imageClassification: imageClassificationMock,
+    })),
+  };
+});
+
 // Import controller AFTER mocks
 const {
   createHelpRequest,
@@ -41,8 +59,18 @@ const {
 } = await import("../../../controllers/helpController.js");
 
 describe("Help Request Controller - Unit Tests", () => {
+  const originalEnv = process.env;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env = { ...originalEnv, HUGGINGFACE_API_KEY: "test_key" };
+    translateMock.mockResolvedValue({ text: "translated text" });
+    automaticSpeechRecognitionMock.mockResolvedValue({ text: "transcribed text" });
+    imageClassificationMock.mockResolvedValue([{ label: "safe", score: 0.9 }]);
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
   });
 
   describe("createHelpRequest", () => {
@@ -139,6 +167,38 @@ describe("Help Request Controller - Unit Tests", () => {
         images: expect.arrayContaining([
           expect.objectContaining({ mimeType: "image/png" })
         ])
+      }));
+    });
+
+    test("should handle AI features: translation, voice transcription, and image classification safely", async () => {
+      const req = {
+        body: {
+          name: "John Doe",
+          message: "ayuda",
+          voiceMessage: { data: "YmFzZTY0ZGF0YQ==", mimeType: "audio/wav" },
+          images: [{ data: "aW1hZ2VkYXRh", mimeType: "image/png" }]
+        },
+      };
+      const res = makeRes();
+
+      getWeatherMock.mockResolvedValue("Clear");
+      translateMock.mockResolvedValue({ text: "help" });
+      automaticSpeechRecognitionMock.mockResolvedValue({ text: "i need help" });
+      imageClassificationMock.mockResolvedValue([{ label: "flood", score: 0.99 }]);
+      
+      createMock.mockResolvedValue({});
+
+      await createHelpRequest(req, res);
+
+      expect(translateMock).toHaveBeenCalledWith("ayuda", { to: 'en' });
+      expect(automaticSpeechRecognitionMock).toHaveBeenCalled();
+      expect(imageClassificationMock).toHaveBeenCalled();
+      
+      expect(createMock).toHaveBeenCalledWith(expect.objectContaining({
+        translatedMessage: "help",
+        voiceTranscription: "i need help",
+        imageLabels: ["flood"],
+        urgency: "high" // Escalate because of flood image
       }));
     });
 

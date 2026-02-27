@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Help Request API is a core feature of RescueNet that allows users to submit emergency help requests during disaster situations. The system automatically determines urgency levels based on weather conditions and disaster types, providing an intelligent response mechanism for emergency management.
+The Help Request API is a core feature of RescueNet that allows users to submit emergency help requests during disaster situations. The system automatically determines urgency levels based on real-time weather conditions, disaster types, and AI-powered image severity analysis, providing an intelligent response mechanism for emergency management.
 
 ---
 
@@ -30,16 +30,19 @@ The Help Request API is a core feature of RescueNet that allows users to submit 
 | `contactNumber`         | String        | ✓               | Contact number for follow-up                                          |
 | `disasterType`          | String (Enum) | ✓               | Type of disaster: `flood`, `tsunami`, `landslide`, `cyclone`, `other` |
 | `message`               | String        | ✓               | Detailed description of the emergency                                 |
+| `translatedMessage`     | String        | Auto-populated  | AI-translated version of the message into English                     |
 | `urgency`               | String (Enum) | Auto-calculated | Priority level: `low`, `medium`, `high`                               |
 | `weatherCondition`      | String        | Auto-populated  | Current weather at the location                                       |
 | `voiceMessage`          | Object        | ✗               | Optional voice recording (Base64 encoded)                             |
 | `voiceMessage.data`     | Buffer        | ✗               | Audio data buffer                                                     |
 | `voiceMessage.mimeType` | String        | ✗               | Audio format (default: `audio/mpeg`)                                  |
 | `voiceMessage.size`     | Number        | ✗               | File size in bytes                                                    |
+| `voiceTranscription`    | String        | Auto-populated  | AI-transcribed text from the voice message                            |
 | `images`                | Array[Object] | ✗               | Optional images (Base64 encoded)                                      |
 | `images[].data`         | Buffer        | ✗               | Image data buffer                                                     |
 | `images[].mimeType`     | String        | ✗               | Image format (default: `image/jpeg`)                                  |
 | `images[].size`         | Number        | ✗               | File size in bytes                                                    |
+| `imageLabels`           | Array[String] | Auto-populated  | AI-detected context labels from the images                            |
 | `createdAt`             | Date          | Auto            | Timestamp of request creation                                         |
 | `updatedAt`             | Date          | Auto            | Timestamp of last update                                              |
 
@@ -87,14 +90,21 @@ The Help Request API is a core feature of RescueNet that allows users to submit 
 ```json
 {
   "_id": "65f8a3b2c1d4e5f6g7h8i9j0",
-  "name": "John Doe",
-  "location": "Downtown Area",
-  "realLocation": "Mumbai",
-  "contactNumber": "+91-9876543210",
+  "name": "Jane Test",
+  "location": "Flood Zone",
+  "realLocation": "Test City",
+  "contactNumber": "+1-555-9999",
   "disasterType": "flood",
-  "message": "Urgent help needed. Water level rising rapidly.",
+  "message": "¡El agua está subiendo muy rápido!",
+  "translatedMessage": "The water is rising very fast!",
   "urgency": "high",
   "weatherCondition": "Heavy rain",
+  "voiceTranscription": "Help, we are stuck on the roof.",
+  "imageLabels": [
+    "lumbermill, sawmill",
+    "stone wall",
+    "lakeside, lakeshore"
+  ],
   "voiceMessage": { ... },
   "images": [ ... ],
   "createdAt": "2024-03-18T10:30:00.000Z",
@@ -219,13 +229,14 @@ The Help Request API is a core feature of RescueNet that allows users to submit 
 
 ## Auto-Urgency Logic
 
-The system automatically calculates urgency based on two factors:
+The system automatically calculates urgency based on three main factors:
 
 ### Priority Rules (in order):
 
 1. **HIGH Priority** - Triggered if:
    - Current weather is `Rain` or `Thunderstorm`, OR
-   - Disaster type is `flood` or `tsunami`
+   - Disaster type is `flood` or `tsunami`, OR
+   - The AI Image Classification detects dangerous context keywords (e.g. `flood`, `fire`, `hurricane`, `lakeshore`, `volcano` etc.) in the uploaded images.
 
 2. **MEDIUM Priority** - All other cases
 
@@ -240,6 +251,15 @@ if (weather === "Rain" || weather === "Thunderstorm") {
   urgency = "high";
 } else {
   urgency = "medium";
+}
+
+// AI Phase 3: Escalate if an image depicts a dangerous scene
+if (
+  detectedImageLabels.some((label) =>
+    dangerousKeywords.some((danger) => label.includes(danger)),
+  )
+) {
+  urgency = "high";
 }
 ```
 

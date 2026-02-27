@@ -5,16 +5,19 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit",
+    "test:api": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/apiTest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:lo": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest src/tests/unit/weatherTest",
     "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@huggingface/inference": "^4.13.13",
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
@@ -23,7 +26,9 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
     "fast-xml-parser": "^5.3.6",
+    "google-translate-api-x": "^10.7.2",
     "helmet": "^8.1.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
@@ -31,7 +36,8 @@
     "multer": "^2.0.2",
     "node-cache": "^5.1.2",
     "nodemailer": "^7.0.13",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
