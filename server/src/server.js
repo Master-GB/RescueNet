@@ -27,6 +27,8 @@ import disastersRoutes from "./routes/disastersRoutes.js";
 import missingPersonRoutes from "./routes/missingPersonRoutes.js";
 import socketRoutes from "./routes/socketRoutes.js";
 import socketService from './services/socketService.js';
+import campaignRoutes from "./routes/campaignRoutes.js";
+import donationRoutes from "./routes/donationRoutes.js";
 
 
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
@@ -92,6 +94,8 @@ app.use("/api/ngo/help-requests", ngoHelpRoutes);
 
 app.use("/api/missing-persons", missingPersonRoutes);
 app.use("/api/socket", socketRoutes);
+app.use("/api/campaigns", campaignRoutes);
+app.use("/api/donations", donationRoutes);
 // Health check
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running" });
