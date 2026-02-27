@@ -34,8 +34,8 @@ export const getMyTasks = async (req, res) => {
     if (!profile) return;
 
     const { status, page = 1, limit = 10 } = req.query;
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10));
     const skip = (pageNum - 1) * limitNum;
 
     // Build the elemMatch filter on the assignments sub-array
@@ -200,7 +200,7 @@ export const acceptTask = async (req, res) => {
 
     // Track in NgoProfile.acceptedRequests (avoid duplicates)
     if (!profile.acceptedRequests.some((id) => id.toString() === requestId)) {
-      profile.acceptedRequests.push(requestId);
+      profile.acceptedRequests.push(helpRequest._id);
     }
 
     await Promise.all([helpRequest.save(), profile.save()]);
