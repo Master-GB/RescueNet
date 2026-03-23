@@ -16,7 +16,14 @@
     "perf:auth:basic": "artillery run  src/tests/performanceTest/authTest/basic-load.yml",
     "perf:auth:stress": "artillery run src/tests/performanceTest/authTest/stress-test.yml",
     "perf:auth:spike": "artillery run  src/tests/performanceTest/authTest/spike-test.yml",
-    "perf:auth:all": "npm run perf:auth:basic && npm run perf:auth:stress && npm run perf:auth:spike"
+    "perf:auth:all": "npm run perf:auth:basic && npm run perf:auth:stress && npm run perf:auth:spike",
+    
+    "ready-admin" :"node src/tests/performanceTest/shelterTest/create-admin-shelter-user.js",
+    "perf:shelter:basic": "artillery run src/tests/performanceTest/shelterTest/basic-load.yml",
+    "perf:shelter:stress": "artillery run src/tests/performanceTest/shelterTest/stress-test.yml",
+    "perf:shelter:spike": "artillery run src/tests/performanceTest/shelterTest/spike-test.yml",
+    "perf:shelter:all": "npm run perf:shelter:basic && npm run perf:shelter:stress && npm run perf:shelter:spike"
+    
   },
   "keywords": [],
   "author": "",
