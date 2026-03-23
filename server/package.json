@@ -22,7 +22,14 @@
     "perf:shelter:basic": "artillery run src/tests/performanceTest/shelterTest/basic-load.yml",
     "perf:shelter:stress": "artillery run src/tests/performanceTest/shelterTest/stress-test.yml",
     "perf:shelter:spike": "artillery run src/tests/performanceTest/shelterTest/spike-test.yml",
-    "perf:shelter:all": "npm run perf:shelter:basic && npm run perf:shelter:stress && npm run perf:shelter:spike"
+    "perf:shelter:all": "npm run perf:shelter:basic && npm run perf:shelter:stress && npm run perf:shelter:spike",
+    
+    "perf:disaster:basic": "artillery run src/tests/performanceTest/disasterAnalyzeTest/basic-load.yml",
+    "perf:disaster:stress": "artillery run src/tests/performanceTest/disasterAnalyzeTest/stress-test.yml",
+    "perf:disaster:spike": "artillery run src/tests/performanceTest/disasterAnalyzeTest/spike-test.yml",
+    "perf:disaster:all": "npm run perf:disaster:basic && npm run perf:disaster:stress && npm run perf:disaster:spike",
+    "perf:disaster:basic-optimized": "artillery run src/tests/performanceTest/disasterAnalyzeTest/basic-load-optimized.yml",
+    "perf:disaster:stress-optimized": "artillery run src/tests/performanceTest/disasterAnalyzeTest/stress-test-optimized.yml"
     
   },
   "keywords": [],
