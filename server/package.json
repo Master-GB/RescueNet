@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
+    "test:unit:all": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.js",
     "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest src/tests/unit/weatherTest",
     "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest"
   },

@@ -24,8 +24,12 @@ import shelterRouter from "./routes/shelterRoutes.js";
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
 
 if (!process.env.JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined");
-  process.exit(1);
+  if (process.env.NODE_ENV === "test") {
+    process.env.JWT_SECRET = "test-secret";
+  } else {
+    console.error("FATAL ERROR: JWT_SECRET is not defined");
+    process.exit(1);
+  }
 }
 
 const app = express();
@@ -77,11 +81,15 @@ app.use("/api/admin/help-requests", adminHelpRoutes);
 app.use("/api/admin/ngos", adminNgoRoutes);
 
 // Start
-connectDB()
-  .then(() => {
-    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error(err?.message ?? err);
-    process.exit(1);
-  });
+if (process.env.NODE_ENV !== "test") {
+  connectDB()
+    .then(() => {
+      server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error(err?.message ?? err);
+      process.exit(1);
+    });
+}
+
+export default app;
