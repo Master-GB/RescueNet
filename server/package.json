@@ -11,7 +11,9 @@
     "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
     "test:unit:all": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.js",
     "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest src/tests/unit/weatherTest",
-    "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest"
+    "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest",
+    "perf:help": "artillery run artillery.config.yml",
+    "perf": "npm run perf:help"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +41,7 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "artillery": "^2.0.30",
     "cross-env": "^10.1.0",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
