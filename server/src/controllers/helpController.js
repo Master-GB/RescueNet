@@ -169,8 +169,31 @@ export async function createHelpRequest(req, res) {
 
 export async function getAllRequests(req, res) {
   try {
-    const requests = await HelpRequest.find().sort({ createdAt: -1 });
-    res.json(requests);
+    // Pagination: default page 1, limit 20 per page
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    // Query: exclude heavy binary fields to reduce response size
+    const requests = await HelpRequest.find()
+      .select("-voiceMessage -images")  // Exclude large Buffer fields
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();  // Return plain JS objects (faster)
+
+    // Get total count for pagination metadata
+    const total = await HelpRequest.countDocuments();
+
+    res.json({
+      data: requests,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
