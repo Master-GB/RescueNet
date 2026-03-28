@@ -1,0 +1,71 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 2
+      name: "Baseline stress"
+    - duration: 120
+      arrivalRate: 3
+      name: "Medium stress"
+    - duration: 180
+      arrivalRate: 3
+      name: "High stress"
+    - duration: 120
+      arrivalRate: 2
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 90
+  payload:
+    path: "disaster-test-data.csv"
+    fields:
+      - "disaster_type"
+      - "start_date"
+      - "end_date"
+      - "min_magnitude"
+      - "bbox_min_lng"
+      - "bbox_min_lat"
+      - "bbox_max_lng"
+      - "bbox_max_lat"
+
+scenarios:
+  - name: "Stress - Earthquake Queries"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/disasters/map?types=EARTHQUAKE&start={{ start_date }}&end={{ end_date }}&minmag={{ min_magnitude }}&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Stress - Fire Hotspots"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/disasters/map?types=FIRE&days=3&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Stress - Multiple Disaster Types"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/disasters/map?types=EARTHQUAKE,FIRE,FLOOD&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Stress - Heatmap Generation"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/disasters/heatmap?types=EARTHQUAKE&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Stress - Disaster Updates"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/disasters/updates?limit=20"
+          expect:
+            - statusCode: [200, 429, 500]

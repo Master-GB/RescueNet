@@ -4,7 +4,7 @@ const volunteerProfileSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "users",
       required: true,
       unique: true,
     },
@@ -18,7 +18,7 @@ const volunteerProfileSchema = new mongoose.Schema(
       enum: ["AVAILABLE", "BUSY", "OFFLINE"],
       default: "OFFLINE",
     },
-    acceptedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tasks", default: [] }],
+    acceptedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "HelpRequest", default: [] }],
 
     verifiedByAdmin: { type: Boolean, default: false },
   },

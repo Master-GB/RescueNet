@@ -1,0 +1,59 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 1
+      name: "Normal load"
+    - duration: 60
+      arrivalRate: 1
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 120
+  payload:
+    path: "geo-test-data.csv"
+    fields:
+      - "from_lng"
+      - "from_lat"
+      - "to_lng"
+      - "to_lat"
+      - "address_query"
+      - "reverse_lat"
+      - "reverse_lng"
+
+scenarios:
+  - name: "Geo Routing - Driving"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/geo/route?fromLng={{ from_lng }}&fromLat={{ from_lat }}&toLng={{ to_lng }}&toLat={{ to_lat }}&profile=driving&alternatives=true"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Geo Routing - Walking"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/geo/route?fromLng={{ from_lng }}&fromLat={{ from_lat }}&toLng={{ to_lng }}&toLat={{ to_lat }}&profile=walking&alternatives=false"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Geocoding - Address Search"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/geo/geocode?q={{ address_query }}&limit=5"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Reverse Geocoding"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/geo/reverse?lat={{ reverse_lat }}&lng={{ reverse_lng }}"
+          expect:
+            - statusCode: [200, 429, 500]

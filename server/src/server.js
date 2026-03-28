@@ -13,6 +13,7 @@ import adminHelpRoutes from "./routes/adminHelpRoutes.js";
 import adminNgoRoutes from "./routes/adminNgoRoutes.js";
 import helpRoutes from "./routes/helpRoutes.js";
 import weatherRoutes from "./routes/weatherRoutes.js";
+import ngoHelpRoutes from "./routes/ngoHelpRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRoutes.js";
@@ -20,6 +21,15 @@ import volunteerProfileRoutes from "./routes/userManagementRoutes/volunteerProfi
 import ngoProfileRoutes from "./routes/userManagementRoutes/ngoProfileRoutes.js";
 import adminUserRoutes from "./routes/userManagementRoutes/adminUserRoutes.js";
 import shelterRouter from "./routes/shelterRoutes.js";
+import geoRoutes from "./routes/geoRoutes.js";
+import disastersRoutes from "./routes/disastersRoutes.js";
+
+import missingPersonRoutes from "./routes/missingPersonRoutes.js";
+import socketRoutes from "./routes/socketRoutes.js";
+import socketService from './services/socketService.js';
+import campaignRoutes from "./routes/campaignRoutes.js";
+import donationRoutes from "./routes/donationRoutes.js";
+
 
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
 
@@ -50,6 +60,7 @@ const io = new Server(server, {
 });
 
 registerShelterSocket(io);
+socketService.initialize(io);
 
 // ✅ make io available in controllers
 app.use("/api/shelters", (req, res, next) => {
@@ -74,11 +85,25 @@ app.use("/api/ngo", ngoProfileRoutes);
 app.use("/api/adminUser", adminUserRoutes);
 
 app.use("/api/shelters", shelterRouter);
+app.use("/api/geo", geoRoutes);
+app.use("/api/disasters", disastersRoutes);
+
 
 app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);
 app.use("/api/admin/help-requests", adminHelpRoutes);
 app.use("/api/admin/ngos", adminNgoRoutes);
+app.use("/api/ngo/help-requests", ngoHelpRoutes);
+
+app.use("/api/missing-persons", missingPersonRoutes);
+app.use("/api/socket", socketRoutes);
+app.use("/api/campaigns", campaignRoutes);
+app.use("/api/donations", donationRoutes);
+
+// Health check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ success: true, message: "Server is running" });
+});
 
 // Start
 if (process.env.NODE_ENV !== "test") {

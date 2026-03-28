@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="25" failures="0" errors="0" time="0.913">
+  <testsuite name="ngoHelpController" errors="0" failures="0" skipped="0" timestamp="2026-02-23T17:58:22" time="0.793" tests="25">
+    <testcase classname="ngoHelpController approval gate returns 404 when NGO profile does not exist" name="ngoHelpController approval gate returns 404 when NGO profile does not exist" time="0.007">
+    </testcase>
+    <testcase classname="ngoHelpController approval gate returns 403 when approvalStatus is pending" name="ngoHelpController approval gate returns 403 when approvalStatus is pending" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController approval gate returns 403 when approvalStatus is suspended" name="ngoHelpController approval gate returns 403 when approvalStatus is suspended" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController getMyTasks returns paginated list for approved NGO" name="ngoHelpController getMyTasks returns paginated list for approved NGO" time="0.002">
+    </testcase>
+    <testcase classname="ngoHelpController getMyTasks returns 400 for invalid status filter" name="ngoHelpController getMyTasks returns 400 for invalid status filter" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController getMyTasks passes status filter to query when valid" name="ngoHelpController getMyTasks passes status filter to query when valid" time="0.002">
+    </testcase>
+    <testcase classname="ngoHelpController getPerformance returns profile stats and aggregated assignment counts" name="ngoHelpController getPerformance returns profile stats and aggregated assignment counts" time="0.002">
+    </testcase>
+    <testcase classname="ngoHelpController getTaskDetail returns 400 for invalid ObjectId" name="ngoHelpController getTaskDetail returns 400 for invalid ObjectId" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController getTaskDetail returns 404 when help request not found or NGO not in assignments" name="ngoHelpController getTaskDetail returns 404 when help request not found or NGO not in assignments" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController getTaskDetail returns help request on success" name="ngoHelpController getTaskDetail returns help request on success" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController acceptTask returns 404 when help request not found" name="ngoHelpController acceptTask returns 404 when help request not found" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController acceptTask returns 404 when NGO is not in assignments" name="ngoHelpController acceptTask returns 404 when NGO is not in assignments" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController acceptTask returns 400 when assignment is not in assigned state" name="ngoHelpController acceptTask returns 400 when assignment is not in assigned state" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController acceptTask accepts task and adds to acceptedRequests" name="ngoHelpController acceptTask accepts task and adds to acceptedRequests" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController acceptTask does not duplicate requestId in acceptedRequests" name="ngoHelpController acceptTask does not duplicate requestId in acceptedRequests" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController declineTask returns 400 when assignment is not in assigned state" name="ngoHelpController declineTask returns 400 when assignment is not in assigned state" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController declineTask sets assignment status to declined and stores reason" name="ngoHelpController declineTask sets assignment status to declined and stores reason" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController declineTask works without a reason provided" name="ngoHelpController declineTask works without a reason provided" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController markInProgress returns 400 when assignment is not accepted" name="ngoHelpController markInProgress returns 400 when assignment is not accepted" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController markInProgress sets assignment to in-progress and promotes help request status" name="ngoHelpController markInProgress sets assignment to in-progress and promotes help request status" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController markInProgress does not downgrade a resolved help request status" name="ngoHelpController markInProgress does not downgrade a resolved help request status" time="0">
+    </testcase>
+    <testcase classname="ngoHelpController markCompleted returns 400 when assignment is not in-progress" name="ngoHelpController markCompleted returns 400 when assignment is not in-progress" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController markCompleted marks assignment completed and increments completedTasks" name="ngoHelpController markCompleted marks assignment completed and increments completedTasks" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController markCompleted resolves help request when all assignments are done" name="ngoHelpController markCompleted resolves help request when all assignments are done" time="0.001">
+    </testcase>
+    <testcase classname="ngoHelpController markCompleted does NOT resolve help request when other assignments are still pending" name="ngoHelpController markCompleted does NOT resolve help request when other assignments are still pending" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>

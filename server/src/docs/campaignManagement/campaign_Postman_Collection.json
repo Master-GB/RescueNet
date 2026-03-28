@@ -1,0 +1,825 @@
+{
+  "info": {
+    "name": "RescueNet - Donations & Campaign Management",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "description": "Postman collection for RescueNet Donations & Campaign Management APIs. Includes campaign CRUD (NGO), donation submission (Citizen/Volunteer) with proof image upload, and donation verification (NGO). Run the Login requests first so the access_token cookie is stored by Postman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api"
+    },
+    {
+      "key": "campaignId",
+      "value": ""
+    },
+    {
+      "key": "donationId",
+      "value": ""
+    },
+    {
+      "key": "ngoEmail",
+      "value": "ngo@rescuenet.org"
+    },
+    {
+      "key": "ngoPassword",
+      "value": "12345678"
+    },
+    {
+      "key": "citizenEmail",
+      "value": "citizen@example.com"
+    },
+    {
+      "key": "citizenPassword",
+      "value": "12345678"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login as NGO - sets cookie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ngoEmail}}\",\n  \"password\": \"{{ngoPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login returns 200/201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200,201]);",
+                  "});",
+                  "pm.test('Set-Cookie header exists', function () {",
+                  "  pm.expect(pm.response.headers.has('Set-Cookie')).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Citizen - sets cookie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{citizenEmail}}\",\n  \"password\": \"{{citizenPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login returns 200/201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200,201]);",
+                  "});",
+                  "pm.test('Set-Cookie header exists', function () {",
+                  "  pm.expect(pm.response.headers.has('Set-Cookie')).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Campaigns",
+      "item": [
+        {
+          "name": "Create Campaign (NGO only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/campaigns/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Southern Province Flood Relief\",\n  \"description\": \"Raising funds and supplies for flood-affected families in Matara and Galle districts. All contributions will go directly to affected communities.\",\n  \"targetAmount\": 500000,\n  \"bankDetails\": {\n    \"accountName\": \"RescueNet Relief Fund\",\n    \"accountNumber\": \"1234567890\",\n    \"bankName\": \"Bank of Ceylon\",\n    \"branchName\": \"Colombo Main\"\n  },\n  \"acceptedItems\": [\"Clothes\", \"Dry Rations\", \"Water Bottles\", \"Blankets\"]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create returns 201', function () {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success true', function () {",
+                  "  pm.expect(data.success).to.be.true;",
+                  "});",
+                  "const id = data?.campaign?._id || data?.campaign?.id;",
+                  "if (id) pm.collectionVariables.set('campaignId', id);",
+                  "pm.test('campaignId stored', function () {",
+                  "  pm.expect(pm.collectionVariables.get('campaignId')).to.not.be.empty;",
+                  "});",
+                  "pm.test('raisedAmount defaults to 0', function () {",
+                  "  pm.expect(data.campaign.raisedAmount).to.equal(0);",
+                  "});",
+                  "pm.test('status defaults to Active', function () {",
+                  "  pm.expect(data.campaign.status).to.equal('Active');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Campaign - Missing Required Fields (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/campaigns/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"AB\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Validation returns 400', function () {",
+                  "  pm.expect(pm.response.code).to.equal(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Active Campaigns (Public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/campaigns/active"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get active returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Response has campaigns array', function () {",
+                  "  pm.expect(data.campaigns).to.be.an('array');",
+                  "});",
+                  "pm.test('All campaigns have Active status', function () {",
+                  "  data.campaigns.forEach(c => {",
+                  "    pm.expect(c.status).to.equal('Active');",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Campaign By ID (Public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/campaigns/{{campaignId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get by ID returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Response has campaign object', function () {",
+                  "  pm.expect(data.campaign).to.be.an('object');",
+                  "});",
+                  "pm.test('Campaign has bank details', function () {",
+                  "  pm.expect(data.campaign.bankDetails).to.be.an('object');",
+                  "});",
+                  "pm.test('NGO is populated', function () {",
+                  "  pm.expect(data.campaign.ngoId).to.have.property('name');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Campaign By ID - Not Found (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/campaigns/000000000000000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Not found returns 404', function () {",
+                  "  pm.expect(pm.response.code).to.equal(404);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Response has success false', function () {",
+                  "  pm.expect(data.success).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Campaign (NGO owner only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/campaigns/update/{{campaignId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated: Now also providing medical supplies to affected communities.\",\n  \"targetAmount\": 750000,\n  \"acceptedItems\": [\"Clothes\", \"Dry Rations\", \"Water Bottles\", \"Blankets\", \"Medicine\"]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Update returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Response has success true', function () {",
+                  "  pm.expect(data.success).to.be.true;",
+                  "});",
+                  "pm.test('Target amount is updated', function () {",
+                  "  pm.expect(data.campaign.targetAmount).to.equal(750000);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Campaign - Change Status to Completed",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/campaigns/update/{{campaignId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Completed\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Update returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Status is Completed', function () {",
+                  "  pm.expect(data.campaign.status).to.equal('Completed');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Campaign - Reactivate for Donation Tests",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/campaigns/update/{{campaignId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Active\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Reactivate returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Status is Active again', function () {",
+                  "  pm.expect(data.campaign.status).to.equal('Active');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Donations",
+      "description": "Login as a Citizen or Volunteer before running these requests.",
+      "item": [
+        {
+          "name": "Submit Money Donation with Proof Image (Citizen/Volunteer)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/donations/submit",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "donationType",
+                  "value": "Money",
+                  "type": "text"
+                },
+                {
+                  "key": "declaredAmount",
+                  "value": "5000",
+                  "type": "text"
+                },
+                {
+                  "key": "donorMessage",
+                  "value": "Stay strong! Hope this helps.",
+                  "type": "text"
+                },
+                {
+                  "key": "proofImage",
+                  "type": "file",
+                  "src": "",
+                  "description": "Select a JPEG/PNG image of the bank transfer slip"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Submit returns 201', function () {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success true', function () {",
+                  "  pm.expect(data.success).to.be.true;",
+                  "});",
+                  "pm.test('Donation status is Pending', function () {",
+                  "  pm.expect(data.donation.status).to.equal('Pending');",
+                  "});",
+                  "pm.test('proofImageUrl is a Cloudinary URL', function () {",
+                  "  pm.expect(data.donation.proofImageUrl).to.include('cloudinary');",
+                  "});",
+                  "const id = data?.donation?._id || data?.donation?.id;",
+                  "if (id) pm.collectionVariables.set('donationId', id);",
+                  "pm.test('donationId stored', function () {",
+                  "  pm.expect(pm.collectionVariables.get('donationId')).to.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Supplies Donation with Proof Image",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/donations/submit",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "donationType",
+                  "value": "Supplies",
+                  "type": "text"
+                },
+                {
+                  "key": "declaredAmount",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "donorMessage",
+                  "value": "Sending 5 bags of rice and bottled water.",
+                  "type": "text"
+                },
+                {
+                  "key": "proofImage",
+                  "type": "file",
+                  "src": "",
+                  "description": "Select a JPEG/PNG image of the supply bag"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Submit returns 201', function () {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Donation type is Supplies', function () {",
+                  "  pm.expect(data.donation.donationType).to.equal('Supplies');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Donation - No Proof Image (400)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/donations/submit",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "campaignId",
+                  "value": "{{campaignId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "donationType",
+                  "value": "Money",
+                  "type": "text"
+                },
+                {
+                  "key": "declaredAmount",
+                  "value": "1000",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing image returns 400', function () {",
+                  "  pm.expect(pm.response.code).to.equal(400);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Error message about proof image', function () {",
+                  "  pm.expect(data.message).to.include('Proof image');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Donation - Campaign Not Found (404)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/donations/submit",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "campaignId",
+                  "value": "000000000000000000000000",
+                  "type": "text"
+                },
+                {
+                  "key": "donationType",
+                  "value": "Money",
+                  "type": "text"
+                },
+                {
+                  "key": "declaredAmount",
+                  "value": "100",
+                  "type": "text"
+                },
+                {
+                  "key": "proofImage",
+                  "type": "file",
+                  "src": "",
+                  "description": "Select any image"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Not found returns 404', function () {",
+                  "  pm.expect(pm.response.code).to.equal(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Campaign Donations (NGO owner only)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/donations/campaign/{{campaignId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get donations returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Response has donations array', function () {",
+                  "  pm.expect(data.donations).to.be.an('array');",
+                  "});",
+                  "pm.test('Donors are populated with name/email', function () {",
+                  "  if (data.donations.length > 0) {",
+                  "    pm.expect(data.donations[0].donorId).to.have.property('name');",
+                  "    pm.expect(data.donations[0].donorId).to.have.property('email');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Donation (NGO owner only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/donations/verify/{{donationId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confirmedAmount\": 5000,\n  \"status\": \"Verified\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Verify returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Response has success true', function () {",
+                  "  pm.expect(data.success).to.be.true;",
+                  "});",
+                  "pm.test('Donation status is Verified', function () {",
+                  "  pm.expect(data.donation.status).to.equal('Verified');",
+                  "});",
+                  "pm.test('Message confirms verification', function () {",
+                  "  pm.expect(data.message).to.include('verified');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Donation - Already Processed (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/donations/verify/{{donationId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confirmedAmount\": 5000,\n  \"status\": \"Verified\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Already processed returns 400', function () {",
+                  "  pm.expect(pm.response.code).to.equal(400);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Error message about already processed', function () {",
+                  "  pm.expect(data.message).to.include('already been processed');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Donation (NGO owner only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/donations/verify/{{donationId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confirmedAmount\": 0,\n  \"status\": \"Rejected\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Reject returns 200 or 400 (if already processed)', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Donation - Not Found (404)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/donations/verify/000000000000000000000000",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confirmedAmount\": 100,\n  \"status\": \"Verified\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Not found returns 404', function () {",
+                  "  pm.expect(pm.response.code).to.equal(404);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('Response has success false', function () {",
+                  "  pm.expect(data.success).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Donation - Invalid Body (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/donations/verify/{{donationId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confirmedAmount\": -50,\n  \"status\": \"Invalid\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Validation returns 400', function () {",
+                  "  pm.expect(pm.response.code).to.equal(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verify raisedAmount After Verification",
+      "item": [
+        {
+          "name": "Get Campaign to Check raisedAmount",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/campaigns/{{campaignId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get returns 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "let data = pm.response.json();",
+                  "pm.test('raisedAmount has been incremented', function () {",
+                  "  pm.expect(data.campaign.raisedAmount).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

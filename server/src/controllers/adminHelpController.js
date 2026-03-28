@@ -1,6 +1,8 @@
 import HelpRequest from "../models/HelpRequest.js";
-import Organization from "../models/ngoModel.js";
+// Switched to unified NgoProfile model
+import NgoProfile from "../models/userProfileModel/NgoProfile.js";
 import mongoose from "mongoose";
+import { sendNgoTaskSMS } from "../services/smsService.js";
 
 /**
  * Update help request admin fields
@@ -11,11 +13,17 @@ export const updateHelpRequest = async (req, res) => {
     const { id } = req.params;
     const {
       status,
-      assignedTo,
       adminNotes,
       rejectionReason,
       publishedToSocial,
     } = req.body;
+
+    if (req.body.assignedTo !== undefined || req.body.assignments !== undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "Use the assign/unassign endpoints to modify assignments",
+      });
+    }
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -61,42 +69,6 @@ export const updateHelpRequest = async (req, res) => {
       }
     }
 
-    // Update assignedTo (verify NGO exists)
-    if (assignedTo !== undefined) {
-      if (assignedTo === null) {
-        updateData.assignedTo = null;
-      } else {
-        if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
-          return res.status(400).json({
-            success: false,
-            message: "Invalid organization ID",
-          });
-        }
-
-        const organization = await Organization.findById(assignedTo);
-        if (!organization) {
-          return res.status(404).json({
-            success: false,
-            message: "Organization not found",
-          });
-        }
-
-        if (organization.approvalStatus !== "approved") {
-          return res.status(400).json({
-            success: false,
-            message: "Cannot assign to unapproved organization",
-          });
-        }
-
-        updateData.assignedTo = assignedTo;
-
-        // Auto-update status to 'assigned' if assigning an organization
-        if (!status) {
-          updateData.status = "assigned";
-        }
-      }
-    }
-
     // Update admin notes
     if (adminNotes !== undefined) {
       updateData.adminNotes = adminNotes;
@@ -117,7 +89,7 @@ export const updateHelpRequest = async (req, res) => {
       id,
       updateData,
       { new: true, runValidators: true }
-    ).populate("assignedTo", "organizationName type availabilityStatus");
+    ).populate("assignments.ngoId", "organizationName type availabilityStatus");
 
     res.json({
       success: true,
@@ -140,6 +112,113 @@ export const updateHelpRequest = async (req, res) => {
 export const assignHelpRequest = async (req, res) => {
   try {
     const { id } = req.params;
+    const { organizationId, taskType } = req.body;
+
+    // check if id and organizationId are valid ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid help request ID",
+      });
+    }
+
+    // check if organizationId is provided and valid
+    if (!organizationId || !mongoose.Types.ObjectId.isValid(organizationId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid organization ID is required",
+      });
+    }
+
+    // Find the help request
+    const helpRequest = await HelpRequest.findById(id);
+    if (!helpRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "Help request not found",
+      });
+    }
+
+    // Find the organization
+    const organization = await NgoProfile.findById(organizationId);
+    if (!organization) {
+      return res.status(404).json({
+        success: false,
+        message: "Organization not found",
+      });
+    }
+
+    if (organization.approvalStatus !== "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot assign to unapproved organization",
+      });
+    }
+
+    if (organization.availabilityStatus === "OFFLINE") {
+      return res.status(400).json({
+        success: false,
+        message: `Organization is currently ${organization.availabilityStatus}`,
+        warning: true,
+      });
+    }
+
+    // Update help request
+    const assignments = Array.isArray(helpRequest.assignments)
+      ? helpRequest.assignments
+      : [];
+    const alreadyAssignedToRequest = assignments.some(
+      (assignment) => assignment.ngoId.toString() === organizationId
+    );
+    if (!alreadyAssignedToRequest) {
+      helpRequest.assignments = assignments;
+      helpRequest.assignments.push({
+        ngoId: organizationId,
+        status: "assigned",
+        taskType: taskType || "General Relief",
+      });
+    }
+    helpRequest.status = "assigned";
+    await helpRequest.save();
+
+    // Fix: compare as strings since assignedRequests contains ObjectIds
+    const alreadyAssigned = organization.assignedRequests.some(
+      (reqId) => reqId.toString() === id
+    );
+    if (!alreadyAssigned) {
+      organization.assignedRequests.push(id);
+      await organization.save();
+    }
+
+    // Notify the NGO via SMS about the new task assignment
+    await sendNgoTaskSMS(organization.contactPhone, taskType || "General Relief");
+
+    const updatedRequest = await HelpRequest.findById(id).populate(
+      "assignments.ngoId",
+      "organizationName type contactPerson contactPhone availabilityStatus"
+    );
+
+    res.json({
+      success: true,
+      message: `Help request assigned to ${organization.organizationName}`,
+      data: updatedRequest,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to assign help request",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Unassign help request from an organization
+ * POST /api/admin/help-requests/:id/unassign
+ */
+export const unassignHelpRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
     const { organizationId } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -156,7 +235,6 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // Find help request
     const helpRequest = await HelpRequest.findById(id);
     if (!helpRequest) {
       return res.status(404).json({
@@ -165,55 +243,52 @@ export const assignHelpRequest = async (req, res) => {
       });
     }
 
-    // Find organization
-    const organization = await Organization.findById(organizationId);
-    if (!organization) {
+    const assignments = Array.isArray(helpRequest.assignments)
+      ? helpRequest.assignments
+      : [];
+    const assignmentIndex = assignments.findIndex(
+      (assignment) => assignment.ngoId.toString() === organizationId
+    );
+    if (assignmentIndex === -1) {
       return res.status(404).json({
         success: false,
-        message: "Organization not found",
+        message: "Assignment not found for organization",
       });
     }
 
-    if (organization.approvalStatus !== "approved") {
-      return res.status(400).json({
-        success: false,
-        message: "Cannot assign to unapproved organization",
-      });
+    assignments.splice(assignmentIndex, 1);
+    helpRequest.assignments = assignments;
+    if (assignments.length === 0 && helpRequest.status === "assigned") {
+      helpRequest.status = "verified";
     }
 
-    if (organization.availabilityStatus === "unavailable" || organization.availabilityStatus === "offline") {
-      return res.status(400).json({
-        success: false,
-        message: `Organization is currently ${organization.availabilityStatus}`,
-        warning: true,
-      });
-    }
-
-    // Update help request
-    helpRequest.assignedTo = organizationId;
-    helpRequest.status = "assigned";
     await helpRequest.save();
 
-    // Add to organization's assigned requests
-    if (!organization.assignedRequests.includes(id)) {
-      organization.assignedRequests.push(id);
+    const organization = await NgoProfile.findById(organizationId);
+    if (organization) {
+      organization.assignedRequests = organization.assignedRequests.filter(
+        (reqId) => reqId.toString() !== id
+      );
+      organization.acceptedRequests = organization.acceptedRequests.filter(
+        (reqId) => reqId.toString() !== id
+      );
       await organization.save();
     }
 
     const updatedRequest = await HelpRequest.findById(id).populate(
-      "assignedTo",
-      "organizationName type contactPerson phone availabilityStatus"
+      "assignments.ngoId",
+      "organizationName type contactPerson contactPhone availabilityStatus"
     );
 
     res.json({
       success: true,
-      message: `Help request assigned to ${organization.organizationName}`,
+      message: "Help request unassigned successfully",
       data: updatedRequest,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Failed to assign help request",
+      message: "Failed to unassign help request",
       error: error.message,
     });
   }
@@ -349,10 +424,17 @@ export const resolveHelpRequest = async (req, res) => {
     await helpRequest.save();
 
     // Update organization's completed tasks if assigned
-    if (helpRequest.assignedTo) {
-      await Organization.findByIdAndUpdate(helpRequest.assignedTo, {
-        $inc: { completedTasks: 1 },
-      });
+    const assignedNgoIds = (Array.isArray(helpRequest.assignments)
+      ? helpRequest.assignments
+      : [])
+      .filter((assignment) => assignment.status === "completed")
+      .map((assignment) => assignment.ngoId)
+      .filter(Boolean);
+    if (assignedNgoIds.length > 0) {
+      await NgoProfile.updateMany(
+        { _id: { $in: assignedNgoIds } },
+        { $inc: { completedTasks: 1 } }
+      );
     }
 
     res.json({
@@ -384,9 +466,9 @@ export const getAdminHelpRequests = async (req, res) => {
     if (urgency) filter.urgency = urgency;
     if (assignedTo) {
       if (assignedTo === "unassigned") {
-        filter.assignedTo = null;
+        filter.assignments = { $size: 0 };
       } else if (mongoose.Types.ObjectId.isValid(assignedTo)) {
-        filter.assignedTo = assignedTo;
+        filter["assignments.ngoId"] = assignedTo;
       }
     }
 
@@ -397,7 +479,10 @@ export const getAdminHelpRequests = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit))
-        .populate("assignedTo", "organizationName type contactPerson phone availabilityStatus"),
+        .populate(
+          "assignments.ngoId",
+          "organizationName type contactPerson contactPhone availabilityStatus"
+        ),
       HelpRequest.countDocuments(filter),
     ]);
 
@@ -436,8 +521,8 @@ export const getAdminHelpRequestById = async (req, res) => {
     }
 
     const helpRequest = await HelpRequest.findById(id).populate(
-      "assignedTo",
-      "organizationName type contactPerson officialEmail phone address capabilities availabilityStatus"
+      "assignments.ngoId",
+      "organizationName type contactPerson officialEmail contactPhone address services serviceDistricts availabilityStatus"
     );
 
     if (!helpRequest) {

@@ -1,0 +1,507 @@
+{
+  "info": {
+    "name": "RescueNet - NGO Task Management",
+    "_postman_id": "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
+    "description": "Postman collection for the RescueNet NGO Task Management API. Covers listing assigned tasks, viewing performance stats, and managing the full assignment lifecycle (accept → in-progress → completed / declined). All requests require a valid NGO JWT and an approved NGO profile.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "description": "Base URL of the RescueNet API server"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "description": "JWT obtained from POST /api/auth/login. Set this before running any request."
+    },
+    {
+      "key": "requestId",
+      "value": "",
+      "description": "MongoDB ObjectId of the HelpRequest under test. Populated automatically by the 'List My Tasks' test script."
+    }
+  ],
+  "item": [
+    {
+      "name": "NGO Task Management",
+      "item": [
+        {
+          "name": "List My Assigned Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "NGO JWT"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/help-requests?status=assigned&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["ngo", "help-requests"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "assigned",
+                  "description": "Filter by assignment status: assigned | accepted | declined | in-progress | completed. Remove to list all."
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (min 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Results per page (min 1, max 50)"
+                }
+              ]
+            },
+            "description": "Returns a paginated list of help requests assigned to the authenticated NGO. Binary fields (voiceMessage, images) are excluded. Use the status query param to filter by assignment status."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success flag', function () {",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test('Response contains pagination', function () {",
+                  "  pm.expect(body.pagination).to.be.an('object');",
+                  "  pm.expect(body.pagination).to.have.all.keys('total', 'page', 'limit', 'totalPages');",
+                  "});",
+                  "// Store first result's ID for downstream requests",
+                  "const first = (body.data || [])[0];",
+                  "if (first && first._id) {",
+                  "  pm.collectionVariables.set('requestId', first._id);",
+                  "  console.log('Stored requestId:', first._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK — List with pagination",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n      \"name\": \"Kasun Perera\",\n      \"location\": \"Colombo 07\",\n      \"realLocation\": \"Colombo\",\n      \"contactNumber\": \"+94771234567\",\n      \"disasterType\": \"flood\",\n      \"message\": \"House flooded, need evacuation for 4 people.\",\n      \"urgency\": \"high\",\n      \"weatherCondition\": \"Heavy rain\",\n      \"status\": \"assigned\",\n      \"assignments\": [\n        {\n          \"ngoId\": \"663a0b1c2d3e4f5a6b7c8d9e\",\n          \"taskType\": \"General Relief\",\n          \"status\": \"assigned\",\n          \"assignedAt\": \"2025-02-20T08:00:00.000Z\"\n        }\n      ],\n      \"adminNotes\": \"Priority area — assign rescue team\",\n      \"createdAt\": \"2025-02-20T07:45:00.000Z\",\n      \"updatedAt\": \"2025-02-20T08:00:00.000Z\"\n    }\n  ],\n  \"pagination\": {\n    \"total\": 12,\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 2\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Invalid status filter",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid status filter. Allowed: assigned, accepted, declined, in-progress, completed\"\n}"
+            },
+            {
+              "name": "403 Forbidden — NGO not approved",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Your NGO account has not been approved by an admin yet\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Performance Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "NGO JWT"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/help-requests/performance",
+              "host": ["{{baseUrl}}"],
+              "path": ["ngo", "help-requests", "performance"]
+            },
+            "description": "Returns aggregate performance metrics for the authenticated NGO: completed task count, average response time, rating, availability status, and a breakdown of current assignment counts by status."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success flag', function () {",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test('Data contains performance fields', function () {",
+                  "  const d = body.data;",
+                  "  pm.expect(d).to.have.property('completedTasks');",
+                  "  pm.expect(d).to.have.property('rating');",
+                  "  pm.expect(d).to.have.property('availabilityStatus');",
+                  "  pm.expect(d).to.have.property('assignmentCounts');",
+                  "});",
+                  "pm.test('assignmentCounts has expected keys', function () {",
+                  "  const ac = body.data.assignmentCounts;",
+                  "  pm.expect(ac).to.have.all.keys('assigned', 'accepted', 'declined', 'inProgress', 'completed');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK — Performance stats",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"completedTasks\": 14,\n    \"averageResponseTime\": 35,\n    \"rating\": 4.2,\n    \"availabilityStatus\": \"AVAILABLE\",\n    \"assignmentCounts\": {\n      \"assigned\": 3,\n      \"accepted\": 2,\n      \"declined\": 1,\n      \"inProgress\": 1,\n      \"completed\": 14\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Task Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "NGO JWT"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/help-requests/{{requestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["ngo", "help-requests", "{{requestId}}"]
+            },
+            "description": "Returns the full HelpRequest document for a single assigned task, including binary fields (voiceMessage, images). Returns 404 if the request does not exist or is not assigned to this NGO."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success flag', function () {",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test('Data contains _id', function () {",
+                  "  pm.expect(body.data).to.have.property('_id');",
+                  "});",
+                  "pm.test('Data contains assignments array', function () {",
+                  "  pm.expect(body.data.assignments).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK — Task detail",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n    \"name\": \"Kasun Perera\",\n    \"location\": \"Colombo 07\",\n    \"realLocation\": \"Colombo\",\n    \"contactNumber\": \"+94771234567\",\n    \"disasterType\": \"flood\",\n    \"message\": \"House flooded, need evacuation for 4 people.\",\n    \"urgency\": \"high\",\n    \"weatherCondition\": \"Heavy rain\",\n    \"status\": \"assigned\",\n    \"assignments\": [\n      {\n        \"ngoId\": \"663a0b1c2d3e4f5a6b7c8d9e\",\n        \"taskType\": \"General Relief\",\n        \"status\": \"assigned\",\n        \"assignedAt\": \"2025-02-20T08:00:00.000Z\"\n      }\n    ],\n    \"adminNotes\": \"Priority area — assign rescue team\",\n    \"voiceMessage\": null,\n    \"images\": [],\n    \"createdAt\": \"2025-02-20T07:45:00.000Z\",\n    \"updatedAt\": \"2025-02-20T08:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Invalid ObjectId",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid help request ID\"\n}"
+            },
+            {
+              "name": "404 Not Found — Not assigned to this NGO",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Help request not found or not assigned to your organisation\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Accept Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "NGO JWT"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/help-requests/{{requestId}}/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["ngo", "help-requests", "{{requestId}}", "accept"]
+            },
+            "description": "Transitions the NGO's assignment status from 'assigned' to 'accepted'. No request body required. Returns 400 if the current status is not 'assigned'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success flag', function () {",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test('Assignment status is accepted', function () {",
+                  "  pm.expect(body.data.assignmentStatus).to.equal('accepted');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK — Task accepted",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Task accepted successfully\",\n  \"data\": {\n    \"requestId\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n    \"assignmentStatus\": \"accepted\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Wrong status",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot accept — current assignment status is \\\"accepted\\\"\"\n}"
+            },
+            {
+              "name": "404 Not Found — Not assigned to this NGO",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Your organisation is not assigned to this help request\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Decline Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "NGO JWT"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/help-requests/{{requestId}}/decline",
+              "host": ["{{baseUrl}}"],
+              "path": ["ngo", "help-requests", "{{requestId}}", "decline"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"We do not have capacity for flood evacuations this week.\"\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "description": "Transitions the NGO's assignment status from 'assigned' to 'declined'. The optional 'reason' field (max 500 chars) is stored on the assignment. Returns 400 if the current status is not 'assigned'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success flag', function () {",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test('Assignment status is declined', function () {",
+                  "  pm.expect(body.data.assignmentStatus).to.equal('declined');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK — Task declined with reason",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Task declined\",\n  \"data\": {\n    \"requestId\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n    \"assignmentStatus\": \"declined\",\n    \"declineReason\": \"We do not have capacity for flood evacuations this week.\"\n  }\n}"
+            },
+            {
+              "name": "200 OK — Task declined without reason",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Task declined\",\n  \"data\": {\n    \"requestId\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n    \"assignmentStatus\": \"declined\",\n    \"declineReason\": null\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Wrong status",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot decline — current assignment status is \\\"accepted\\\"\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark Task In-Progress",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "NGO JWT"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/help-requests/{{requestId}}/in-progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["ngo", "help-requests", "{{requestId}}", "in-progress"]
+            },
+            "description": "Transitions the NGO's assignment status from 'accepted' to 'in-progress'. Also promotes the parent HelpRequest status to 'in-progress' if it hasn't already reached that state. Returns 400 if the current status is not 'accepted'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success flag', function () {",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test('Assignment status is in-progress', function () {",
+                  "  pm.expect(body.data.assignmentStatus).to.equal('in-progress');",
+                  "});",
+                  "pm.test('HelpRequest status is in-progress or resolved', function () {",
+                  "  pm.expect(body.data.helpRequestStatus).to.be.oneOf(['in-progress', 'resolved']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK — Marked in-progress",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Task marked as in-progress\",\n  \"data\": {\n    \"requestId\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n    \"assignmentStatus\": \"in-progress\",\n    \"helpRequestStatus\": \"in-progress\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Wrong status",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot mark in-progress — current assignment status is \\\"assigned\\\"\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark Task Completed",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "NGO JWT"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ngo/help-requests/{{requestId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["ngo", "help-requests", "{{requestId}}", "complete"]
+            },
+            "description": "Transitions the NGO's assignment status from 'in-progress' to 'completed'. Increments completedTasks on the NGO profile. If every assignment on the HelpRequest is now in a terminal state (completed or declined), the parent request is automatically resolved. Returns 400 if the current status is not 'in-progress'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "let body = {};",
+                  "try { body = pm.response.json(); } catch (e) {}",
+                  "pm.test('Response has success flag', function () {",
+                  "  pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test('Assignment status is completed', function () {",
+                  "  pm.expect(body.data.assignmentStatus).to.equal('completed');",
+                  "});",
+                  "pm.test('completedAt is present', function () {",
+                  "  pm.expect(body.data.completedAt).to.exist;",
+                  "});",
+                  "pm.test('helpRequestResolved is boolean', function () {",
+                  "  pm.expect(body.data.helpRequestResolved).to.be.a('boolean');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK — Task completed, request still open",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Task marked as completed\",\n  \"data\": {\n    \"requestId\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n    \"assignmentStatus\": \"completed\",\n    \"completedAt\": \"2025-02-21T14:30:00.000Z\",\n    \"helpRequestStatus\": \"in-progress\",\n    \"helpRequestResolved\": false\n  }\n}"
+            },
+            {
+              "name": "200 OK — Task completed, request fully resolved",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Task completed — help request fully resolved\",\n  \"data\": {\n    \"requestId\": \"664f1a2b3c4d5e6f7a8b9c0d\",\n    \"assignmentStatus\": \"completed\",\n    \"completedAt\": \"2025-02-21T14:30:00.000Z\",\n    \"helpRequestStatus\": \"resolved\",\n    \"helpRequestResolved\": true\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Wrong status",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Cannot complete — current assignment status is \\\"accepted\\\"\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

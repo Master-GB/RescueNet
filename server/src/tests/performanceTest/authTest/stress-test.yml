@@ -1,0 +1,84 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Baseline"
+    - duration: 120
+      arrivalRate: 10
+      name: "Medium stress"
+    - duration: 180
+      arrivalRate: 15
+      name: "High stress"
+    - duration: 120
+      arrivalRate: 20
+      name: "Maximum stress"
+    - duration: 60
+      arrivalRate: 5
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 30
+  payload:
+    path: "test-users.csv"
+    fields:
+      - "email"
+      - "password"
+
+scenarios:
+  - name: "Auth Stress Test - Login Focus"
+    weight: 70
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+
+  - name: "Auth Stress Test - Profile Access"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Auth Stress Test - Logout"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/auth/logout"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200

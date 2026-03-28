@@ -1,0 +1,132 @@
+{
+  "info": {
+    "name": "RescueNet_Geo_Module",
+    "_postman_id": "5f6e1f2f-59a9-47d3-9af4-f1627cff2888",
+    "description": "Geo services for RescueNet (Nominatim geocoding + OSRM routing). Endpoints: Geocode, Reverse Geocode, Route (alternatives).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "geoPath",
+      "value": "api/geo"
+    }
+  ],
+  "item": [
+    {
+      "name": "Geo - Geocode (Forward)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/{{geoPath}}/geocode?q=Colombo%2C%20Sri%20Lanka&limit=5",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "{{geoPath}}",
+            "geocode"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "Colombo, Sri Lanka"
+            },
+            {
+              "key": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "Forward geocoding using Nominatim. Returns an array of matches with lat/lng + display name."
+      }
+    },
+    {
+      "name": "Geo - Reverse Geocode",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/{{geoPath}}/reverse?lat=6.9271&lng=79.8612&zoom=18",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "{{geoPath}}",
+            "reverse"
+          ],
+          "query": [
+            {
+              "key": "lat",
+              "value": "6.9271"
+            },
+            {
+              "key": "lng",
+              "value": "79.8612"
+            },
+            {
+              "key": "zoom",
+              "value": "18"
+            }
+          ]
+        },
+        "description": "Reverse geocoding using Nominatim. Returns address details for a lat/lng."
+      }
+    },
+    {
+      "name": "Geo - Route (OSRM, alternatives)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/{{geoPath}}/route?fromLng=79.8612&fromLat=6.9271&toLng=80.6337&toLat=7.2906&profile=driving&alternatives=true&overview=full&geometries=geojson",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "{{geoPath}}",
+            "route"
+          ],
+          "query": [
+            {
+              "key": "fromLng",
+              "value": "79.8612"
+            },
+            {
+              "key": "fromLat",
+              "value": "6.9271"
+            },
+            {
+              "key": "toLng",
+              "value": "80.6337"
+            },
+            {
+              "key": "toLat",
+              "value": "7.2906"
+            },
+            {
+              "key": "profile",
+              "value": "driving"
+            },
+            {
+              "key": "alternatives",
+              "value": "true"
+            },
+            {
+              "key": "overview",
+              "value": "full"
+            },
+            {
+              "key": "geometries",
+              "value": "geojson"
+            }
+          ]
+        },
+        "description": "Route calculation using OSRM. Returns main route and optional alternative routes. Use geometries=geojson for Leaflet-friendly coordinates."
+      }
+    }
+  ]
+}

@@ -7,13 +7,33 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit",
+    "test:api": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/apiTest",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
-    "test:unit:all": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.js",
-    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest src/tests/unit/weatherTest",
+    "test:lo": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest src/tests/unit/weatherTest",
     "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest",
-    "perf:help": "artillery run artillery.config.yml",
-    "perf": "npm run perf:help"
+
+    "perf:auth:basic": "artillery run  src/tests/performanceTest/authTest/basic-load.yml",
+    "perf:auth:stress": "artillery run src/tests/performanceTest/authTest/stress-test.yml",
+    "perf:auth:spike": "artillery run  src/tests/performanceTest/authTest/spike-test.yml",
+    "perf:auth:all": "npm run perf:auth:basic && npm run perf:auth:stress && npm run perf:auth:spike",
+    
+    "ready-admin" :"node src/tests/performanceTest/shelterTest/create-admin-shelter-user.js",
+    "perf:shelter:basic": "artillery run src/tests/performanceTest/shelterTest/basic-load.yml",
+    "perf:shelter:stress": "artillery run src/tests/performanceTest/shelterTest/stress-test.yml",
+    "perf:shelter:spike": "artillery run src/tests/performanceTest/shelterTest/spike-test.yml",
+    "perf:shelter:all": "npm run perf:shelter:basic && npm run perf:shelter:stress && npm run perf:shelter:spike",
+    
+    "perf:disaster:basic": "artillery run src/tests/performanceTest/disasterAnalyzeTest/basic-load.yml",
+    "perf:disaster:stress-optimized": "artillery run src/tests/performanceTest/disasterAnalyzeTest/stress-test-optimized.yml",
+    "perf:disaster:spike": "artillery run src/tests/performanceTest/disasterAnalyzeTest/spike-test.yml",
+    "perf:disaster:all": "npm run perf:disaster:basic && npm run perf:disaster:stress-optimized && npm run perf:disaster:spike",
+    
+    "perf:geo:basic": "artillery run src/tests/performanceTest/geoTest/basic-load.yml",
+    "perf:geo:stress": "artillery run src/tests/performanceTest/geoTest/stress-test.yml",
+    "perf:geo:spike": "artillery run src/tests/performanceTest/geoTest/spike-test.yml",
+    "perf:geo:all": "npm run perf:geo:basic && npm run perf:geo:stress && npm run perf:geo:spike"
+    
   },
   "keywords": [],
   "author": "",
@@ -23,11 +43,13 @@
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
     "fast-xml-parser": "^5.3.6",
     "google-translate-api-x": "^10.7.2",
     "helmet": "^8.1.0",
@@ -35,6 +57,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "node-cache": "^5.1.2",
     "nodemailer": "^7.0.13",
     "socket.io": "^4.8.3",
@@ -42,6 +65,7 @@
   },
   "devDependencies": {
     "artillery": "^2.0.30",
+    "artillery-plugin-metrics-by-endpoint": "^1.24.0",
     "cross-env": "^10.1.0",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
