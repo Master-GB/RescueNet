@@ -32,7 +32,8 @@
     "perf:geo:basic": "artillery run src/tests/performanceTest/geoTest/basic-load.yml",
     "perf:geo:stress": "artillery run src/tests/performanceTest/geoTest/stress-test.yml",
     "perf:geo:spike": "artillery run src/tests/performanceTest/geoTest/spike-test.yml",
-    "perf:geo:all": "npm run perf:geo:basic && npm run perf:geo:stress && npm run perf:geo:spike"
+    "perf:geo:all": "npm run perf:geo:basic && npm run perf:geo:stress && npm run perf:geo:spike",
+    "perf:help": "artillery run src/tests/perfomanceTest/helpTest/artillery.config.yml"
     
   },
   "keywords": [],
