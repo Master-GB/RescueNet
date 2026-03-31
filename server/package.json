@@ -9,6 +9,7 @@
     "dev": "nodemon src/server.js",
     "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit",
     "test:api": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/apiTest",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:lo": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest src/tests/unit/weatherTest",
     "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest",
@@ -69,6 +70,8 @@
     "cross-env": "^10.1.0",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
+    "mongodb-memory-server": "^10.2.0",
+    "supertest": "^7.1.4",
     "nodemon": "^3.1.11"
   }
 }
