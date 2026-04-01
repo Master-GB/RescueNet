@@ -1,0 +1,48 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 30
+      arrivalRate: 1
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 2
+      name: "Normal load"
+    - duration: 30
+      arrivalRate: 1
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 15
+
+scenarios:
+  - name: "Create Help Request"
+    weight: 60
+    flow:
+      - post:
+          url: "/api/help/add"
+          json:
+            name: "Test User {{ $randomString(5) }}"
+            location: "Test Location {{ $randomString(3) }}"
+            disasterType: "other"
+            message: "Performance test help request"
+            contactNumber: "1234567890"
+            realLocation: "40.7128,-74.0060"
+          expect:
+            - statusCode: 201
+
+  - name: "Get All Help Requests"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/help/"
+          expect:
+            - statusCode: 200
+
+  - name: "Get Help Request by ID"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/help/getid/000000000000000000000001"
+          expect:
+            - statusCode: [200, 404]
