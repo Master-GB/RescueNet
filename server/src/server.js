@@ -72,8 +72,10 @@ app.use("/api/shelters", (req, res, next) => {
 // Middleware
 app.use(
   cors({
-    origin: CLIENT_URL,
+    origin: ["http://localhost:3000", "http://localhost:5173", CLIENT_URL],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 const sidebarItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/citizen/dashboard" },
+  { name: "Dashboard", icon: LayoutDashboard, path: "/" },
   { name: "Shelters", icon: House, path: "/citizen/shelters" },
   { name: "Disaster", icon: TriangleAlert, path: "/citizen/disaster" },
   { name: "Help Request", icon: HandHelping, path: "/citizen/help-request" },
