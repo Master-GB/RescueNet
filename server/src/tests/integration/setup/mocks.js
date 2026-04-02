@@ -1,5 +1,13 @@
 import { jest } from "@jest/globals";
 
+// Mock User model for testing
+export const mockUser = {
+  findOne: jest.fn(),
+  findOneAndUpdate: jest.fn(),
+  create: jest.fn(),
+  findById: jest.fn(),
+};
+
 // Mock external HTTP client to avoid real network calls
 export const mockHttpClient = {
   get: jest.fn(),
@@ -30,6 +38,10 @@ export const mockUpload = jest.fn();
 // Helper to reset all mocks
 export function resetAllMocks() {
   jest.clearAllMocks();
+  mockUser.findOne.mockReset();
+  mockUser.findOneAndUpdate.mockReset();
+  mockUser.create.mockReset();
+  mockUser.findById.mockReset();
   mockHttpClient.get.mockClear();
   mockHttpClient.post.mockClear();
   mockWeatherService.getWeatherData.mockClear();

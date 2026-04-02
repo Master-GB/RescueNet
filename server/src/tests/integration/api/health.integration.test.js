@@ -17,7 +17,7 @@ describe("Health API Integration", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       success: true,
-      message: "Server is running"
+      message: "Test server is running"
     });
   });
 });

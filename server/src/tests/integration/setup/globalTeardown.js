@@ -1,15 +1,10 @@
 import mongoose from "mongoose";
 
-let mongod;
-
 export default async function globalTeardown() {
-  await mongoose.disconnect();
-  if (mongod) {
-    await mongod.stop();
+  try {
+    await mongoose.disconnect();
+    console.log("🧪 Test database disconnected");
+  } catch (error) {
+    console.log("⚠️ Error disconnecting from database:", error.message);
   }
-  console.log("🧪 In-memory MongoDB stopped");
-}
-
-export function setMongodInstance(instance) {
-  mongod = instance;
 }
