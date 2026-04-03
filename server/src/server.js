@@ -14,6 +14,7 @@ import adminNgoRoutes from "./routes/adminNgoRoutes.js";
 import helpRoutes from "./routes/helpRoutes.js";
 import weatherRoutes from "./routes/weatherRoutes.js";
 import ngoHelpRoutes from "./routes/ngoHelpRoutes.js";
+import areaSituationRoutes from "./routes/areaSituationRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRoutes.js";
@@ -72,8 +73,10 @@ app.use("/api/shelters", (req, res, next) => {
 // Middleware
 app.use(
   cors({
-    origin: CLIENT_URL,
+    origin: ["http://localhost:3000", "http://localhost:5173", CLIENT_URL],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 
@@ -87,7 +90,7 @@ app.use("/api/adminUser", adminUserRoutes);
 app.use("/api/shelters", shelterRouter);
 app.use("/api/geo", geoRoutes);
 app.use("/api/disasters", disastersRoutes);
-
+app.use("/api/area", areaSituationRoutes);
 
 app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);
