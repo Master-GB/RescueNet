@@ -1,6 +1,7 @@
 import React from "react";
 import { LayoutDashboard, ClipboardList, MapPinned, BellRing, UserCircle, HandHelping, Siren } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
+import VolunteerGreeting from "../../components/volunteerDashboard/VolunteerGreeting";
 import VolunteerSectionHeader from "../../components/volunteerDashboard/VolunteerSectionHeader";
 import VolunteerBriefingBanner from "../../components/volunteerDashboard/VolunteerBriefingBanner";
 import VolunteerFieldConditions from "../../components/volunteerDashboard/VolunteerFieldConditions";
@@ -28,6 +29,8 @@ const VolunteerDashboard = () => {
       searchPlaceholder="Search tasks, shelters, volunteer teams..."
     >
       <div className="space-y-8">
+        <VolunteerGreeting />
+
         <VolunteerBriefingBanner />
 
         <section>

@@ -1,45 +1,80 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CloudRain, Wind, Waves, TrafficCone, Clock3 } from "lucide-react";
-
-const cards = [
-  {
-    id: "weather",
-    label: "Weather",
-    value: "Heavy Rain",
-    detail: "Visibility reduced in west corridor",
-    icon: CloudRain,
-  },
-  {
-    id: "wind",
-    label: "Wind",
-    value: "28 km/h",
-    detail: "Moderate gusts near open shelters",
-    icon: Wind,
-  },
-  {
-    id: "flood",
-    label: "Flood Level",
-    value: "+18 cm",
-    detail: "Above safe threshold in zone B2",
-    icon: Waves,
-  },
-  {
-    id: "roads",
-    label: "Road Closures",
-    value: "5 Active",
-    detail: "South bridge and feeder roads blocked",
-    icon: TrafficCone,
-  },
-];
+import {
+  fetchAreaSituation,
+  fetchCurrentWeather,
+  getCurrentCoordinates,
+} from "./volunteerDashboardApi";
 
 const VolunteerFieldConditions = () => {
+  const [weather, setWeather] = useState(null);
+  const [situation, setSituation] = useState(null);
+  const [updatedAt, setUpdatedAt] = useState(null);
+
+  useEffect(() => {
+    const loadConditions = async () => {
+      try {
+        const coords = await getCurrentCoordinates();
+        const [weatherData, situationData] = await Promise.all([
+          fetchCurrentWeather(coords),
+          fetchAreaSituation(coords),
+        ]);
+
+        setWeather(weatherData?.current || null);
+        setSituation(situationData?.situations?.[0] || null);
+        setUpdatedAt(new Date());
+      } catch (error) {
+        console.error("Failed to load field conditions:", error.message);
+      }
+    };
+
+    loadConditions();
+  }, []);
+
+  const cards = useMemo(() => {
+    const windUnit = weather?.windSpeedUnit || "km/h";
+    const affectedAreasCount = situation?.affectedAreas?.length || 0;
+    const severity = situation?.severity || "low";
+
+    return [
+      {
+        id: "weather",
+        label: "Weather",
+        value: weather?.condition || "Unavailable",
+        detail: `Temperature ${Math.round(weather?.temperature || 0)}°`,
+        icon: CloudRain,
+      },
+      {
+        id: "wind",
+        label: "Wind",
+        value: `${Math.round(weather?.windSpeed || 0)} ${windUnit}`,
+        detail: "Current wind speed",
+        icon: Wind,
+      },
+      {
+        id: "severity",
+        label: "Area Severity",
+        value: String(severity).toUpperCase(),
+        detail: situation?.title || "No current advisory",
+        icon: Waves,
+      },
+      {
+        id: "affected",
+        label: "Affected Areas",
+        value: String(affectedAreasCount),
+        detail: "From current area situation",
+        icon: TrafficCone,
+      },
+    ];
+  }, [situation, weather]);
+
   return (
     <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-slate-800">Field Conditions</h3>
         <div className="text-xs text-slate-500 inline-flex items-center gap-1">
           <Clock3 className="w-3.5 h-3.5" />
-          Updated 3 minutes ago
+          {updatedAt ? `Updated ${updatedAt.toLocaleTimeString()}` : "Loading..."}
         </div>
       </div>
 
