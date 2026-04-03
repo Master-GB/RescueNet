@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Radio, Route, ClipboardCheck, Package, ArrowUpRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import {
+  fetchVolunteerProfile,
+  updateVolunteerAvailability,
+} from "./volunteerDashboardApi";
 
 const actions = [
   {
@@ -37,47 +40,85 @@ const actions = [
   },
 ];
 
-const VolunteerActionCenter = () => {
-  const navigate = useNavigate();
+const nextAvailability = {
+  OFFLINE: "AVAILABLE",
+  AVAILABLE: "BUSY",
+  BUSY: "OFFLINE",
+};
 
-  const handleOpen = (actionId) => {
-    if (actionId === "supplies") {
-      navigate("/donations/submit");
+const VolunteerActionCenter = () => {
+  const [availability, setAvailability] = useState("OFFLINE");
+  const [statusMessage, setStatusMessage] = useState("");
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const data = await fetchVolunteerProfile();
+        setAvailability(data?.profileData?.availabilityStatus || "OFFLINE");
+      } catch (error) {
+        setStatusMessage(error.message || "Could not load volunteer profile status");
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  const handleOpen = async (actionId) => {
+    if (actionId === "checkin") {
+      try {
+        const next = nextAvailability[availability] || "AVAILABLE";
+        const data = await updateVolunteerAvailability(next);
+        setAvailability(data?.profile?.availabilityStatus || next);
+        setStatusMessage(`Availability updated to ${data?.profile?.availabilityStatus || next}`);
+      } catch (error) {
+        setStatusMessage(error.message || "Failed to update volunteer availability");
+      }
       return;
     }
-    console.log(`Action selected: ${actionId}`);
+
+    setStatusMessage(`${actionId} connected. Backend endpoint for this action is not configured yet.`);
   };
 
+  const actionLabel = useMemo(() => {
+    return `Check-In (${availability})`;
+  }, [availability]);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {actions.map((item) => {
-        const Icon = item.icon;
+    <div className="space-y-3">
+      {statusMessage && (
+        <div className="text-sm text-slate-600">{statusMessage}</div>
+      )}
 
-        return (
-          <article
-            key={item.id}
-            className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition ${item.cardStyle}`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                <Icon className="w-5 h-5 text-slate-700" />
-              </div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</span>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {actions.map((item) => {
+          const Icon = item.icon;
 
-            <h4 className="mt-4 font-bold text-slate-800">{item.title}</h4>
-            <p className="mt-2 text-sm text-slate-600">{item.description}</p>
-
-            <button
-              className={`mt-4 w-full text-white rounded-xl px-4 py-2.5 text-sm font-semibold transition inline-flex items-center justify-center gap-2 ${item.buttonStyle}`}
-              onClick={() => handleOpen(item.id)}
+          return (
+            <article
+              key={item.id}
+              className={`rounded-2xl border p-5 shadow-sm hover:shadow-md transition ${item.cardStyle}`}
             >
-              Open
-              <ArrowUpRight className="w-4 h-4" />
-            </button>
-          </article>
-        );
-      })}
+              <div className="flex items-start justify-between gap-3">
+                <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                  <Icon className="w-5 h-5 text-slate-700" />
+                </div>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</span>
+              </div>
+
+              <h4 className="mt-4 font-bold text-slate-800">{item.id === "checkin" ? actionLabel : item.title}</h4>
+              <p className="mt-2 text-sm text-slate-600">{item.description}</p>
+
+              <button
+                className={`mt-4 w-full text-white rounded-xl px-4 py-2.5 text-sm font-semibold transition inline-flex items-center justify-center gap-2 ${item.buttonStyle}`}
+                onClick={() => handleOpen(item.id)}
+              >
+                Open
+                <ArrowUpRight className="w-4 h-4" />
+              </button>
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 };
