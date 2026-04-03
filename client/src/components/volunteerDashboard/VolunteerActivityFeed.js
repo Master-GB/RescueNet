@@ -1,38 +1,64 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Radio, Truck, Users2, CheckCircle2 } from "lucide-react";
+import { fetchHelpRequests } from "./volunteerDashboardApi";
 
-const activities = [
-  {
-    id: 1,
-    message: "Dispatch team V-14 confirmed route to flood zone C2.",
-    time: "2 min ago",
-    icon: Radio,
-    iconBg: "bg-indigo-500",
-  },
-  {
-    id: 2,
-    message: "Food and water kit delivery completed at Borella center.",
-    time: "11 min ago",
-    icon: Truck,
-    iconBg: "bg-emerald-500",
-  },
-  {
-    id: 3,
-    message: "6 displaced families checked in and assigned support staff.",
-    time: "18 min ago",
-    icon: Users2,
-    iconBg: "bg-blue-500",
-  },
-  {
-    id: 4,
-    message: "Night shift handover finalized for zone K1.",
-    time: "35 min ago",
-    icon: CheckCircle2,
-    iconBg: "bg-amber-500",
-  },
-];
+const iconForStatus = {
+  pending: { icon: Radio, iconBg: "bg-amber-500" },
+  assigned: { icon: Users2, iconBg: "bg-blue-500" },
+  "in-progress": { icon: Truck, iconBg: "bg-indigo-500" },
+  resolved: { icon: CheckCircle2, iconBg: "bg-emerald-500" },
+};
+
+const toTimeAgo = (timestamp) => {
+  const diffMs = Date.now() - new Date(timestamp).getTime();
+  const min = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+
+  if (min < 60) {
+    return `${min} min ago`;
+  }
+
+  const hr = Math.floor(min / 60);
+  return `${hr} hr ago`;
+};
 
 const VolunteerActivityFeed = () => {
+  const [requests, setRequests] = useState([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchHelpRequests(4);
+        setRequests(data?.data || []);
+      } catch (error) {
+        console.error("Failed to load volunteer activity:", error.message);
+      }
+    };
+
+    load();
+  }, []);
+
+  const activities = useMemo(() => {
+    return requests.map((request) => {
+      const iconMeta = iconForStatus[request.status] || iconForStatus.pending;
+
+      return {
+        id: request._id,
+        message: `${request.disasterType} request at ${request.location}`,
+        time: toTimeAgo(request.createdAt),
+        icon: iconMeta.icon,
+        iconBg: iconMeta.iconBg,
+      };
+    });
+  }, [requests]);
+
+  if (activities.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-slate-500">
+        No recent activity found.
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
       <div className="space-y-4">

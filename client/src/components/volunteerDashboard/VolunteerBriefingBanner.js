@@ -1,7 +1,50 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { RadioTower, Siren, UsersRound, ArrowRight } from "lucide-react";
+import {
+  fetchAreaSituation,
+  fetchHelpRequests,
+  getCurrentCoordinates,
+} from "./volunteerDashboardApi";
 
 const VolunteerBriefingBanner = () => {
+  const [situation, setSituation] = useState(null);
+  const [helpRequests, setHelpRequests] = useState([]);
+
+  useEffect(() => {
+    const loadBriefing = async () => {
+      try {
+        const coords = await getCurrentCoordinates();
+        const [situationData, helpData] = await Promise.all([
+          fetchAreaSituation(coords),
+          fetchHelpRequests(50),
+        ]);
+
+        setSituation(situationData?.situations?.[0] || null);
+        setHelpRequests(helpData?.data || []);
+      } catch (error) {
+        console.error("Failed to load volunteer briefing:", error.message);
+      }
+    };
+
+    loadBriefing();
+  }, []);
+
+  const summary = useMemo(() => {
+    const openAlerts = helpRequests.filter((item) => item.status === "pending").length;
+    const activeCases = helpRequests.filter(
+      (item) => item.status === "assigned" || item.status === "in-progress"
+    ).length;
+
+    return {
+      openAlerts,
+      activeCases,
+      title: situation?.title || "No active alert in your area",
+      message:
+        situation?.message ||
+        "No immediate threats detected by the area situation service. Keep your status updated.",
+    };
+  }, [helpRequests, situation]);
+
   return (
     <section className="rounded-2xl border border-emerald-700 bg-gradient-to-r from-emerald-600 to-green-700 p-6 text-white shadow-md">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
@@ -10,20 +53,18 @@ const VolunteerBriefingBanner = () => {
             <RadioTower className="w-3.5 h-3.5" />
             Live Volunteer Briefing
           </div>
-          <h2 className="mt-3 text-2xl font-bold">Zone B2 escalation: prioritize elderly transport support</h2>
-          <p className="mt-2 text-emerald-100 max-w-3xl">
-            Two field teams are en route. Dispatch requests additional volunteers with medical support training for safe relocation.
-          </p>
+          <h2 className="mt-3 text-2xl font-bold">{summary.title}</h2>
+          <p className="mt-2 text-emerald-100 max-w-3xl">{summary.message}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 min-w-fit">
           <div className="rounded-xl bg-white/15 border border-white/20 p-3">
             <p className="text-xs text-emerald-100">Open Alerts</p>
-            <p className="text-2xl font-bold mt-1">06</p>
+            <p className="text-2xl font-bold mt-1">{summary.openAlerts}</p>
           </div>
           <div className="rounded-xl bg-white/15 border border-white/20 p-3">
-            <p className="text-xs text-emerald-100">Teams Active</p>
-            <p className="text-2xl font-bold mt-1">14</p>
+            <p className="text-xs text-emerald-100">Active Cases</p>
+            <p className="text-2xl font-bold mt-1">{summary.activeCases}</p>
           </div>
         </div>
       </div>
