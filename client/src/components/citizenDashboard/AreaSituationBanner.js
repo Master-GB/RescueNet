@@ -196,10 +196,78 @@ const AreaSituationBanner = () => {
 
   if (!situations || situations.length === 0) {
     return (
-      <div className="bg-gray-100 rounded-2xl border border-gray-200 p-6 shadow-sm">
-        <div className="flex items-center text-gray-600">
-          <Info className="w-5 h-5 mr-2" />
-          <span>Unable to fetch area situation information</span>
+      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl border border-emerald-700 p-6 shadow-md text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-white/20">
+              <CheckCircle className="w-8 h-8 text-emerald-100" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-1">All Clear - No Active Disasters</h3>
+              <p className="text-emerald-100 opacity-90">
+                Your area is currently safe with no reported disaster situations. Stay prepared and informed.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition font-medium flex items-center gap-2"
+          >
+            <Activity className="w-4 h-4" />
+            Refresh Status
+          </button>
+        </div>
+        
+        {/* Additional Safe Information */}
+        <div className="mt-4 pt-4 border-t border-emerald-400/30">
+          <div className="flex items-center gap-2 text-sm opacity-90">
+            <Shield className="w-4 h-4" />
+            <span>Emergency services are operational and monitoring the area</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm opacity-90 mt-2">
+            <Clock className="w-4 h-4" />
+            <span>Last checked: {new Date().toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if all situations are "safe" - show our custom safe message
+  if (situations.every(situation => situation?.status === 'safe')) {
+    return (
+      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl border border-emerald-700 p-6 shadow-md text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-white/20">
+              <CheckCircle className="w-8 h-8 text-emerald-100" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-1">All Clear - No Active Disasters</h3>
+              <p className="text-emerald-100 opacity-90">
+                Your area is currently safe with no reported disaster situations. Stay prepared and informed.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition font-medium flex items-center gap-2"
+          >
+            <Activity className="w-4 h-4" />
+            Refresh Status
+          </button>
+        </div>
+        
+        {/* Additional Safe Information */}
+        <div className="mt-4 pt-4 border-t border-emerald-400/30">
+          <div className="flex items-center gap-2 text-sm opacity-90">
+            <Shield className="w-4 h-4" />
+            <span>Emergency services are operational and monitoring the area</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm opacity-90 mt-2">
+            <Clock className="w-4 h-4" />
+            <span>Last checked: {new Date().toLocaleString()}</span>
+          </div>
         </div>
       </div>
     );

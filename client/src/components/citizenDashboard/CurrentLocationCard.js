@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Navigation, Shield, Loader, AlertCircle } from 'lucide-react';
+import { MapPin, Navigation, Shield, Loader, AlertCircle, RefreshCw } from 'lucide-react';
 
 const CurrentLocationCard = () => {
   const [location, setLocation] = useState(null);
@@ -122,7 +122,7 @@ const CurrentLocationCard = () => {
           onClick={fetchCurrentLocation}
           className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
         >
-          <Navigation className="w-3 h-3" />
+          <RefreshCw className="w-3 h-3" />
           Refresh
         </button>
       </div>
@@ -133,24 +133,32 @@ const CurrentLocationCard = () => {
         <div className="bg-gray-50 rounded-lg p-4">
           <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <Shield className="w-4 h-4" />
-            Address Details
+            Full Address
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <div className="space-y-2 text-sm">
             <div>
-              <p className="text-gray-500">District</p>
-              <p className="font-medium text-gray-900">{location.address.district}</p>
+              <p className="text-gray-500">Street Address</p>
+              <p className="font-medium text-gray-900">{location.address.road}</p>
             </div>
-            <div>
-              <p className="text-gray-500">City/Town</p>
-              <p className="font-medium text-gray-900">{location.address.city}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <p className="text-gray-500">City/Town</p>
+                <p className="font-medium text-gray-900">{location.address.city}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">District</p>
+                <p className="font-medium text-gray-900">{location.address.district}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-gray-500">Country</p>
-              <p className="font-medium text-gray-900">{location.address.country}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Postal Code</p>
-              <p className="font-medium text-gray-900">{location.address.postcode}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <p className="text-gray-500">Country</p>
+                <p className="font-medium text-gray-900">{location.address.country}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Postal Code</p>
+                <p className="font-medium text-gray-900">{location.address.postcode}</p>
+              </div>
             </div>
           </div>
         </div>

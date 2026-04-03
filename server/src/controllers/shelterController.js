@@ -130,7 +130,10 @@ export const listShelters = async (req, res) => {
     );
     const sort = req.query.sort || "-updatedAt";
 
-    const filter = buildShelterQuery(req.query);
+    const filter = {
+      ...buildShelterQuery(req.query),
+      verified: true
+    };
 
     const [items, total] = await Promise.all([
       Shelter.find(filter)
@@ -172,7 +175,10 @@ export const nearbyShelters = async (req, res) => {
         .json({ success: false, message: "lng and lat are required numbers" });
     }
 
-    const baseFilter = buildShelterQuery(req.query);
+    const baseFilter = {
+      ...buildShelterQuery(req.query),
+      verified: true
+    };
 
     const shelters = await Shelter.find({
       ...baseFilter,

@@ -176,9 +176,9 @@ const WeatherDetailsCard = () => {
       {/* Current Weather */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Temperature */}
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="animate-fade-in">
               <p className="text-sm text-gray-600 mb-1">Temperature</p>
               <p className={`text-3xl font-bold ${getTemperatureColor(weather?.current?.temperature || 0)}`}>
                 {Math.round(weather?.current?.temperature || 0)}°
@@ -187,14 +187,14 @@ const WeatherDetailsCard = () => {
                 {weather?.units === 'imperial' ? 'Fahrenheit' : 'Celsius'}
               </p>
             </div>
-            <Thermometer className={`w-8 h-8 ${getTemperatureColor(weather?.current?.temperature || 0)}`} />
+            <Thermometer className={`w-8 h-8 ${getTemperatureColor(weather?.current?.temperature || 0)} animate-pulse`} />
           </div>
         </div>
 
         {/* Condition */}
-        <div className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-lg p-4">
+        <div className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-lg p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="animate-fade-in">
               <p className="text-sm text-gray-600 mb-1">Condition</p>
               <p className="text-xl font-bold text-gray-900 capitalize">
                 {weather?.current?.condition || 'Unknown'}
@@ -203,7 +203,9 @@ const WeatherDetailsCard = () => {
                 Provider: {weather?.provider || 'Unknown'}
               </p>
             </div>
-            {getWeatherIcon(weather?.current?.condition)}
+            <div className="animate-bounce-slow">
+              {getWeatherIcon(weather?.current?.condition)}
+            </div>
           </div>
         </div>
       </div>
@@ -211,42 +213,48 @@ const WeatherDetailsCard = () => {
       {/* Detailed Information */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Wind */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-lg p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-md">
           <div className="flex items-center gap-2 mb-2">
-            <Wind className="w-4 h-4 text-gray-600" />
+            <Wind className="w-4 h-4 text-gray-600 animate-spin-slow" />
             <p className="text-sm font-semibold text-gray-700">Wind</p>
           </div>
-          <p className="text-lg font-bold text-gray-900">
-            {Math.round(weather?.current?.windSpeed || 0)}
-          </p>
-          <p className="text-xs text-gray-500">
-            {weather?.units === 'imperial' ? 'mph' : 'km/h'}
-          </p>
-          <p className={`text-xs font-medium mt-1 ${windInfo.color}`}>
-            {windInfo.level} winds
-          </p>
+          <div className="animate-fade-in">
+            <p className="text-lg font-bold text-gray-900">
+              {Math.round(weather?.current?.windSpeed || 0)}
+            </p>
+            <p className="text-xs text-gray-500">
+              {weather?.units === 'imperial' ? 'mph' : 'km/h'}
+            </p>
+            <p className={`text-xs font-medium mt-1 ${windInfo.color}`}>
+              {windInfo.level} winds
+            </p>
+          </div>
         </div>
 
         {/* Humidity (Mock Data) */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-lg p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-md">
           <div className="flex items-center gap-2 mb-2">
-            <Droplets className="w-4 h-4 text-gray-600" />
+            <Droplets className="w-4 h-4 text-gray-600 animate-pulse" />
             <p className="text-sm font-semibold text-gray-700">Humidity</p>
           </div>
-          <p className="text-lg font-bold text-gray-900">65%</p>
-          <p className="text-xs text-gray-500">Moderate</p>
+          <div className="animate-fade-in">
+            <p className="text-lg font-bold text-gray-900">65%</p>
+            <p className="text-xs text-gray-500">Moderate</p>
+          </div>
         </div>
 
         {/* UV Index (Mock Data) */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-lg p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-md">
           <div className="flex items-center gap-2 mb-2">
-            <Sun className="w-4 h-4 text-gray-600" />
+            <Sun className="w-4 h-4 text-gray-600 animate-pulse-slow" />
             <p className="text-sm font-semibold text-gray-700">UV Index</p>
           </div>
-          <p className="text-lg font-bold text-gray-900">{uvInfo.value}</p>
-          <p className={`text-xs font-medium ${uvInfo.color}`}>
-            {uvInfo.level} exposure
-          </p>
+          <div className="animate-fade-in">
+            <p className="text-lg font-bold text-gray-900">{uvInfo.value}</p>
+            <p className={`text-xs font-medium ${uvInfo.color}`}>
+              {uvInfo.level} exposure
+            </p>
+          </div>
         </div>
       </div>
 
@@ -254,9 +262,9 @@ const WeatherDetailsCard = () => {
       {weather?.current?.condition?.toLowerCase().includes('thunderstorm') ||
        weather?.current?.condition?.toLowerCase().includes('heavy rain') ||
        weather?.current?.condition?.toLowerCase().includes('severe') ? (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg animate-pulse-slow">
           <div className="flex items-center gap-2 text-red-800">
-            <AlertTriangle className="w-4 h-4" />
+            <AlertTriangle className="w-4 h-4 animate-bounce" />
             <span className="text-sm font-medium">
               Severe Weather Alert: Take precautions and avoid unnecessary travel
             </span>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
   LogOut,
   Siren,
   SearchIcon,
+  Clock,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -26,6 +27,32 @@ const sidebarItems = [
 
 const CitizenLayout = ({ children }) => {
   const location = useLocation();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-200">
@@ -64,13 +91,16 @@ const CitizenLayout = ({ children }) => {
               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
             </button>
 
-            <button className="px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold flex items-center gap-2 shadow-sm transition">
-              <Siren className="w-4 h-4" />
-              SOS
-            </button>
-
             <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200">
               C
+            </div>
+
+            {/* Clock Widget */}
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition min-w-[70px]">
+              <div className="flex flex-col">
+                <span className="text-white font-semibold text-xl font-mono min-w-[70px]">{formatTime(currentTime)}</span>
+              
+              </div>
             </div>
 
           </div>
