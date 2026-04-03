@@ -10,12 +10,10 @@ import {
   UserCircle,
   Bell,
   LogOut,
-  Siren,
   SearchIcon,
-  Clock,
 } from "lucide-react";
 
-const sidebarItems = [
+const defaultSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/" },
   { name: "Shelters", icon: House, path: "/citizen/shelters" },
   { name: "Disaster", icon: TriangleAlert, path: "/citizen/disaster" },
@@ -25,7 +23,14 @@ const sidebarItems = [
   { name: "Profile", icon: UserCircle, path: "/citizen/profile" },
 ];
 
-const CitizenLayout = ({ children }) => {
+const DashboardLayout = ({
+  children,
+  sidebarItems = defaultSidebarItems,
+  portalTitle = "Citizen Portal",
+  avatarLetter = "C",
+  homePath = "/",
+  searchPlaceholder = "Search shelters, alerts, requests...",
+}) => {
   const location = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -54,7 +59,7 @@ const CitizenLayout = ({ children }) => {
       <header className="fixed top-0 left-0 right-0 h-20 bg-black border-b border-gray-800 z-50">
         <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Left */}
-          <Link to="/" className="flex items-center gap-3 min-w-fit transition-opacity">
+          <Link to={homePath} className="flex items-center gap-3 min-w-fit transition-opacity">
             <div className="w-11 h-11 rounded-2xl bg-green-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
               R
             </div>
@@ -62,7 +67,7 @@ const CitizenLayout = ({ children }) => {
               <h1 className="text-xl font-extrabold text-white">
                 RescueNet
               </h1>
-              <p className="text-xs text-gray-300">Citizen Portal</p>
+              <p className="text-xs text-gray-300">{portalTitle}</p>
             </div>
           </Link>
 
@@ -72,7 +77,7 @@ const CitizenLayout = ({ children }) => {
               <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search shelters, alerts, requests..."
+                placeholder={searchPlaceholder}
                 className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
               />
             </div>
@@ -85,8 +90,8 @@ const CitizenLayout = ({ children }) => {
               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
             </button>
 
-            <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200">
-              C
+            <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase">
+              {avatarLetter}
             </div>
 
             {/* Clock Widget */}
@@ -152,4 +157,4 @@ const CitizenLayout = ({ children }) => {
   );
 };
 
-export default CitizenLayout;
+export default DashboardLayout;
