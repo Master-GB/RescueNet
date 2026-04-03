@@ -7,6 +7,7 @@ import SectionHeader from "../../components/citizenDashboard/SectionHeader";
 import CurrentLocationCard from "../../components/citizenDashboard/CurrentLocationCard";
 import WeatherDetailsCard from "../../components/citizenDashboard/WeatherDetailsCard";
 import RecentNotifications from "../../components/citizenDashboard/RecentNotifications";
+import ShelterMap from "../../components/citizenDashboard/ShelterMap";
 import locationService from '../../services/locationService.js';
 import { AlertTriangle, Shield, Phone, Radio, Heart, Zap } from "lucide-react";
 
@@ -177,6 +178,15 @@ const CitizenDashboard = () => {
 
             <RecentNotifications />
           </div>
+        </section>
+
+        {/* Shelter Map */}
+        <section>
+          <SectionHeader
+            title="Shelter Map"
+            subtitle="All verified shelters with real-time capacity information"
+          />
+          <ShelterMap />
         </section>
       </div>
     </DashboardLayout>
