@@ -56,7 +56,7 @@ const DashboardLayout = ({
   return (
     <div className="min-h-screen bg-gray-200">
       {/* Top Navbar */}
-      <header className="fixed top-0 left-0 right-0 h-20 bg-black border-b border-gray-800 z-50">
+      <header className="fixed top-0 left-0 right-0 h-20 bg-black border-b border-gray-800 z-[1200]">
         <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Left */}
           <Link to={homePath} className="flex items-center gap-3 min-w-fit transition-opacity">
@@ -107,7 +107,7 @@ const DashboardLayout = ({
       </header>
 
       {/* Left Sidebar */}
-      <aside className="fixed top-20 left-0 w-72 h-[calc(100vh-5rem)] bg-gray-900 border-r border-gray-800 z-40 hidden lg:flex flex-col">
+      <aside className="fixed top-20 left-0 w-72 h-[calc(100vh-5rem)] bg-gray-900 border-r border-gray-800 z-[1100] hidden lg:flex flex-col">
 
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
