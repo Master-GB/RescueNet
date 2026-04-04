@@ -1,7 +1,14 @@
 .glass-panel {
-  background: rgba(37, 34, 40, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Fallback background for browsers without backdrop-filter */
+  background-color: rgba(37, 34, 40, 0.85);
   border-radius: var(--radius-lg);
   box-shadow: var(--ambient-shadow);
+}
+
+@supports ((-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px))) {
+  .glass-panel {
+    background: rgba(37, 34, 40, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
 }

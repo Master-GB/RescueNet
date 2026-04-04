@@ -18,6 +18,11 @@
   --secondary-container: #005f5f;
   --tertiary: #2cfe4c;
 
+  /* Semantic colors */
+  --danger: #ef4444;
+  --warning: #eab308;
+  --success: #22c55e;
+
   --outline-variant: #a29aa3;
   --outline-ghost: rgba(162, 154, 163, 0.15);
 
