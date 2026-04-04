@@ -78,7 +78,6 @@ const CitizenDashboard = () => {
   };
 
   return (
-    <DashboardLayout>
       <div className="space-y-8">
         {/* Area Situation Banner - Top Priority */}
         <AreaSituationBanner />
@@ -185,11 +184,12 @@ const CitizenDashboard = () => {
           <SectionHeader
             title="Shelter Map"
             subtitle="All verified shelters with real-time capacity information"
+            actionText="Find More Shelters Data"
+            onActionClick={() => window.location.href = '/citizen/shelters'}
           />
           <ShelterMap />
         </section>
       </div>
-    </DashboardLayout>
   );
 };
 
