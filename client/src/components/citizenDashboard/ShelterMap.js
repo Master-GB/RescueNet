@@ -58,17 +58,17 @@ const ShelterMap = () => {
 
   // Get capacity percentage for color coding
   const getCapacityColor = (shelter) => {
-    // Check shelter status first
-    if (shelter.status?.toLowerCase() === 'closed') return '#EF4444'; // Red - Closed
-    if (shelter.status?.toLowerCase() === 'full') return '#EAB308'; // Yellow - Full
-    
+    // Use semantic tokens (CSS variables) instead of hard-coded hex
+    if (shelter.status?.toLowerCase() === 'closed') return 'var(--danger)'; // Red - Closed
+    if (shelter.status?.toLowerCase() === 'full') return 'var(--warning)'; // Yellow - Full
+
     // If no occupancy data, default to available (green)
-    if (!shelter.occupancy?.current || !shelter.capacity?.total) return '#22C55E'; // Green - Available
-    
+    if (!shelter.occupancy?.current || !shelter.capacity?.total) return 'var(--success)'; // Green - Available
+
     const percentage = (shelter.occupancy.current / shelter.capacity.total) * 100;
-    
-    if (percentage >= 90) return '#EAB308'; // Yellow - Full
-    return '#22C55E'; // Green - Available
+
+    if (percentage >= 90) return 'var(--warning)'; // Yellow - Full
+    return 'var(--success)'; // Green - Available
   };
 
   // Create custom icon for shelters
@@ -89,21 +89,21 @@ const ShelterMap = () => {
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <!-- House base -->
             <rect x="6" y="12" width="12" height="10" 
-                  fill="${color}" 
-                  stroke="white" 
-                  stroke-width="1.5"/>
+              style="fill: ${color};" 
+              stroke="white" 
+              stroke-width="1.5"/>
             <!-- Roof -->
             <path d="M3 12L12 3L21 12" 
-                  fill="${color}" 
-                  stroke="white" 
-                  stroke-width="1.5"/>
+              style="fill: ${color};" 
+              stroke="white" 
+              stroke-width="1.5"/>
             <!-- Door -->
             <rect x="10" y="15" width="4" height="7" 
                   fill="white" 
                   opacity="0.8"/>
-            <!-- Door knob -->
-            <circle cx="13" cy="18.5" r="0.5" 
-                    fill="${color}"/>
+                <!-- Door knob -->
+                <circle cx="13" cy="18.5" r="0.5" 
+                  style="fill: ${color};"/>
             <!-- Windows -->
             <rect x="7.5" y="14" width="2" height="2" 
                   fill="white" 

@@ -1,0 +1,39 @@
+:root {
+  --surface: #151316;
+  --surface-container-low: #1b191d;
+  --surface-container: #201e23;
+  --surface-container-high: #26242a;
+  --surface-container-highest: #2c2930;
+  --surface-variant: #252228;
+  --surface-bright: #2f2c34;
+  --surface-tint: #56f7b7;
+
+  --on-surface: #e7e1e5;
+  --on-primary: #0b0b0b;
+  --on-secondary: #0b0b0b;
+
+  --primary: #56f7b7;
+  --primary-container: #2cda9d;
+  --secondary: #8ad3d3;
+  --secondary-container: #005f5f;
+  --tertiary: #2cfe4c;
+
+  /* Semantic colors */
+  --danger: #ef4444;
+  --warning: #eab308;
+  --success: #22c55e;
+
+  --outline-variant: #a29aa3;
+  --outline-ghost: rgba(162, 154, 163, 0.15);
+
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  --spacing-2: 0.5rem;
+  --spacing-4: 1.4rem;
+  --spacing-6: 2rem;
+  --spacing-8: 2.6rem;
+  --spacing-10: 3.2rem;
+
+  --ambient-shadow: 0px 24px 48px rgba(0, 0, 0, 0.4);
+}
