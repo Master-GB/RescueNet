@@ -1,0 +1,9 @@
+.ghost-outline {
+  outline: 1px solid var(--outline-ghost);
+  outline-offset: 0;
+}
+
+.focus-ghost:focus-visible {
+  outline: 1px solid var(--outline-ghost);
+  outline-offset: 2px;
+}
