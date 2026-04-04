@@ -12,11 +12,40 @@ Short guide to keep UI theming consistent across the client.
 - Prefer Tailwind utility classes mapped to tokens (e.g. `bg-surface`, `text-on-surface`, `shadow-ambient`) in markup.
 - Use the shared UI primitives in `src/components/ui` (`Button`, `Card`, `GlassContainer`) for consistent visuals.
 
-### Example usage (using tailwind classes referencing tokens):
+**Background classes**
+| Tailwind class | Token | Current color |
+|---|---|---|
+| `bg-surface` | `--surface` | `#151316` |
+| `bg-surface-container-low` | `--surface-container-low` | `#1b191d` |
+| `bg-surface-container` | `--surface-container` | `#201e23` |
+| `bg-surface-container-high` | `--surface-container-high` | `#26242a` |
+| `bg-surface-container-highest` | `--surface-container-highest` | `#2c2930` |
+| `bg-surface-variant` | `--surface-variant` | `#252228` |
+| `bg-surface-bright` | `--surface-bright` | `#2f2c34` |
+| `bg-primary` | `--primary` | `#56f7b7` |
+| `bg-primary-container` | `--primary-container` | `#2cda9d` |
+| `bg-secondary` | `--secondary` | `#8ad3d3` |
+| `bg-secondary-container` | `--secondary-container` | `#005f5f` |
+| `bg-tertiary` | `--tertiary` | `#2cfe4c` |
 
+**Text classes**
+| Tailwind class | Token | Current color |
+|---|---|---|
+| `text-on-surface` | `--on-surface` | `#e7e1e5` |
+| `text-on-primary` | `--on-primary` | `#0b0b0b` |
+| `text-primary` | `--primary` | `#56f7b7` |
+| `text-secondary` | `--secondary` | `#8ad3d3` |
+| `text-tertiary` | `--tertiary` | `#2cfe4c` |
+
+**Shadow**
+| Tailwind class | Token | Current value |
+|---|---|---|
+| `shadow-ambient` | `--ambient-shadow` | `0px 24px 48px rgba(0, 0, 0, 0.4)` |
+
+**Copy‑paste example**
 ```jsx
-<button className="bg-primary text-on-primary px-4 py-2 rounded-md shadow-ambient transition hover:opacity-95">
-  Primary action
+<button className="bg-primary text-on-primary px-4 py-2 rounded-md shadow-ambient">
+  Primary
 </button>
 ```
 
