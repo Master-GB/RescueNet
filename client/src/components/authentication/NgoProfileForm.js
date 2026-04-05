@@ -18,9 +18,26 @@ export default function NgoProfileForm({
 }) {
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [contactPhone, setContactPhone] = useState("");
-  const [servicesInput, setServicesInput] = useState("");
+  const [services, setServices] = useState([]);
   const [districtsInput, setDistrictsInput] = useState("");
   const [clientError, setClientError] = useState("");
+
+  const SERVICES = [
+    "FOOD",
+    "MEDICAL",
+    "TRANSPORT",
+    "SHELTER",
+    "RESCUE",
+    "EDUCATION",
+  ];
+
+  const toggleService = (service) => {
+    setClientError("");
+    setServices((prev) => {
+      if (prev.includes(service)) return prev.filter((s) => s !== service);
+      return [...prev, service];
+    });
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -33,7 +50,7 @@ export default function NgoProfileForm({
     await onSubmit({
       registrationNumber: registrationNumber.trim(),
       contactPhone: contactPhone.trim(),
-      services: splitValues(servicesInput, true),
+      services: services, // already an array of selected service strings
       serviceDistricts: splitValues(districtsInput),
     });
   };
@@ -70,14 +87,25 @@ export default function NgoProfileForm({
         required
       />
 
-      <AuthInput
-        id="ngo-services"
-        label="Services"
-        value={servicesInput}
-        onChange={(event) => setServicesInput(event.target.value)}
-        placeholder="FOOD, MEDICAL, TRANSPORT"
-        hint="Comma-separated values"
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Services</label>
+        <div className="grid grid-cols-2 gap-2">
+          {SERVICES.map((s) => (
+            <label key={s} className="inline-flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="services"
+                value={s}
+                checked={services.includes(s)}
+                onChange={() => toggleService(s)}
+                className="form-checkbox h-4 w-4 text-indigo-600"
+              />
+              <span className="text-sm">{s}</span>
+            </label>
+          ))}
+        </div>
+        <p className="text-xs text-gray-500 mt-1">Select one or more services offered by the NGO.</p>
+      </div>
 
       <AuthInput
         id="ngo-districts"
