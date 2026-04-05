@@ -1,26 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+const ENTRY_DELAY_MS = 1500;
+const TRANSITION_MS = 500;
+
+const PHASE = {
+  HIDDEN: 'hidden',
+  ENTERING: 'entering',
+  VISIBLE: 'visible',
+  EXITING: 'exiting',
+};
 
 const AuthCookie = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [phase, setPhase] = useState(PHASE.HIDDEN);
+  const showTimerRef = useRef(null);
+  const hideTimerRef = useRef(null);
+  const frameRef = useRef(null);
 
   useEffect(() => {
     const isConsentGiven = localStorage.getItem('rescuenet_cookie_consent');
-    if (!isConsentGiven) {
-      // Show it after a small delay for a nice effect
-      const timer = setTimeout(() => setIsVisible(true), 1500);
-      return () => clearTimeout(timer);
+    if (isConsentGiven) {
+      return undefined;
     }
+
+    // Show after a small delay, then animate from right to left.
+    showTimerRef.current = setTimeout(() => {
+      setPhase(PHASE.ENTERING);
+      frameRef.current = requestAnimationFrame(() => {
+        setPhase(PHASE.VISIBLE);
+      });
+    }, ENTRY_DELAY_MS);
+
+    return () => {
+      if (showTimerRef.current) {
+        clearTimeout(showTimerRef.current);
+      }
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
   }, []);
 
   const handleAccept = () => {
     localStorage.setItem('rescuenet_cookie_consent', 'true');
-    setIsVisible(false);
+    setPhase(PHASE.EXITING);
+
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+    }
+
+    hideTimerRef.current = setTimeout(() => {
+      setPhase(PHASE.HIDDEN);
+    }, TRANSITION_MS);
   };
 
-  if (!isVisible) return null;
+  if (phase === PHASE.HIDDEN) return null;
+
+  const motionClassName =
+    phase === PHASE.VISIBLE
+      ? 'translate-x-0 opacity-100'
+      : 'translate-x-[120%] opacity-0 pointer-events-none';
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] [--shadow:rgba(60,64,67,0.3)_0_1px_2px_0,rgba(60,64,67,0.15)_0_2px_6px_2px] w-4/5 h-auto rounded-2xl bg-white [box-shadow:var(--shadow)] max-w-[300px] animate-in fade-in slide-in-from-bottom-8 duration-500">
+    <div className={`fixed bottom-6 right-6 z-[9999] [--shadow:rgba(60,64,67,0.3)_0_1px_2px_0,rgba(60,64,67,0.15)_0_2px_6px_2px] w-4/5 h-auto rounded-2xl bg-white [box-shadow:var(--shadow)] max-w-[300px] transform transition-[transform,opacity] duration-500 ease-out will-change-transform ${motionClassName}`}>
       <div className="flex flex-col items-center justify-between pt-9 px-6 pb-6 relative">
         <span className="relative mx-auto -mt-16 mb-8">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" height={46} width={65}>
