@@ -15,6 +15,27 @@ Our palette is a study in high-contrast luminescence. We use a dark substrate to
 *   **The Anchor (Secondary):** `secondary` (`#8ad3d3`) and `secondary_container` (`#005f5f`) handle navigation and structural elements, providing a calming, oceanic counterpoint to the vibrant mint signals.
 *   **The Alert (Tertiary):** `tertiary` (`#2cfe4c`) is used exclusively for success states and "Shelter Available" indicators.
 
+### Auth Light Palette (Tokenized Exception)
+Authentication screens intentionally use a light shell while preserving the Vigilant Sanctuary brand accents. These values are fixed and must be consumed through tokens only.
+
+*   `auth_bg` = `#f8fafc`
+*   `auth_surface` = `#ffffff`
+*   `auth_border` = `#e2e8f0`
+*   `auth_border_subtle` = `#f1f5f9`
+*   `auth_text` = `#0f172a`
+*   `auth_text_strong` = `#1e293b`
+*   `auth_text_soft` = `#475569`
+*   `auth_text_muted` = `#64748b`
+*   `auth_placeholder` = `#94a3b8`
+*   `auth_success_bg` = `#f0fdf4`
+*   `auth_success_border` = `#bbf7d0`
+*   `auth_warning_bg` = `#fefce8`
+*   `auth_warning_border` = `#fef08a`
+*   `auth_danger_bg` = `#fef2f2`
+*   `auth_danger_border` = `#fecaca`
+
+Rule: do not use default Tailwind palette classes (`slate-*`, `red-*`, `yellow-*`, `green-*`) in auth feature code when an auth token class exists.
+
 ### The "No-Line" Rule
 Standard UI relies on 1px borders to separate content. **In this design system, 1px solid borders are strictly prohibited for sectioning.** Boundaries must be defined through:
 1.  **Background Color Shifts:** A `surface-container-low` section sitting on a `surface` background.
@@ -91,6 +112,7 @@ Depth in this design system is achieved through **Tonal Layering** rather than t
 ## 7. Implementation Notes
 *   **Font:** Load Raleway in `public/index.html` using the Google Fonts link with `display=swap` and preconnects.
 *   **Tokens:** Use CSS variables from `src/styles/design-tokens.css` as the source of truth. Mirror them in Tailwind `theme.extend` for utility classes.
+*   **Auth Screens:** Use only tokenized auth utility classes (`bg-auth-*`, `text-auth-*`, `border-auth-*`) to preserve exact light-theme values without hardcoding.
 *   **Global Base:** Import tokens and set `body` background/text color in `src/index.css`.
 *   **Glass & Ghost:** Use `.glass-panel` (from `src/styles/glass.css`) for glassmorphism and `.ghost-outline` (from `src/styles/accessibility.css`) only when a boundary is required.
 

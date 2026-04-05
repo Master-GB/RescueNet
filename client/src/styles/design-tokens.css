@@ -36,4 +36,28 @@
   --spacing-10: 3.2rem;
 
   --ambient-shadow: 0px 24px 48px rgba(0, 0, 0, 0.4);
+
+  /* Auth light palette tokens (value-preserving) */
+  --auth-bg: #f8fafc;
+  --auth-surface: #ffffff;
+  --auth-surface-glass: rgba(255, 255, 255, 0.7);
+  --auth-surface-glass-border: rgba(255, 255, 255, 0.5);
+
+  --auth-border: #e2e8f0;
+  --auth-border-subtle: #f1f5f9;
+
+  --auth-text: #0f172a;
+  --auth-text-strong: #1e293b;
+  --auth-text-soft: #475569;
+  --auth-text-muted: #64748b;
+  --auth-placeholder: #94a3b8;
+
+  --auth-success-bg: #f0fdf4;
+  --auth-success-border: #bbf7d0;
+  --auth-warning-bg: #fefce8;
+  --auth-warning-border: #fef08a;
+  --auth-danger-bg: #fef2f2;
+  --auth-danger-border: #fecaca;
+
+  --auth-shell-panel-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 }

@@ -11,7 +11,7 @@ import VolunteerTaskBoard from "../../components/volunteerDashboard/VolunteerTas
 import VolunteerActivityFeed from "../../components/volunteerDashboard/VolunteerActivityFeed";
 
 const volunteerSidebarItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/volunteer" },
+  { name: "Dashboard", icon: LayoutDashboard, path: "/volunteer-dashboard" },
   { name: "My Tasks", icon: ClipboardList, path: "/volunteer/tasks" },
   { name: "Field Map", icon: MapPinned, path: "/volunteer/map" },
   { name: "Team Alerts", icon: BellRing, path: "/volunteer/alerts" },
@@ -25,7 +25,7 @@ const VolunteerDashboard = () => {
       sidebarItems={volunteerSidebarItems}
       portalTitle="Volunteer Portal"
       avatarLetter="V"
-      homePath="/volunteer"
+      homePath="/volunteer-dashboard"
       searchPlaceholder="Search tasks, shelters, volunteer teams..."
     >
       <div className="space-y-8">
