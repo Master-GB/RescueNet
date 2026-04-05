@@ -17,9 +17,23 @@ export default function VolunteerProfileForm({
   serverError = "",
 }) {
   const [phone, setPhone] = useState("");
-  const [skillsInput, setSkillsInput] = useState("");
+  const [skills, setSkills] = useState([]);
   const [districtsInput, setDistrictsInput] = useState("");
   const [clientError, setClientError] = useState("");
+
+  const SKILLS = [
+    "FIRST_AID",
+    "RESCUE",
+    "LOGISTICS",
+    "MEDICAL",
+    "DRIVING",
+    "COMMUNICATION",
+  ];
+
+  const toggleSkill = (skill) => {
+    setClientError("");
+    setSkills((prev) => (prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]));
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -31,7 +45,7 @@ export default function VolunteerProfileForm({
 
     await onSubmit({
       phone: phone.trim(),
-      skills: splitValues(skillsInput, true),
+      skills: skills, // already an array of selected skills
       serviceDistricts: splitValues(districtsInput),
     });
   };
@@ -56,14 +70,25 @@ export default function VolunteerProfileForm({
         required
       />
 
-      <AuthInput
-        id="volunteer-skills"
-        label="Skills"
-        value={skillsInput}
-        onChange={(event) => setSkillsInput(event.target.value)}
-        placeholder="FIRST_AID, RESCUE, LOGISTICS"
-        hint="Comma-separated values"
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+        <div className="grid grid-cols-2 gap-2">
+          {SKILLS.map((s) => (
+            <label key={s} className="inline-flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="skills"
+                value={s}
+                checked={skills.includes(s)}
+                onChange={() => toggleSkill(s)}
+                className="form-checkbox h-4 w-4 text-indigo-600"
+              />
+              <span className="text-sm">{s}</span>
+            </label>
+          ))}
+        </div>
+        <p className="text-xs text-gray-500 mt-1">Select one or more skills you have.</p>
+      </div>
 
       <AuthInput
         id="volunteer-districts"
