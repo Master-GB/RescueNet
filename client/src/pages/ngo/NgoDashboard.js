@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Zap, FileText, Heart, Megaphone, Users, User, MapPin, CheckCircle, Clock } from 'lucide-react';
 import NGOnavbar from '../../components/ngoDashboard/NGOnavbar';
+import NGOcard from '../../components/ngoDashboard/NGOcard';
 // import { fetchDashboardData, toggleNgoStatus } from '../../services/api'; // TODO: Replace with real API calls
 
 const NgoDashboard = () => {
