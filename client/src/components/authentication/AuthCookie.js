@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-const Card = () => {
+const AuthCookie = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const isConsentGiven = localStorage.getItem('rescuenet_cookie_consent');
+    if (!isConsentGiven) {
+      // Show it after a small delay for a nice effect
+      const timer = setTimeout(() => setIsVisible(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleAccept = () => {
+    localStorage.setItem('rescuenet_cookie_consent', 'true');
+    setIsVisible(false);
+  };
+
+  if (!isVisible) return null;
+
   return (
-    <div className="[--shadow:rgba(60,64,67,0.3)_0_1px_2px_0,rgba(60,64,67,0.15)_0_2px_6px_2px] w-4/5 h-auto rounded-2xl bg-white [box-shadow:var(--shadow)] max-w-[300px]">
+    <div className="fixed bottom-6 right-6 z-[9999] [--shadow:rgba(60,64,67,0.3)_0_1px_2px_0,rgba(60,64,67,0.15)_0_2px_6px_2px] w-4/5 h-auto rounded-2xl bg-white [box-shadow:var(--shadow)] max-w-[300px] animate-in fade-in slide-in-from-bottom-8 duration-500">
       <div className="flex flex-col items-center justify-between pt-9 px-6 pb-6 relative">
         <span className="relative mx-auto -mt-16 mb-8">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" height={46} width={65}>
@@ -20,22 +38,27 @@ const Card = () => {
         <h5 className="text-sm font-semibold mb-2 text-left mr-auto text-zinc-700">
           Your privacy is important to us
         </h5>
-        <p className="w-full mb-4 text-sm text-justify">
+        <p className="w-full mb-4 text-sm text-justify text-zinc-600">
           We process your personal information to measure and improve our sites and
           services, to assist our campaigns and to provide personalised content.
           <br />
           For more information see our
-          <a className="mb-2 text-sm cursor-pointer font-semibold transition-colors hover:text-[#634647] underline underline-offset-2">Privacy Policy</a>
+          <a className="ml-1 mb-2 text-sm cursor-pointer font-semibold transition-colors hover:text-[#634647] underline underline-offset-2">Privacy Policy</a>
         </p>
-        <button className="mb-2 text-sm mr-auto text-zinc-600 cursor-pointer font-semibold transition-colors hover:text-[#634647] hover:underline underline-offset-2">
-          More Options
-        </button>
-        <button className="absolute font-semibold right-6 bottom-6 cursor-pointer py-2 px-8 w-max break-keep text-sm rounded-lg transition-colors text-[#634647] hover:text-[#ddad81] bg-[#ddad81] hover:bg-[#634647]" type="button">
-          Accept
-        </button>
+        <div className="flex w-full justify-between items-center mt-2">
+          <button className="text-sm text-zinc-600 cursor-pointer font-semibold transition-colors hover:text-primary-container hover:underline underline-offset-2">
+            More Options
+          </button>
+          <button 
+            onClick={handleAccept}
+            className="font-semibold cursor-pointer py-2 px-6 break-keep text-sm rounded-lg transition-colors bg-primary text-on-primary hover:bg-primary-container shadow-sm" type="button"
+          >
+            Accept
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-export default Card;
+export default AuthCookie;

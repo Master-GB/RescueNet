@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import AuthCookie from "../components/authentication/AuthCookie";
 import {
   LayoutDashboard,
   House,
@@ -166,6 +167,9 @@ const DashboardLayout = ({
       <main className="pt-20 lg:pl-72 min-h-screen">
         <div className="p-4 md:p-6 lg:p-8">{children}</div>
       </main>
+
+      {/* Global auth cookie consent component */}
+      <AuthCookie />
     </div>
   );
 };
