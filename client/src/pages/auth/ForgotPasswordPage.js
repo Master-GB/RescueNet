@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
       title="Reset Password"
       subtitle="Complete the 3-step reset flow: request code, verify code, set a new password."
       footer={
-        <Link className="text-primary hover:underline" to="/auth/login">
+        <Link className="text-primary-container font-semibold hover:underline" to="/auth/login">
           Back to Sign In
         </Link>
       }
@@ -213,7 +213,7 @@ export default function ForgotPasswordPage() {
       ) : null}
 
       {step === "done" ? (
-        <p className="text-sm text-on-surface opacity-80">
+        <p className="text-sm text-auth-text-muted">
           Redirecting to login...
         </p>
       ) : null}

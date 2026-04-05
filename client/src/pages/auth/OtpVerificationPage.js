@@ -132,8 +132,8 @@ export default function OtpVerificationPage() {
       title="Verify Your Account"
       subtitle="Account verification is mandatory before login and dashboard access."
       footer={
-        <p className="text-xs text-on-surface opacity-80">
-          Logged in as <span className="text-primary">{user?.email || "current user"}</span>
+        <p className="text-xs text-auth-text-muted">
+          Logged in as <span className="text-primary-container font-semibold">{user?.email || "current user"}</span>
         </p>
       }
     >

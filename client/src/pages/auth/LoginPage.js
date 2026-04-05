@@ -70,11 +70,11 @@ export default function LoginPage() {
       title="Sign In"
       subtitle="Use your RescueNet account to continue to your role dashboard."
       footer={
-        <div className="flex items-center justify-between gap-3 text-on-surface opacity-80">
-          <Link className="text-primary hover:underline" to="/auth/register">
+        <div className="flex items-center justify-between gap-3 text-auth-text-muted">
+          <Link className="text-primary-container font-semibold hover:underline" to="/auth/register">
             Create account
           </Link>
-          <Link className="text-secondary hover:underline" to="/auth/forgot-password">
+          <Link className="text-secondary-container font-semibold hover:underline" to="/auth/forgot-password">
             Forgot password?
           </Link>
         </div>

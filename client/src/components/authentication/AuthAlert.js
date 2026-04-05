@@ -2,20 +2,24 @@ import React from "react";
 
 const variantStyles = {
   info: {
-    backgroundColor: "var(--surface-container-high)",
-    color: "var(--secondary)",
+    backgroundColor: "var(--auth-bg)",
+    color: "var(--secondary-container)",
+    border: "1px solid var(--auth-border)",
   },
   success: {
-    backgroundColor: "var(--surface-container-high)",
-    color: "var(--primary)",
+    backgroundColor: "var(--auth-success-bg)",
+    color: "var(--primary-container)",
+    border: "1px solid var(--auth-success-border)",
   },
   warning: {
-    backgroundColor: "var(--surface-container-high)",
+    backgroundColor: "var(--auth-warning-bg)",
     color: "var(--warning)",
+    border: "1px solid var(--auth-warning-border)",
   },
   error: {
-    backgroundColor: "var(--surface-container-high)",
+    backgroundColor: "var(--auth-danger-bg)",
     color: "var(--danger)",
+    border: "1px solid var(--auth-danger-border)",
   },
 };
 
@@ -29,7 +33,7 @@ export default function AuthAlert({
 
   return (
     <div
-      className="rounded-lg px-4 py-3 text-sm ghost-outline"
+      className="rounded-lg px-4 py-3 text-sm font-medium"
       style={variantStyles[variant] || variantStyles.info}
     >
       {message}

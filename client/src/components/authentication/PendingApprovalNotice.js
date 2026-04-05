@@ -9,16 +9,19 @@ export default function PendingApprovalNotice({
   refreshing = false,
 }) {
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl bg-surface-container-high p-5 ghost-outline">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        <p className="mt-2 text-sm text-on-surface opacity-80">{message}</p>
+    <div className="space-y-4 text-auth-text-strong">
+      <div className="rounded-xl bg-auth-bg border border-auth-border p-6">
+        <h2 className="text-xl font-bold text-auth-text">{title}</h2>
+        <p className="mt-3 text-sm text-auth-text-soft leading-relaxed">{message}</p>
       </div>
 
       {details.length > 0 ? (
-        <ul className="space-y-2 rounded-xl bg-surface-container-low p-5 ghost-outline text-sm text-on-surface opacity-80">
+        <ul className="space-y-3 rounded-xl bg-auth-surface border border-auth-border-subtle p-6 text-sm text-auth-text-soft">
           {details.map((item) => (
-            <li key={item}>• {item}</li>
+            <li key={item} className="flex gap-2">
+              <span className="text-primary-container font-bold">•</span>
+              <span>{item}</span>
+            </li>
           ))}
         </ul>
       ) : null}

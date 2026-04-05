@@ -99,9 +99,9 @@ export default function RegisterPage() {
       title="Create Account"
       subtitle="Register your role and continue immediately to mandatory OTP verification."
       footer={
-        <div className="text-on-surface opacity-80">
+        <div className="text-auth-text-muted">
           Already have an account?{" "}
-          <Link className="text-primary hover:underline" to="/auth/login">
+          <Link className="text-primary-container font-semibold hover:underline" to="/auth/login">
             Sign in
           </Link>
         </div>
@@ -157,13 +157,13 @@ export default function RegisterPage() {
         />
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.08em] text-secondary">
+          <span className="mb-2 block text-xs uppercase tracking-[0.08em] text-secondary-container font-semibold">
             Role
           </span>
           <select
             value={role}
             onChange={(event) => setRole(event.target.value)}
-            className="focus-ghost w-full rounded-lg bg-surface-container-highest px-4 py-3 text-sm text-on-surface outline-none"
+            className="focus-ghost w-full rounded-lg bg-auth-bg border border-auth-border px-4 py-3 text-sm text-auth-text outline-none transition focus:bg-auth-surface focus:border-primary-container"
           >
             {roleOptions.map((item) => (
               <option key={item} value={item}>
