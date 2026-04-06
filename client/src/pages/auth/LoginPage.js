@@ -2,12 +2,13 @@ import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthAlert from "../../components/authentication/AuthAlert";
 import AuthInput from "../../components/authentication/AuthInput";
-import AuthShell from "../../components/authentication/AuthShell";
+import AuthMarketingPanel from "../../components/authentication/AuthMarketingPanel";
 import Button from "../../components/ui/Button";
 import useAuth from "../../hooks/useAuth";
 import { getApiErrorMessage } from "../../services/authService";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MARKETING_HEADLINE_TEXT = "Security-first access for rapid, coordinated relief.";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -66,61 +67,71 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthShell
-      title="Sign In"
-      subtitle="Use your RescueNet account to continue to your role dashboard."
-      footer={
-        <div className="flex items-center justify-between gap-3 text-auth-text-muted">
-          <Link className="text-primary-container font-semibold hover:underline" to="/auth/register">
-            Create account
-          </Link>
-          <Link className="text-secondary-container font-semibold hover:underline" to="/auth/forgot-password">
-            Forgot password?
-          </Link>
+    <main className="flex flex-col md:flex-row min-h-screen" data-purpose="auth-page-container">
+      <AuthMarketingPanel headlineText={MARKETING_HEADLINE_TEXT} />
+
+      <section className="w-full md:w-1/2 bg-auth-bg flex flex-col justify-center p-10 md:p-16 lg:p-24" data-purpose="login-panel">
+        <div className="max-w-md w-full mx-auto">
+          <span className="block text-[10px] md:text-xs font-bold tracking-[0.2em] text-primary uppercase mb-4" data-purpose="brand-label">
+            RescueNet
+          </span>
+          <h2 className="text-3xl font-bold text-auth-text-strong mb-4">Sign In</h2>
+          <p className="text-auth-text-muted text-sm mb-10 leading-relaxed">
+            Use your RescueNet account to continue to your role dashboard.
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <AuthAlert message={error} variant="error" />
+            <AuthAlert message={hint} variant="warning" />
+
+            <AuthInput
+              id="login-email"
+              type="email"
+              label="Email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setError("");
+              }}
+              placeholder="you@example.com"
+              autoComplete="email"
+              error={emailError}
+              required
+            />
+
+            <AuthInput
+              id="login-password"
+              type="password"
+              label="Password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setError("");
+              }}
+              placeholder="Enter password"
+              autoComplete="current-password"
+              required
+            />
+
+            <Button
+              type="submit"
+              disabled={submitting || !canSubmit || Boolean(emailError)}
+              className="w-full py-3 text-sm font-semibold disabled:opacity-70"
+            >
+              {submitting ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+
+          <div className="mt-10 flex items-center justify-between text-sm" data-purpose="auth-links">
+            <Link className="text-primary font-semibold hover:underline" to="/auth/register">
+              Create account
+            </Link>
+            <Link className="text-secondary font-semibold hover:underline" to="/auth/forgot-password">
+              Forgot password?
+            </Link>
+          </div>
         </div>
-      }
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <AuthAlert message={error} variant="error" />
-        <AuthAlert message={hint} variant="warning" />
-
-        <AuthInput
-          id="login-email"
-          type="email"
-          label="Email"
-          value={email}
-          onChange={(event) => {
-            setEmail(event.target.value);
-            setError("");
-          }}
-          placeholder="you@example.com"
-          autoComplete="email"
-          error={emailError}
-          required
-        />
-
-        <AuthInput
-          id="login-password"
-          type="password"
-          label="Password"
-          value={password}
-          onChange={(event) => {
-            setPassword(event.target.value);
-            setError("");
-          }}
-          placeholder="Enter password"
-          autoComplete="current-password"
-          required
-        />
-
-        <Button
-          type="submit"
-          disabled={submitting || !canSubmit || Boolean(emailError)}
-          className="w-full py-3 text-sm font-semibold disabled:opacity-70"
-        >
-          {submitting ? "Signing in..." : "Sign In"}
-        </Button>
-      </form>
-    </AuthShell>
+      </section>
+    </main>
   );
 }
