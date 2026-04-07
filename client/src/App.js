@@ -1,7 +1,12 @@
 import AppRoutes from "./routes/AppRoutes";
+import { ShelterProvider } from "./contexts/ShelterContext";
 
 function App() {
-  return <AppRoutes />;
+  return (
+    <ShelterProvider>
+      <AppRoutes />
+    </ShelterProvider>
+  );
 }
 
 export default App;
