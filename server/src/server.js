@@ -14,6 +14,7 @@ import adminNgoRoutes from "./routes/adminNgoRoutes.js";
 import helpRoutes from "./routes/helpRoutes.js";
 import weatherRoutes from "./routes/weatherRoutes.js";
 import ngoHelpRoutes from "./routes/ngoHelpRoutes.js";
+import areaSituationRoutes from "./routes/areaSituationRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRoutes.js";
@@ -34,8 +35,12 @@ import donationRoutes from "./routes/donationRoutes.js";
 dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
 
 if (!process.env.JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined");
-  process.exit(1);
+  if (process.env.NODE_ENV === "test") {
+    process.env.JWT_SECRET = "test-secret";
+  } else {
+    console.error("FATAL ERROR: JWT_SECRET is not defined");
+    process.exit(1);
+  }
 }
 
 const app = express();
@@ -68,8 +73,10 @@ app.use("/api/shelters", (req, res, next) => {
 // Middleware
 app.use(
   cors({
-    origin: CLIENT_URL,
+    origin: ["http://localhost:3000", "http://localhost:5173", CLIENT_URL],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 
@@ -83,7 +90,7 @@ app.use("/api/adminUser", adminUserRoutes);
 app.use("/api/shelters", shelterRouter);
 app.use("/api/geo", geoRoutes);
 app.use("/api/disasters", disastersRoutes);
-
+app.use("/api/area", areaSituationRoutes);
 
 app.use("/api/help", helpRoutes);
 app.use("/api/weather", weatherRoutes);
@@ -102,11 +109,15 @@ app.get("/api/health", (req, res) => {
 });
 
 // Start
-connectDB()
-  .then(() => {
-    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error(err?.message ?? err);
-    process.exit(1);
-  });
+if (process.env.NODE_ENV !== "test") {
+  connectDB()
+    .then(() => {
+      server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error(err?.message ?? err);
+      process.exit(1);
+    });
+}
+
+export default app;
