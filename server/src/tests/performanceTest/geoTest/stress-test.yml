@@ -1,0 +1,62 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 2
+      name: "Baseline stress"
+    - duration: 120
+      arrivalRate: 3
+      name: "Medium stress"
+    - duration: 180
+      arrivalRate: 4
+      name: "High stress"
+    - duration: 120
+      arrivalRate: 2
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 90
+  payload:
+    path: "geo-test-data.csv"
+    fields:
+      - "from_lng"
+      - "from_lat"
+      - "to_lng"
+      - "to_lat"
+      - "address_query"
+      - "reverse_lat"
+      - "reverse_lng"
+
+scenarios:
+  - name: "Stress - Emergency Routing"
+    weight: 35
+    flow:
+      - get:
+          url: "/api/geo/route?fromLng={{ from_lng }}&fromLat={{ from_lat }}&toLng={{ to_lng }}&toLat={{ to_lat }}&profile=driving&alternatives=true"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Stress - Multiple Routing Profiles"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/geo/route?fromLng={{ from_lng }}&fromLat={{ from_lat }}&toLng={{ to_lng }}&toLat={{ to_lat }}&profile=walking&alternatives=false"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Stress - Geocoding Load"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/geo/geocode?q={{ address_query }}&limit=10"
+          expect:
+            - statusCode: [200, 429, 500]
+
+  - name: "Stress - Reverse Geocoding"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/geo/reverse?lat={{ reverse_lat }}&lng={{ reverse_lng }}"
+          expect:
+            - statusCode: [200, 429, 500]

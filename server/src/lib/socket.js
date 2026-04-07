@@ -15,7 +15,7 @@ export function setupSocketIO(httpServer, clientUrl = process.env.CLIENT_URL) {
     console.error("Socket.IO init skipped: HTTP server instance is missing");
     return null;
   }
-
+ 
   const origin = clientUrl || "http://localhost:5173";
 
   let io;

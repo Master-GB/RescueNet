@@ -1,0 +1,74 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      name: "Normal traffic"
+    - duration: 30
+      arrivalRate: 8
+      name: "SPIKE - Emergency disaster queries"
+    - duration: 30
+      arrivalRate: 12
+      name: "PEAK SPIKE - Maximum emergency"
+    - duration: 60
+      arrivalRate: 3
+      name: "Sustained high load"
+    - duration: 60
+      arrivalRate: 1
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 60
+  payload:
+    path: "disaster-test-data.csv"
+    fields:
+      - "disaster_type"
+      - "start_date"
+      - "end_date"
+      - "min_magnitude"
+      - "bbox_min_lng"
+      - "bbox_min_lat"
+      - "bbox_max_lng"
+      - "bbox_max_lat"
+
+scenarios:
+  - name: "Spike - Emergency Earthquake Queries"
+    weight: 35
+    flow:
+      - get:
+          url: "/api/disasters/map?types=EARTHQUAKE&start={{ start_date }}&end={{ end_date }}&minmag={{ min_magnitude }}&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429]
+
+  - name: "Spike - Emergency Fire Detection"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/disasters/map?types=FIRE&days=3&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429]
+
+  - name: "Spike - Emergency Multiple Disasters"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/disasters/map?types=EARTHQUAKE,FIRE,FLOOD&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429]
+
+  - name: "Spike - Emergency Heatmap"
+    weight: 5
+    flow:
+      - get:
+          url: "/api/disasters/heatmap?types=EARTHQUAKE&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429]
+
+  - name: "Spike - Emergency Updates"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/disasters/updates?limit=30"
+          expect:
+            - statusCode: [200, 429]

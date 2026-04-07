@@ -1,0 +1,108 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      name: "Normal traffic"
+    - duration: 30
+      arrivalRate: 3
+      name: "SPIKE - Emergency situation"
+    - duration: 30
+      arrivalRate: 5
+      name: "PEAK SPIKE - Maximum emergency"
+    - duration: 60
+      arrivalRate: 2
+      name: "Sustained high load"
+    - duration: 60
+      arrivalRate: 1
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 120
+  payload:
+    path: "shelter-test-users.csv"
+    fields:
+      - "email"
+      - "password"
+
+scenarios:
+  - name: "Login and Create Emergency Shelter"
+    weight: 50
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - post:
+          url: "/api/shelters/create"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            name: "Emergency Shelter {{ $randomString() }}"
+            description: "Emergency shelter during disaster"
+            shelterType: "SCHOOL"
+            address:
+              street: "789 Emergency St"
+              city: "Emergency City"
+              province: "Emergency Province"
+              postalCode: "54321"
+            contact:
+              phone: "+947700000002"
+              email: "emergency{{ $randomString() }}@example.com"
+            location:
+              type: "Point"
+              coordinates: [79.8612, 6.9876]
+            capacity:
+              total: 200
+            supports:
+              disasterTypes: ["FLOOD", "FIRE", "TSUNAMI"]
+              wheelchairAccess: true
+          expect:
+            - statusCode: 201
+
+  - name: "Login and Emergency Shelter Search"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/shelters/get-nearby?lng=79.8612&lat=6.9876&radiusKm=15"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Login and Emergency Shelter List"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/shelters/get-list?page=1&limit=100"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200

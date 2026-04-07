@@ -1,0 +1,57 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      name: "Normal traffic"
+    - duration: 30
+      arrivalRate: 3
+      name: "SPIKE - Emergency help requests"
+    - duration: 30
+      arrivalRate: 5
+      name: "PEAK SPIKE - Disaster situation"
+    - duration: 60
+      arrivalRate: 2
+      name: "Sustained high load"
+    - duration: 60
+      arrivalRate: 1
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 120
+
+scenarios:
+  - name: "Create Emergency Help Request"
+    weight: 50
+    flow:
+      - post:
+          url: "/api/help/add"
+          json:
+            name: "Emergency Help {{ $randomString(5) }}"
+            location: "Disaster Zone {{ $randomString(3) }}"
+            disasterType: "flood"
+            message: "URGENT: Emergency help request during disaster"
+            contactNumber: "{{ $randomNumber(1000000000, 9999999999) }}"
+            realLocation: "40.7128,-74.0060"
+          expect:
+            - statusCode: 201
+
+  - name: "Query Help Requests During Crisis"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/help/"
+          expect:
+            - statusCode: 200
+
+  - name: "Update Help Request Status"
+    weight: 20
+    flow:
+      - put:
+          url: "/api/help/update/000000000000000000000001"
+          json:
+            status: "in-progress"
+            message: "Help is on the way"
+          expect:
+            - statusCode: [200, 404]

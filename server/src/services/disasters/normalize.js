@@ -68,7 +68,7 @@ export function normalizeFIRMS(rows) {
   return toFeatureCollection(features);
 }
 
-// ReliefWeb usually isn't precise geo; we return items for UI list
+// ReliefWeb v2 normalization for UI list
 export function normalizeReliefWebForList(raw) {
   const data = raw?.data || [];
   return data.map((item) => ({
@@ -77,7 +77,7 @@ export function normalizeReliefWebForList(raw) {
     url: item.fields?.url || item.href,
     date: item.fields?.date?.created || item.fields?.date?.changed,
     countries: item.fields?.country?.map((c) => c.name) || [],
-    disasterTypes: item.fields?.disaster_type?.map((d) => d.name) || [],
+    disasterTypes: [], // No category field available in v2, will use title filtering
     raw: item,
   }));
 }
