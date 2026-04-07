@@ -4,7 +4,9 @@ import AuthAlert from "../../components/authentication/AuthAlert";
 import AuthInput from "../../components/authentication/AuthInput";
 import AuthMarketingPanel from "../../components/authentication/AuthMarketingPanel";
 import Button from "../../components/ui/Button";
+import SUButton from "../../components/ui/Signupbtn";
 import useAuth from "../../hooks/useAuth";
+import RNlogo from '../../assets/images/RNlogo.PNG';
 import { getApiErrorMessage } from "../../services/authService";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -72,9 +74,12 @@ export default function LoginPage() {
 
       <section className="w-full md:w-1/2 bg-auth-bg flex flex-col justify-center p-10 md:p-16 lg:p-24" data-purpose="login-panel">
         <div className="max-w-md w-full mx-auto">
-          <span className="block text-[10px] md:text-xs font-bold tracking-[0.2em] text-primary uppercase mb-4" data-purpose="brand-label">
-            RescueNet
-          </span>
+          <img
+            src={RNlogo}
+            alt="RescueNet logo"
+            className="block mx-auto w-auto h-12 md:h-16 lg:h-20 mb-6"
+            data-purpose="brand-label"
+          />
           <h2 className="text-3xl font-bold text-auth-text-strong mb-4">Sign In</h2>
           <p className="text-auth-text-muted text-sm mb-10 leading-relaxed">
             Use your RescueNet account to continue to your role dashboard.
