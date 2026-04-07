@@ -62,6 +62,7 @@ const ShelterPage = () => {
   const [nearbyShelters, setNearbyShelters] = useState([]);
   const [allSheltersOriginal, setAllSheltersOriginal] = useState([]);
   const [nearbySheltersOriginal, setNearbySheltersOriginal] = useState([]);
+  const [savedSheltersList, setSavedSheltersList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -116,14 +117,36 @@ const ShelterPage = () => {
     maxDistance: 20, // Default 20km
   });
 
+  const [savedFilters, setSavedFilters] = useState({
+    status: '',
+    shelterType: '',
+    city: '',
+    province: '',
+    disasterTypes: [],
+    wheelchairAccess: '',
+    medical: '',
+    food: '',
+    water: '',
+    power: '',
+    petFriendly: '',
+    childFriendly: '',
+    elderlySupport: '',
+    disabilitySupport: '',
+    pregnancySupport: '',
+    verified: 'true',
+  });
+
   const [allFiltersDraft, setAllFiltersDraft] = useState(allFilters);
   const [nearbyFiltersDraft, setNearbyFiltersDraft] = useState(nearbyFilters);
+  const [savedFiltersDraft, setSavedFiltersDraft] = useState(savedFilters);
 
   // Search states for each tab
   const [allSearchTerm, setAllSearchTerm] = useState('');
   const [nearbySearchTerm, setNearbySearchTerm] = useState('');
+  const [savedSearchTerm, setSavedSearchTerm] = useState('');
   const [allSearchTermDraft, setAllSearchTermDraft] = useState('');
   const [nearbySearchTermDraft, setNearbySearchTermDraft] = useState('');
+  const [savedSearchTermDraft, setSavedSearchTermDraft] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
   const hasActiveFilters = (filters) =>
@@ -165,14 +188,22 @@ const ShelterPage = () => {
   }, [nearbyFilters, nearbySearchTerm]);
 
   useEffect(() => {
+    setSavedFiltersDraft(savedFilters);
+    setSavedSearchTermDraft(savedSearchTerm);
+  }, [savedFilters, savedSearchTerm]);
+
+  useEffect(() => {
     if (activeTab === 'all') {
       setAllFiltersDraft(allFilters);
       setAllSearchTermDraft(allSearchTerm);
-    } else {
+    } else if (activeTab === 'nearby') {
       setNearbyFiltersDraft(nearbyFilters);
       setNearbySearchTermDraft(nearbySearchTerm);
+    } else {
+      setSavedFiltersDraft(savedFilters);
+      setSavedSearchTermDraft(savedSearchTerm);
     }
-  }, [activeTab, allFilters, allSearchTerm, nearbyFilters, nearbySearchTerm]);
+  }, [activeTab, allFilters, allSearchTerm, nearbyFilters, nearbySearchTerm, savedFilters, savedSearchTerm]);
 
   // Statistics
   const allStatistics = useMemo(() => {
@@ -199,11 +230,23 @@ const ShelterPage = () => {
     return { total, open, full, closed, availableCapacity };
   }, [nearbySheltersOriginal]);
 
+  const savedStatistics = useMemo(() => {
+    const total = savedSheltersList.length;
+    const open = savedSheltersList.filter(s => s.status === 'OPEN').length;
+    const full = savedSheltersList.filter(s => s.status === 'FULL').length;
+    const closed = savedSheltersList.filter(s => s.status === 'CLOSED').length;
+    const totalCapacity = savedSheltersList.reduce((sum, s) => sum + (s.capacity?.total || 0), 0);
+    const currentOccupancy = savedSheltersList.reduce((sum, s) => sum + (s.occupancy?.current || 0), 0);
+    const availableCapacity = totalCapacity - currentOccupancy;
+
+    return { total, open, full, closed, availableCapacity };
+  }, [savedSheltersList]);
+
   // Statistics based on active tab
-  const statistics = activeTab === 'all' ? allStatistics : nearbyStatistics;
+  const statistics = activeTab === 'all' ? allStatistics : activeTab === 'nearby' ? nearbyStatistics : savedStatistics;
 
   // Filtered shelters based on active tab
-  const filteredShelters = activeTab === 'all' ? allShelters : nearbyShelters;
+  const filteredShelters = activeTab === 'all' ? allShelters : activeTab === 'nearby' ? nearbyShelters : savedSheltersList;
 
   // Fetch all shelters for "All" tab
   useEffect(() => {
@@ -309,20 +352,34 @@ const ShelterPage = () => {
     setSavedShelters(saved);
   }, []);
 
+  // Update saved shelters list when savedShelters IDs or all shelters change
+  useEffect(() => {
+    if (savedShelters.length > 0 && allSheltersOriginal.length > 0) {
+      const savedSheltersData = allSheltersOriginal.filter(shelter => 
+        savedShelters.includes(shelter._id)
+      );
+      setSavedSheltersList(savedSheltersData);
+    } else {
+      setSavedSheltersList([]);
+    }
+  }, [savedShelters, allSheltersOriginal]);
+
   // Auto-apply search term when draft changes (for immediate search experience)
   useEffect(() => {
     if (activeTab === 'all') {
       setAllSearchTerm(allSearchTermDraft);
-    } else {
+    } else if (activeTab === 'nearby') {
       setNearbySearchTerm(nearbySearchTermDraft);
+    } else {
+      setSavedSearchTerm(savedSearchTermDraft);
     }
-  }, [allSearchTermDraft, nearbySearchTermDraft, activeTab]);
+  }, [allSearchTermDraft, nearbySearchTermDraft, savedSearchTermDraft, activeTab]);
 
   // Apply search and filters based on active tab
   useEffect(() => {
-    let filtered = activeTab === 'all' ? allSheltersOriginal : nearbySheltersOriginal;
-    const searchTerm = activeTab === 'all' ? allSearchTerm : nearbySearchTerm;
-    const filters = activeTab === 'all' ? allFilters : nearbyFilters;
+    let filtered = activeTab === 'all' ? allSheltersOriginal : activeTab === 'nearby' ? nearbySheltersOriginal : savedSheltersList;
+    const searchTerm = activeTab === 'all' ? allSearchTerm : activeTab === 'nearby' ? nearbySearchTerm : savedSearchTerm;
+    const filters = activeTab === 'all' ? allFilters : activeTab === 'nearby' ? nearbyFilters : savedFilters;
     
     console.log('Filtering - Active Tab:', activeTab);
     console.log('Filtering - Original Data Count:', filtered.length);
@@ -392,10 +449,12 @@ const ShelterPage = () => {
     // Update the appropriate shelter list
     if (activeTab === 'all') {
       setAllShelters(filtered);
-    } else {
+    } else if (activeTab === 'nearby') {
       setNearbyShelters(filtered);
+    } else {
+      setSavedSheltersList(filtered);
     }
-  }, [allSheltersOriginal, nearbySheltersOriginal, allSearchTerm, nearbySearchTerm, allFilters, nearbyFilters, activeTab]);
+  }, [allSheltersOriginal, nearbySheltersOriginal, savedSheltersList, allSearchTerm, nearbySearchTerm, savedSearchTerm, allFilters, nearbyFilters, savedFilters, activeTab]);
 
   // Calculate distance between two coordinates in kilometers
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -530,6 +589,36 @@ const ShelterPage = () => {
     }));
   };
 
+  const handleSavedFilterChange = (key, value) => {
+    setSavedFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSavedFilterDraftChange = (key, value) => {
+    setSavedFiltersDraft(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSavedDisasterTypeChange = (type) => {
+    setSavedFilters(prev => ({
+      ...prev,
+      disasterTypes: prev.disasterTypes.includes(type)
+        ? prev.disasterTypes.filter(t => t !== type)
+        : [...prev.disasterTypes, type]
+    }));
+  };
+
+  const handleSavedDisasterTypeDraftChange = (type) => {
+    setSavedFiltersDraft(prev => ({
+      ...prev,
+      disasterTypes: prev.disasterTypes.includes(type)
+        ? prev.disasterTypes.filter(t => t !== type)
+        : [...prev.disasterTypes, type]
+    }));
+  };
+
+  const handleSavedSearchTermDraftChange = (value) => {
+    setSavedSearchTermDraft(value);
+  };
+
   const clearAllFilters = () => {
     setAllFilters({
       status: '',
@@ -575,25 +664,50 @@ const ShelterPage = () => {
     setNearbySearchTerm('');
   };
 
-  // Applied vs Draft values (Draft is used for UI; Applied drives actual filtering/fetching)
-  const currentFiltersApplied = activeTab === 'all' ? allFilters : nearbyFilters;
-  const currentSearchTermApplied = activeTab === 'all' ? allSearchTerm : nearbySearchTerm;
-  const currentFiltersDraft = activeTab === 'all' ? allFiltersDraft : nearbyFiltersDraft;
-  const currentSearchTermDraft = activeTab === 'all' ? allSearchTermDraft : nearbySearchTermDraft;
+  const clearSavedFilters = () => {
+    setSavedFilters({
+      status: '',
+      shelterType: '',
+      city: '',
+      province: '',
+      disasterTypes: [],
+      wheelchairAccess: '',
+      medical: '',
+      food: '',
+      water: '',
+      power: '',
+      petFriendly: '',
+      childFriendly: '',
+      elderlySupport: '',
+      disabilitySupport: '',
+      pregnancySupport: '',
+      verified: 'true',
+    });
+    setSavedSearchTerm('');
+  };
 
-  const setCurrentSearchTermDraft = activeTab === 'all' ? setAllSearchTermDraft : setNearbySearchTermDraft;
-  const setCurrentFiltersDraft = activeTab === 'all' ? setAllFiltersDraft : setNearbyFiltersDraft;
-  const handleFilterDraftChange = activeTab === 'all' ? handleAllFilterDraftChange : handleNearbyFilterDraftChange;
-  const handleDisasterTypeDraftChange = activeTab === 'all' ? handleAllDisasterTypeDraftChange : handleNearbyDisasterTypeDraftChange;
-  const handleSearchTermDraftChange = activeTab === 'all' ? handleAllSearchTermDraftChange : handleNearbySearchTermDraftChange;
+  // Applied vs Draft values (Draft is used for UI; Applied drives actual filtering/fetching)
+  const currentFiltersApplied = activeTab === 'all' ? allFilters : activeTab === 'nearby' ? nearbyFilters : savedFilters;
+  const currentSearchTermApplied = activeTab === 'all' ? allSearchTerm : activeTab === 'nearby' ? nearbySearchTerm : savedSearchTerm;
+  const currentFiltersDraft = activeTab === 'all' ? allFiltersDraft : activeTab === 'nearby' ? nearbyFiltersDraft : savedFiltersDraft;
+  const currentSearchTermDraft = activeTab === 'all' ? allSearchTermDraft : activeTab === 'nearby' ? nearbySearchTermDraft : savedSearchTermDraft;
+
+  const setCurrentSearchTermDraft = activeTab === 'all' ? setAllSearchTermDraft : activeTab === 'nearby' ? setNearbySearchTermDraft : setSavedSearchTermDraft;
+  const setCurrentFiltersDraft = activeTab === 'all' ? setAllFiltersDraft : activeTab === 'nearby' ? setNearbyFiltersDraft : setSavedFiltersDraft;
+  const handleFilterDraftChange = activeTab === 'all' ? handleAllFilterDraftChange : activeTab === 'nearby' ? handleNearbyFilterDraftChange : handleSavedFilterDraftChange;
+  const handleDisasterTypeDraftChange = activeTab === 'all' ? handleAllDisasterTypeDraftChange : activeTab === 'nearby' ? handleNearbyDisasterTypeDraftChange : handleSavedDisasterTypeDraftChange;
+  const handleSearchTermDraftChange = activeTab === 'all' ? handleAllSearchTermDraftChange : activeTab === 'nearby' ? handleNearbySearchTermDraftChange : handleSavedSearchTermDraftChange;
 
   const applyCurrentDraft = () => {
     if (activeTab === 'all') {
       setAllFilters(allFiltersDraft);
       setAllSearchTerm(allSearchTermDraft);
-    } else {
+    } else if (activeTab === 'nearby') {
       setNearbyFilters(nearbyFiltersDraft);
       setNearbySearchTerm(nearbySearchTermDraft);
+    } else {
+      setSavedFilters(savedFiltersDraft);
+      setSavedSearchTerm(savedSearchTermDraft);
     }
   };
 
@@ -601,17 +715,22 @@ const ShelterPage = () => {
     if (activeTab === 'all') {
       setAllFiltersDraft(allFilters);
       setAllSearchTermDraft(allSearchTerm);
-    } else {
+    } else if (activeTab === 'nearby') {
       setNearbyFiltersDraft(nearbyFilters);
       setNearbySearchTermDraft(nearbySearchTerm);
+    } else {
+      setSavedFiltersDraft(savedFilters);
+      setSavedSearchTermDraft(savedSearchTerm);
     }
   };
 
   const clearApplied = () => {
     if (activeTab === 'all') {
       clearAllFilters();
-    } else {
+    } else if (activeTab === 'nearby') {
       clearNearbyFilters();
+    } else {
+      clearSavedFilters();
     }
   };
 
@@ -878,6 +997,20 @@ const ShelterPage = () => {
                 {nearbyStatistics.total}
               </span>
             </button>
+            <button
+              onClick={() => setActiveTab('saved')}
+              className={`flex items-center space-x-3 px-8 py-4 rounded-2xl font-bold transition-all duration-200 border border-gray-300 ${
+                activeTab === 'saved'
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Heart className="w-5 h-5" />
+              <span>Saved Shelters</span>
+              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                {savedStatistics.total}
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -965,7 +1098,7 @@ const ShelterPage = () => {
               <Search className="absolute left-5 top-7 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
               <input
                 type="text"
-                placeholder={`Search ${activeTab === 'all' ? 'all shelters' : 'nearby shelters'} by name, city, or province...`}
+                placeholder={`Search ${activeTab === 'all' ? 'all shelters' : activeTab === 'nearby' ? 'nearby shelters' : 'saved shelters'} by name, city, or province...`}
                 value={currentSearchTermDraft}
                 onChange={(e) => handleSearchTermDraftChange(e.target.value)}
                 className="w-full pl-14 pr-6 py-3 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 text-lg"
@@ -1547,12 +1680,14 @@ const ShelterPage = () => {
                     <div className="text-center py-12">
                       <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {activeTab === 'all' ? 'No Shelters Found' : 'No Nearby Shelters Found'}
+                        {activeTab === 'all' ? 'No Shelters Found' : activeTab === 'nearby' ? 'No Nearby Shelters Found' : 'No Saved Shelters Found'}
                       </h3>
                       <p className="text-gray-600">
                         {activeTab === 'all' 
                           ? 'Try adjusting your filters or search terms to find more shelters.'
-                          : 'Try increasing the distance range or adjusting filters to find nearby shelters.'
+                          : activeTab === 'nearby'
+                          ? 'Try increasing the distance range or adjusting filters to find nearby shelters.'
+                          : 'Save shelters to see them here. Use the star icon on any shelter to save it.'
                         }
                       </p>
                     </div>
