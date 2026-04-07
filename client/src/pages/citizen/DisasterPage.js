@@ -1,4 +1,3 @@
-import React from 'react';
 import DisasterDashboard from '../../components/disaster/DisasterDashboard';
 
 const DisasterPage = () => {
