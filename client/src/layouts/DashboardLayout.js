@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import AuthCookie from "../components/authentication/AuthCookie";
 import {
   LayoutDashboard,
   House,
@@ -14,7 +16,7 @@ import {
 } from "lucide-react";
 
 const defaultSidebarItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { name: "Dashboard", icon: LayoutDashboard, path: "/citizen-dashboard" },
   { name: "Shelters", icon: House, path: "/citizen/shelters" },
   { name: "Disaster", icon: TriangleAlert, path: "/citizen/disaster" },
   { name: "Help Request", icon: HandHelping, path: "/citizen/help-request" },
@@ -28,11 +30,13 @@ const DashboardLayout = ({
   sidebarItems = defaultSidebarItems,
   portalTitle = "Citizen Portal",
   avatarLetter = "C",
-  homePath = "/",
+  homePath = "/citizen-dashboard",
   searchPlaceholder = "Search shelters, alerts, requests...",
 }) => {
   const location = useLocation();
+  const { logout } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -49,6 +53,19 @@ const DashboardLayout = ({
       second: '2-digit',
       hour12: false
     });
+  };
+
+  const handleLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
  
@@ -135,15 +152,12 @@ const DashboardLayout = ({
         {/* Logout Button - Fixed at bottom */}
         <div className="px-4 py-6 border-t border-gray-800">
           <button
-            onClick={() => {
-              // Handle logout logic here
-              console.log("Logging out...");
-              // You can add actual logout logic like clearing tokens, redirecting to login, etc.
-            }}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900 hover:bg-red-800 text-white hover:text-white font-medium transition group"
+            disabled={isLoggingOut}
           >
             <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span>Logout</span>
+            <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
           </button>
         </div>
 
@@ -153,6 +167,9 @@ const DashboardLayout = ({
       <main className="pt-20 lg:pl-72 min-h-screen">
         <div className="p-4 md:p-6 lg:p-8">{children}</div>
       </main>
+
+      {/* Global auth cookie consent component */}
+      <AuthCookie />
     </div>
   );
 };

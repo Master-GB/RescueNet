@@ -1,21 +1,18 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DashboardLayout from "../layouts/DashboardLayout";
 import CitizenDashboard from "../pages/citizen/CitizenDashboard";
-import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
-import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
-import NgoDashboard from "../pages/ngo/NgoDashboard";
+import ShelterPage from "../pages/citizen/ShelterPage";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<CitizenDashboard />} />
-        <Route path="/citizen/help-request" element={<CitizenHelpRequest />} />
-        <Route path="/volunteer" element={<VolunteerDashboard />} />
-        <Route path="/ngo" element={<NgoDashboard />} />
-        <Route path="/ngo/dashboard" element={<NgoDashboard />} />
-      </Routes>
-
+      <DashboardLayout>
+        <Routes>
+          <Route path="/" element={<CitizenDashboard />} />
+          <Route path="/citizen/shelters" element={<ShelterPage />} />
+        </Routes>
+      </DashboardLayout>
     </BrowserRouter>
   );
 };
