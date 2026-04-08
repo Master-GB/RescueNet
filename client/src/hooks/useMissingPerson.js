@@ -160,31 +160,79 @@ export const useMissingPerson = () => {
     }
   }, [setLoading, setError, addNotification, setMissingPersons]);
 
+  // Update last seen information
+  const updateLastSeen = useCallback(async (personId, lastSeenData) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await missingPersonService.updateLastSeen(personId, lastSeenData);
+      
+      if (response.success) {
+        // Update the person in the list
+        setMissingPersons(prev => prev.map(person => 
+          person.id === personId || person._id === personId
+            ? { 
+                ...person, 
+                lastSeenLocation: {
+                  address: lastSeenData.address,
+                  city: lastSeenData.city
+                },
+                lastSeenDate: lastSeenData.dateTime,
+                updatedAt: new Date().toISOString()
+              }
+            : person
+        ));
+
+        addNotification({
+          type: 'success',
+          title: 'Last Seen Updated',
+          message: 'Person\'s last seen information has been updated.',
+        });
+
+        return response.data;
+      } else {
+        throw new Error(response.message || 'Failed to update last seen information');
+      }
+    } catch (error) {
+      const errorMessage = missingPersonService.handleApiError(error, 'Failed to update last seen');
+      setError(errorMessage);
+      addNotification({
+        type: 'error',
+        title: 'Update Error',
+        message: errorMessage,
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading, setError, addNotification, setMissingPersons]);
+
   // Add tip/information
   const addTip = useCallback(async (personId, tipData) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await missingPersonService.addTip(personId, tipData);
+      const response = await missingPersonService.addSighting(personId, tipData);
       
       if (response.success) {
         addNotification({
           type: 'success',
-          title: 'Tip Submitted',
-          message: 'Your information has been submitted. Thank you for helping.',
+          title: 'Sighting Submitted',
+          message: 'Your sighting information has been submitted. Thank you for helping.',
         });
 
         return response.data;
       } else {
-        throw new Error(response.message || 'Failed to submit tip');
+        throw new Error(response.message || 'Failed to submit sighting');
       }
     } catch (error) {
-      const errorMessage = missingPersonService.handleApiError(error, 'Failed to submit tip');
+      const errorMessage = missingPersonService.handleApiError(error, 'Failed to submit sighting');
       setError(errorMessage);
       addNotification({
         type: 'error',
-        title: 'Tip Error',
+        title: 'Sighting Error',
         message: errorMessage,
       });
       throw error;
@@ -296,6 +344,7 @@ export const useMissingPerson = () => {
     fetchStatistics,
     reportMissingPerson,
     updatePersonStatus,
+    updateLastSeen,
     addTip,
     searchSimilar,
     uploadImage,

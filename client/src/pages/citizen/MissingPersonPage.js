@@ -8,6 +8,8 @@ import {
 import { MissingPersonProvider, useMissingPersonContext } from '../../contexts/MissingPersonContext';
 import { useMissingPerson } from '../../hooks/useMissingPerson';
 import { MISSING_PERSON_STATUS, AGE_GROUPS, GENDER_OPTIONS } from '../../constants/missingPersonConstants';
+import DashboardLayout from "../../layouts/DashboardLayout";
+import NotificationContainer from '../../components/common/NotificationContainer';
 
 // Import components (we'll create these next)
 import MissingPersonCard from '../../components/missing/MissingPersonCard';
@@ -26,6 +28,8 @@ const MissingPersonPageContent = () => {
     showFilters,
     setShowFilters,
     hasActiveFilters,
+    isDirty,
+    hasApplied,
     selectPerson,
     showDetailModal,
     closeDetailModal,
@@ -33,6 +37,7 @@ const MissingPersonPageContent = () => {
     setShowReportModal,
     sortBy,
     updateFilter,
+    applyFilters,
   } = useMissingPersonContext();
 
   const { statistics, loadingStats, refresh } = useMissingPerson();
@@ -60,6 +65,7 @@ const MissingPersonPageContent = () => {
   };
 
   return (
+    <DashboardLayout>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm sticky top-0 z-40">
@@ -117,7 +123,7 @@ const MissingPersonPageContent = () => {
         </div>
       </header>
 
-      {/* Main Content */}}
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Cards */}
         {stats && (
@@ -217,17 +223,25 @@ const MissingPersonPageContent = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-2xl border transition-all ${
-                  hasActiveFilters 
-                    ? 'bg-green-50 border-green-200 text-green-700' 
-                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                className={`flex items-center space-x-3 px-7 py-3 rounded-2xl font-bold transition-all duration-300 relative overflow-hidden group transform hover:scale-105 active:scale-95 ${
+                  showFilters 
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:shadow-2xl' 
+                    : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 shadow-md hover:shadow-lg'
                 }`}
               >
-                <Filter className="w-4 h-4" />
-                <span className="hidden sm:inline">Filters</span>
-                {hasActiveFilters && (
-                  <span className="w-2 h-2 bg-green-600 rounded-full" />
-                )}
+                <div className={`absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 opacity-0 group-hover:opacity-100 transition-all duration-300 ${showFilters ? 'opacity-100' : ''}`}></div>
+                <div className="relative flex items-center space-x-3">
+                  <Filter className={`w-6 h-6 transition-all duration-300 ${showFilters ? 'text-white rotate-180' : 'text-gray-700 rotate-0'}`} />
+                  <span className={`transition-all duration-300 ${showFilters ? 'text-white' : 'text-gray-700'}`}>Filters</span>
+                  {isDirty ? (
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce shadow-lg"></div>
+                  ) : hasApplied ? (
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg"></div>
+                  ) : (
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg"></div>
+                  )}
+                </div>
+                <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${showFilters ? 'ring-4 ring-green-200/50 ring-offset-2' : ''}`}></div>
               </button>
 
               {/* Sort Dropdown - Right next to filter button */}
@@ -405,6 +419,7 @@ const MissingPersonPageContent = () => {
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 };
 
@@ -412,6 +427,7 @@ const MissingPersonPage = () => {
   return (
     <MissingPersonProvider>
       <MissingPersonPageContent />
+      <NotificationContainer />
     </MissingPersonProvider>
   );
 };

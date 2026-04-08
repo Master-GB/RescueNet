@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Heart, MapPin, Calendar, Phone, Mail, User, Clock, 
-  Eye, Share2, AlertTriangle, CheckCircle, Search,
+  Eye, AlertTriangle, CheckCircle, Search,
   Camera, Shield, Star
 } from 'lucide-react';
 import { MISSING_PERSON_STATUS, AGE_GROUPS, GENDER_OPTIONS, PRIORITY_LEVELS } from '../../constants/missingPersonConstants';
@@ -10,7 +10,6 @@ import { useMissingPersonContext } from '../../contexts/MissingPersonContext';
 const MissingPersonCard = ({ person, viewMode = 'grid', onClick }) => {
   const { toggleSavePerson, isPersonSaved } = useMissingPersonContext();
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const isSaved = isPersonSaved(person._id);
   const statusConfig = MISSING_PERSON_STATUS.find(s => s.value === person.status);
@@ -58,39 +57,6 @@ const MissingPersonCard = ({ person, viewMode = 'grid', onClick }) => {
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     return date.toLocaleDateString();
-  };
-
-  // Handle share
-  const handleShare = async (platform) => {
-    const shareUrl = `${window.location.origin}/missing-persons/${person._id}`;
-    const shareText = `Help find ${person.fullName}, ${person.age} years old, missing since ${formatDate(person.lastSeenDate)}`;
-    
-    let url = '';
-    switch (platform) {
-      case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-        break;
-      case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-        break;
-      case 'whatsapp':
-        url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
-        break;
-      case 'copy':
-        try {
-          await navigator.clipboard.writeText(shareUrl + ' ' + shareText);
-          alert('Link copied to clipboard!');
-        } catch (err) {
-          console.error('Failed to copy:', err);
-        }
-        setShowShareMenu(false);
-        return;
-      default:
-        return;
-    }
-    
-    window.open(url, '_blank', 'width=600,height=400');
-    setShowShareMenu(false);
   };
 
   // Handle save/unsave
@@ -198,56 +164,24 @@ const MissingPersonCard = ({ person, viewMode = 'grid', onClick }) => {
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-center space-x-2">
               <MapPin className="w-4 h-4 text-gray-400" />
-              <span className="truncate">{formattedLocation}</span>
+              <span className="truncate">Last Seen: {formattedLocation}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4 text-gray-400" />
-              <span>Missing since {formatDate(person.lastSeenDate)}</span>
+              <span>Last Seen: {formatDate(person.lastSeenDate)}</span>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowShareMenu(!showShareMenu);
-                }}
-                className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                <Share2 className="w-4 h-4 text-gray-600" />
-              </button>
               <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                 <Eye className="w-4 h-4 text-gray-600" />
               </button>
             </div>
-            
-            <div className="text-xs text-gray-500">
-              {person.daysMissing || 0} days missing
-            </div>
           </div>
 
-          {/* Share Menu */}
-          {showShareMenu && (
-            <div className="absolute bottom-full right-4 mb-2 bg-white rounded-xl shadow-xl border border-gray-200 p-2 z-10">
-              <div className="flex space-x-1">
-                {['facebook', 'twitter', 'whatsapp', 'copy'].map(platform => (
-                  <button
-                    key={platform}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleShare(platform);
-                    }}
-                    className="p-2 hover:bg-gray-100 rounded-lg capitalize text-xs"
-                  >
-                    {platform === 'copy' ? 'Link' : platform}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
       </div>
     );
   }
@@ -300,8 +234,7 @@ const MissingPersonCard = ({ person, viewMode = 'grid', onClick }) => {
 
                 <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
                   <span>{person.age} years, {genderConfig?.label}</span>
-                  <span>Missing since {formatDate(person.lastSeenDate)}</span>
-                  <span>{person.daysMissing || 0} days missing</span>
+                  <span>Last Seen: {formatDate(person.lastSeenDate)}</span>
                 </div>
 
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">
@@ -311,7 +244,7 @@ const MissingPersonCard = ({ person, viewMode = 'grid', onClick }) => {
                 <div className="flex items-center space-x-4 text-sm text-gray-600">
                   <span className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4 text-gray-400" />
-                    <span>{formattedLocation}</span>
+                    <span>Last Seen: {formattedLocation}</span>
                   </span>
                   <span className="flex items-center space-x-1">
                     <Phone className="w-4 h-4 text-gray-400" />
@@ -334,9 +267,6 @@ const MissingPersonCard = ({ person, viewMode = 'grid', onClick }) => {
                       isSaved ? 'fill-red-500 text-red-500' : 'text-gray-600'
                     }`}
                   />
-                </button>
-                <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                  <Share2 className="w-4 h-4 text-gray-600" />
                 </button>
                 <button className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                   <Eye className="w-4 h-4" />

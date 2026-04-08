@@ -139,6 +139,21 @@ class MissingPersonService {
     });
   }
 
+  // Update last seen information
+  async updateLastSeen(id, lastSeenData) {
+    const endpoint = API_ENDPOINTS.MISSING_PERSON.replace(':id', id);
+    return this.apiCall(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify({
+        lastSeenLocation: {
+          address: lastSeenData.address,
+          city: lastSeenData.city
+        },
+        lastSeenDate: lastSeenData.dateTime
+      }),
+    });
+  }
+
   // Add sighting/information about missing person
   async addSighting(id, sightingData) {
     const endpoint = API_ENDPOINTS.SIGHTINGS.replace(':id', id);

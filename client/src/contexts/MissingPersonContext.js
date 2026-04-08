@@ -61,6 +61,8 @@ export const MissingPersonProvider = ({ children }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
   // Filter actions
   const updateFilter = useCallback((key, value) => {
@@ -70,11 +72,13 @@ export const MissingPersonProvider = ({ children }) => {
       // Handle sortBy separately since it's not in the filters object
       console.log('Setting sortBy to:', value);
       setSortBy(value);
+      setIsDirty(true);
     } else {
       // Handle regular filters
       setFilters(prev => {
         const newFilters = { ...prev, [key]: value };
         localStorage.setItem(STORAGE_KEYS.missingPersonFilters, JSON.stringify(newFilters));
+        setIsDirty(true);
         return newFilters;
       });
     }
@@ -84,6 +88,13 @@ export const MissingPersonProvider = ({ children }) => {
     setFilters(DEFAULT_FILTERS);
     setSortBy('-createdAt'); // Reset sort to default
     localStorage.setItem(STORAGE_KEYS.missingPersonFilters, JSON.stringify(DEFAULT_FILTERS));
+    setIsDirty(false);
+    setHasApplied(false);
+  }, []);
+
+  const applyFilters = useCallback(() => {
+    setIsDirty(false);
+    setHasApplied(true);
   }, []);
 
   const resetFilters = useCallback(() => {
@@ -335,7 +346,10 @@ export const MissingPersonProvider = ({ children }) => {
   }, [missingPersons, searchTerm, filters, sortBy]);
 
   const hasActiveFilters = useMemo(() => {
-    return Object.values(filters).some(value => 
+    // Create a copy of filters without sortBy for checking active filters
+    const { sortBy: _, ...filtersWithoutSort } = filters;
+    
+    return Object.values(filtersWithoutSort).some(value => 
       value && value !== '' && !(Array.isArray(value) && value.length === 0)
     ) || searchTerm.trim() !== '';
   }, [filters, searchTerm]);
@@ -364,11 +378,14 @@ export const MissingPersonProvider = ({ children }) => {
     setViewMode,
     showFilters,
     setShowFilters,
+    isDirty,
+    hasApplied,
 
     // Filter actions
     updateFilter,
     clearFilters,
     resetFilters,
+    applyFilters,
 
     // Search actions
     addToSearchHistory,
