@@ -129,7 +129,7 @@ const CitizenDashboard = () => {
   };
 
   return (
-    <>
+    <DashboardLayout>
       {/* Shelter Detail Modal - Outside main container for full coverage */}
       {selectedShelter && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[99999]">
@@ -705,7 +705,7 @@ const CitizenDashboard = () => {
           </div>
         )}
       </div>
-    </>
+    </DashboardLayout>
   );
 };
 

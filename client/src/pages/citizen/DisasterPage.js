@@ -1,7 +1,12 @@
 import DisasterDashboard from '../../components/disaster/DisasterDashboard';
+import DashboardLayout from "../../layouts/DashboardLayout";
 
 const DisasterPage = () => {
-  return <DisasterDashboard />;
+  return(
+    <DashboardLayout>
+      <DisasterDashboard />
+    </DashboardLayout>
+  ) ;
 };
 
 export default DisasterPage;
