@@ -2,10 +2,16 @@ import Campaign from "../models/Campaign.js";
 
 export const createCampaign = async (req, res) => {
   try {
-    const campaign = await Campaign.create({
+    const campaignPayload = {
       ...req.body,
       ngoId: req.user._id,
-    });
+    };
+
+    if (req.file?.path) {
+      campaignPayload.campaignImageUrl = req.file.path;
+    }
+
+    const campaign = await Campaign.create(campaignPayload);
 
     return res.status(201).json({
       success: true,
@@ -39,6 +45,11 @@ export const updateCampaign = async (req, res) => {
     }
 
     Object.assign(campaign, req.body);
+
+    if (req.file?.path) {
+      campaign.campaignImageUrl = req.file.path;
+    }
+
     await campaign.save();
 
     return res.status(200).json({

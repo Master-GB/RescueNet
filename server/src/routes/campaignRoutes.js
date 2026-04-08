@@ -2,6 +2,8 @@ import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorizeMiddleware.js";
 import { validateBody } from "../middleware/validate.js";
+import { uploadCampaignImage } from "../middleware/uploadMiddleware.js";
+import { normalizeCampaignBody } from "../middleware/normalizeCampaignBody.js";
 import {
   createCampaignSchema,
   updateCampaignSchema,
@@ -24,6 +26,8 @@ router.post(
   "/create",
   protect,
   authorize("NGO"),
+  uploadCampaignImage.single("campaignImage"),
+  normalizeCampaignBody,
   validateBody(createCampaignSchema),
   createCampaign
 );
@@ -32,6 +36,8 @@ router.put(
   "/update/:id",
   protect,
   authorize("NGO"),
+  uploadCampaignImage.single("campaignImage"),
+  normalizeCampaignBody,
   validateBody(updateCampaignSchema),
   updateCampaign
 );

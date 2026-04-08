@@ -8,12 +8,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "rescuenet_donations",
-    allowed_formats: ["jpeg", "png", "jpg"],
-  },
-});
+const createStorage = (folder) =>
+  new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder,
+      allowed_formats: ["jpeg", "png", "jpg"],
+    },
+  });
 
-export const upload = multer({ storage });
+const donationStorage = createStorage("rescuenet_donations");
+const campaignStorage = createStorage("rescuenet_campaigns");
+
+export const upload = multer({ storage: donationStorage });
+export const uploadCampaignImage = multer({ storage: campaignStorage });

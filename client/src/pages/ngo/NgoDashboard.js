@@ -3,7 +3,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Zap, FileText, Heart, Megaphone, Users, User, MapPin, CheckCircle, Clock } from 'lucide-react';
 import NGOnavbar from '../../components/ngoDashboard/NGOnavbar';
 import NGOcard from '../../components/ngoDashboard/NGOcard';
-// import { fetchDashboardData, toggleNgoStatus } from '../../services/api'; // TODO: Replace with real API calls
+import { getNgoProfile, updateNgoStatus } from '../../services/profileService';
+// TODO: Replace other mocked metrics with real API calls when available
 
 const NgoDashboard = () => {
   // Mock Data from MongoDB snippet provided
@@ -29,6 +30,9 @@ const NgoDashboard = () => {
     activeCampaigns: 12,
     peopleAssisted: 1842
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const donationData = [
     { name: 'MON', value: 4000 },
@@ -59,13 +63,44 @@ const NgoDashboard = () => {
     { id: 4, name: 'Target Met', action: 'Shelter B-12', campaign: '#TexasFloodRelief', time: '3 hours ago', type: 'target' },
   ];
 
-  const handleStatusToggle = () => {
-    // TODO: Connect to backend API: PATCH /api/ngo/profile/status-update
-    setNgoData(prev => ({
-      ...prev,
-      availabilityStatus: prev.availabilityStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE'
-    }));
+  const handleStatusToggle = async () => {
+    // Toggle locally first for snappy UI, then persist to backend
+    const nextStatus = ngoData.availabilityStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
+    setNgoData(prev => ({ ...prev, availabilityStatus: nextStatus }));
+
+    try {
+      await updateNgoStatus({ availabilityStatus: nextStatus });
+    } catch (err) {
+      // Revert locally and surface error
+      setNgoData(prev => ({ ...prev, availabilityStatus: prev.availabilityStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE' }));
+      setServerError("Could not update availability status. Please try again.");
+      console.error("Failed to update NGO status", err);
+    }
   };
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      setServerError("");
+      try {
+        const data = await getNgoProfile();
+        if (!mounted) return;
+        if (data) {
+          // Map server response into local shape if needed
+          setNgoData(prev => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        console.error("Error fetching NGO profile", err);
+        if (mounted) setServerError("Could not load NGO profile.");
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+    return () => { mounted = false; };
+  }, []);
 
   const getSeverityPill = (severity) => {
     const colors = {

@@ -103,6 +103,33 @@ describe("Campaign Controller - Unit Tests", () => {
       );
     });
 
+    test("should store campaignImageUrl when an image file is uploaded", async () => {
+      createMock.mockResolvedValue({
+        ...mockCampaign,
+        campaignImageUrl:
+          "https://res.cloudinary.com/demo/image/upload/v1/rescuenet_campaigns/campaign.jpg",
+      });
+
+      const req = {
+        user: { _id: ngoUserId },
+        body: validBody,
+        file: {
+          path: "https://res.cloudinary.com/demo/image/upload/v1/rescuenet_campaigns/campaign.jpg",
+        },
+      };
+      const res = makeRes();
+
+      await createCampaign(req, res);
+
+      expect(createMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ngoId: ngoUserId,
+          campaignImageUrl: expect.stringContaining("rescuenet_campaigns"),
+        })
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
+    });
+
     test("should return 500 when Campaign.create throws", async () => {
       createMock.mockRejectedValue(new Error("DB write failed"));
 
@@ -191,6 +218,32 @@ describe("Campaign Controller - Unit Tests", () => {
           message: "Campaign updated successfully",
         })
       );
+    });
+
+    test("should update campaignImageUrl when a new image file is uploaded", async () => {
+      const saveable = {
+        ...mockCampaign,
+        campaignImageUrl: "https://old.example.com/old.jpg",
+        save: jest.fn(),
+      };
+      saveable.save.mockResolvedValue(saveable);
+      findByIdMock.mockResolvedValue(saveable);
+
+      const req = {
+        user: { _id: ngoUserId },
+        params: { id: "camp1" },
+        body: { title: "Updated With Image" },
+        file: {
+          path: "https://res.cloudinary.com/demo/image/upload/v1/rescuenet_campaigns/new.jpg",
+        },
+      };
+      const res = makeRes();
+
+      await updateCampaign(req, res);
+
+      expect(saveable.campaignImageUrl).toContain("rescuenet_campaigns/new.jpg");
+      expect(saveable.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
     });
 
     test("should update status field when provided", async () => {
