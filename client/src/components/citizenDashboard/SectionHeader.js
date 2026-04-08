@@ -1,4 +1,4 @@
-const SectionHeader = ({ title, subtitle, actionText }) => {
+const SectionHeader = ({ title, subtitle, actionText, onActionClick }) => {
   return (
     <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
       <div>
@@ -7,7 +7,10 @@ const SectionHeader = ({ title, subtitle, actionText }) => {
       </div>
 
       {actionText && (
-        <button className="text-sm font-semibold text-blue-600 hover:text-blue-700 mr-4">
+        <button 
+          onClick={onActionClick}
+          className="text-sm font-semibold text-blue-600 hover:text-blue-700 mr-4"
+        >
           {actionText}
         </button>
       )}
