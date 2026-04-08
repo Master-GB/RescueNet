@@ -26,8 +26,28 @@ class MissingPersonService {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        let errorData = {};
+        let responseText = '';
+        
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          responseText = await response.text();
+        }
+        
+        console.error('API Error Response:', errorData);
+        console.error('Response status:', response.status);
+        console.error('Response text:', responseText);
+        
+        // Log specific validation errors
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          console.error('Validation Errors:', errorData.errors);
+          errorData.errors.forEach((error, index) => {
+            console.error(`Error ${index + 1}:`, error);
+          });
+        }
+        
+        throw new Error(errorData.message || responseText || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       return await response.json();
@@ -67,66 +87,55 @@ class MissingPersonService {
 
   // Report a new missing person
   async reportMissingPerson(personData) {
-    const formData = new FormData();
-
     // Map frontend data to backend schema
     const backendData = {
-      fullName: personData.name,
-      age: personData.age,
-      gender: personData.gender,
+      fullName: personData.name?.trim() || '',
+      age: parseInt(personData.age) || 0,
+      gender: personData.gender || '',
       lastSeenLocation: {
-        address: personData.lastSeenLocation?.address || personData.lastSeenAddress || '',
-        city: personData.lastSeenLocation?.city || personData.lastSeenCity || ''
+        address: personData.lastSeenAddress?.trim() || '',
+        city: personData.lastSeenCity?.trim() || ''
       },
-      lastSeenDate: personData.dateMissing || personData.lastSeenDate,
-      circumstances: personData.description || personData.circumstances,
-      reporterName: personData.contactName,
+      lastSeenDate: personData.dateMissing ? new Date(personData.dateMissing).toISOString() : new Date().toISOString(),
+      circumstances: personData.description?.trim() || '',
+      reporterName: personData.contactName?.trim() || '',
       reporterContact: {
-        phone: personData.contactPhone,
-        email: personData.contactEmail
+        phone: personData.contactPhone?.replace(/\D/g, '').trim() || '',
+        email: personData.contactEmail?.trim() || ''
       },
       physicalDescription: {
-        height: personData.physicalDescription?.height,
-        weight: personData.physicalDescription?.weight,
-        hairColor: personData.physicalDescription?.hairColor,
-        eyeColor: personData.physicalDescription?.eyeColor,
-        distinctiveMarks: personData.distinctiveMarks || personData.specialMarks?.join(', '),
-        clothing: personData.clothing
+        height: personData.physicalDescription?.height?.trim() || '',
+        weight: personData.physicalDescription?.weight?.trim() || '',
+        hairColor: personData.physicalDescription?.hairColor?.trim() || '',
+        eyeColor: personData.physicalDescription?.eyeColor?.trim() || '',
+        distinctiveMarks: personData.distinctiveMarks?.trim() || '',
+        clothing: personData.clothing?.trim() || ''
       },
-      medicalConditions: personData.medicalConditions,
-      emergencyContact: personData.emergencyContact,
+      medicalConditions: personData.medicalConditions?.trim() || '',
+      emergencyContact: personData.emergencyContact?.trim() || '',
       priority: personData.priority || 'Medium'
     };
 
-    // Add all data fields to FormData
-    Object.keys(backendData).forEach(key => {
-      if (key === 'physicalDescription' || key === 'reporterContact' || key === 'lastSeenLocation') {
-        // Handle nested objects
-        Object.keys(backendData[key]).forEach(nestedKey => {
-          if (backendData[key][nestedKey]) {
-            formData.append(`${key}.${nestedKey}`, backendData[key][nestedKey]);
-          }
-        });
-      } else if (Array.isArray(backendData[key])) {
-        backendData[key].forEach(item => formData.append(key, item));
-      } else if (backendData[key] !== undefined && backendData[key] !== null) {
-        formData.append(key, backendData[key]);
-      }
-    });
-
-    // Handle images
-    if (personData.images && personData.images.length > 0) {
-      personData.images.forEach((image, index) => {
-        if (image instanceof File) {
-          formData.append(`image`, image);
-        }
-      });
+    // Explicitly set geoLocation to null to prevent Mongoose from applying defaults
+    // Only populate if valid coordinates are provided
+    if (personData.geoLocation?.coordinates && 
+        Array.isArray(personData.geoLocation.coordinates) &&
+        personData.geoLocation.coordinates.length === 2) {
+      backendData.geoLocation = {
+        type: 'Point',
+        coordinates: personData.geoLocation.coordinates
+      };
+    } else {
+      // Send null to prevent Mongoose from creating incomplete default object
+      backendData.geoLocation = null;
     }
+
+    // Debug: Log backend data being sent
+    console.log('Submitting backend data:', backendData);
 
     return this.apiCall(API_ENDPOINTS.MISSING_PERSONS, {
       method: 'POST',
-      body: formData,
-      headers: {}, // Let browser set Content-Type for FormData
+      body: JSON.stringify(backendData),
     });
   }
 
@@ -163,9 +172,42 @@ class MissingPersonService {
         reportedBy: sightingData.reportedBy || 'Anonymous',
         location: sightingData.location,
         dateTime: sightingData.dateTime || new Date().toISOString(),
-        description: sightingData.description,
-        verified: false
+        description: sightingData.description
       }),
+    });
+  }
+
+  // Update missing person report
+  async updateReport(id, updateData) {
+    const endpoint = API_ENDPOINTS.MISSING_PERSON.replace(':id', id);
+    return this.apiCall(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  // Delete missing person report (soft delete)
+  async deleteReport(id) {
+    const endpoint = API_ENDPOINTS.MISSING_PERSON.replace(':id', id);
+    return this.apiCall(endpoint, {
+      method: 'DELETE',
+    });
+  }
+
+  // Update sighting report
+  async updateSighting(id, sightingId, updateData) {
+    const endpoint = `${API_ENDPOINTS.SIGHTINGS.replace(':id', id)}/${sightingId}`;
+    return this.apiCall(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  // Delete sighting report
+  async deleteSighting(id, sightingId) {
+    const endpoint = `${API_ENDPOINTS.SIGHTINGS.replace(':id', id)}/${sightingId}`;
+    return this.apiCall(endpoint, {
+      method: 'DELETE',
     });
   }
 

@@ -10,10 +10,13 @@ import { useMissingPerson } from '../../hooks/useMissingPerson';
 import { MISSING_PERSON_STATUS, AGE_GROUPS, GENDER_OPTIONS } from '../../constants/missingPersonConstants';
 import DashboardLayout from "../../layouts/DashboardLayout";
 import NotificationContainer from '../../components/common/NotificationContainer';
+import useAuth from '../../hooks/useAuth';
 
 // Import components (we'll create these next)
 import MissingPersonCard from '../../components/missing/MissingPersonCard';
 import MissingPersonModal from '../../components/missing/MissingPersonModal';
+import MyMissingPersonModal from '../../components/missing/MyMissingPersonModal';
+import ReportMissingPersonModal from '../../components/missing/ReportMissingPersonModal';
 import SearchAndFilter from '../../components/missing/SearchAndFilter';
 
 const MissingPersonPageContent = () => {
@@ -33,35 +36,113 @@ const MissingPersonPageContent = () => {
     selectPerson,
     showDetailModal,
     closeDetailModal,
+    selectedPerson,
+    savedPersons,
+    setSavedPersons,
+    isPersonSaved,
     showReportModal,
     setShowReportModal,
     sortBy,
     updateFilter,
     applyFilters,
+    addNotification
   } = useMissingPersonContext();
 
   const { statistics, loadingStats, refresh } = useMissingPerson();
+  const { user } = useAuth();
+
+  // Success handler for report submission
+  const handleReportSuccess = () => {
+    // Refresh data to show new report
+    refresh();
+    // Show success notification
+    addNotification({
+      type: 'success',
+      title: 'Report Submitted',
+      message: 'Missing person report has been submitted successfully.'
+    });
+  };
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'saved', 'my'
 
   // Calculate statistics
   const stats = useMemo(() => {
     if (!statistics) return null;
+    
+    // Calculate this week and this month based on lastSeenDate
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); // Start of current month
+    
+    // Get all persons from filteredPersons to calculate based on lastSeenDate
+    let thisWeekCount = 0;
+    let thisMonthCount = 0;
+    
+    if (filteredPersons && filteredPersons.length > 0) {
+      filteredPersons.forEach(person => {
+        const lastSeenDate = person.lastSeenDate ? new Date(person.lastSeenDate) : null;
+        
+        if (lastSeenDate) {
+          // Check if last seen date is this week
+          if (lastSeenDate >= startOfWeek && lastSeenDate <= now) {
+            thisWeekCount++;
+          }
+          
+          // Check if last seen date is this month
+          if (lastSeenDate >= startOfMonth && lastSeenDate <= now) {
+            thisMonthCount++;
+          }
+        }
+      });
+    }
     
     return {
       total: statistics.total || 0,
       missing: statistics.active || 0,
       found: statistics.found || 0,
       closed: statistics.closed || 0,
-      thisWeek: statistics.thisWeek || 0,
-      thisMonth: statistics.thisMonth || 0,
+      thisWeek: thisWeekCount, // Calculate based on lastSeenDate
+      thisMonth: thisMonthCount, // Calculate based on lastSeenDate
     };
-  }, [statistics]);
+  }, [statistics, filteredPersons]);
 
   // Status color mapping
   const getStatusColor = (status) => {
     const statusConfig = MISSING_PERSON_STATUS.find(s => s.value === status);
     return statusConfig?.color || 'gray';
+  };
+
+  // Filter data based on active tab
+  const getTabFilteredData = () => {
+    switch (activeTab) {
+      case 'saved':
+        return filteredPersons.filter(person => savedPersons.includes(person._id || person.id));
+      case 'my':
+        return filteredPersons.filter(person => {
+          const reporterId = person.reporterContact?.email || person.reporterEmail;
+          const userId = user?.email;
+          return reporterId === userId;
+        });
+      default:
+        return filteredPersons;
+    }
+  };
+
+  const tabFilteredPersons = getTabFilteredData();
+  const tabCounts = {
+    all: filteredPersons.length,
+    saved: filteredPersons.filter(person => savedPersons.includes(person._id || person.id)).length,
+    my: filteredPersons.filter(person => {
+      const reporterId = person.reporterContact?.email || person.reporterEmail;
+      const userId = user?.email;
+      return reporterId === userId;
+    }).length
   };
 
   return (
@@ -315,14 +396,64 @@ const MissingPersonPageContent = () => {
 
         {/* Results Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-gray-200/60 shadow-sm overflow-hidden">
+          {/* Tab Navigation */}
+          <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200/50">
+            <div className="px-6 py-4">
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`flex items-center space-x-3 px-6 py-3 rounded-2xl font-bold transition-all duration-200 border border-gray-300 ${
+                    activeTab === 'all'
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Users className="w-5 h-5" />
+                  <span>All</span>
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                    {tabCounts.all}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('saved')}
+                  className={`flex items-center space-x-3 px-6 py-3 rounded-2xl font-bold transition-all duration-200 border border-gray-300 ${
+                    activeTab === 'saved'
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Heart className="w-5 h-5" />
+                  <span>Saved</span>
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                    {tabCounts.saved}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('my')}
+                  className={`flex items-center space-x-3 px-6 py-3 rounded-2xl font-bold transition-all duration-200 border border-gray-300 ${
+                    activeTab === 'my'
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <User className="w-5 h-5" />
+                  <span>My</span>
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                    {tabCounts.my}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
           <div className="px-6 py-4 border-b border-gray-200/70">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Search Results
+                  {activeTab === 'all' ? 'Search Results' : activeTab === 'saved' ? 'Saved Persons' : 'My Missing Persons'}
                 </h2>
                 <p className="text-sm text-gray-600">
-                  {filteredPersons.length} person{filteredPersons.length !== 1 ? 's' : ''} found
+                  {tabFilteredPersons.length} person{tabFilteredPersons.length !== 1 ? 's' : ''} found
                 </p>
               </div>
               {error && (
@@ -344,17 +475,17 @@ const MissingPersonPageContent = () => {
           )}
 
           {/* Empty State */}
-          {!loading && filteredPersons.length === 0 && (
+          {!loading && tabFilteredPersons.length === 0 && (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Users className="w-10 h-10 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No missing persons found
+                  {activeTab === 'all' ? 'No missing persons found' : activeTab === 'saved' ? 'No saved persons found' : 'No missing persons found'}
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Try adjusting your search or filters
+                  {activeTab === 'all' ? 'Try adjusting your search or filters' : activeTab === 'saved' ? 'Save persons to see them here' : 'You haven\'t reported any missing persons'}
                 </p>
                 <button
                   onClick={() => setShowReportModal(true)}
@@ -367,7 +498,7 @@ const MissingPersonPageContent = () => {
           )}
 
           {/* Results Grid/List */}
-          {!loading && filteredPersons.length > 0 && (
+          {!loading && tabFilteredPersons.length > 0 && (
             <div className={`${
               viewMode === 'grid' 
                 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6'
@@ -375,7 +506,7 @@ const MissingPersonPageContent = () => {
                 ? 'divide-y divide-gray-200'
                 : 'p-6'
             }`}>
-              {filteredPersons.map((person) => (
+              {tabFilteredPersons.map((person) => (
                 <MissingPersonCard
                   key={person._id}
                   person={person}
@@ -388,8 +519,13 @@ const MissingPersonPageContent = () => {
         </div>
       </main>
 
-      {/* Detail Modal */}
-      {showDetailModal && (
+      {/* Detail Modal - Different modal for different tabs */}
+      {showDetailModal && activeTab === 'my' ? (
+        <MyMissingPersonModal
+          person={selectedPerson}
+          onClose={closeDetailModal}
+        />
+      ) : (
         <MissingPersonModal
           onClose={closeDetailModal}
         />
@@ -397,26 +533,10 @@ const MissingPersonPageContent = () => {
 
       {/* Report Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900">Report Missing Person</h2>
-                <button
-                  onClick={() => setShowReportModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <div className="p-6">
-              <p className="text-gray-600">
-                Report form will be implemented here. This is a placeholder for the missing person report form.
-              </p>
-            </div>
-          </div>
-        </div>
+        <ReportMissingPersonModal
+          onClose={() => setShowReportModal(false)}
+          onSuccess={handleReportSuccess}
+        />
       )}
     </div>
     </DashboardLayout>

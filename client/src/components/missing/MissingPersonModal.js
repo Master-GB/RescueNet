@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Heart, Share2, Phone, Mail, MapPin, Calendar, User, 
+  X, Heart, Phone, MapPin, Calendar, User, 
   Camera, AlertTriangle, CheckCircle, Clock, Shield, Star,
   Download, Eye, MessageCircle, Flag, ExternalLink, ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -85,35 +85,9 @@ const MissingPersonModal = ({ onClose }) => {
     });
   };
 
-  // Handle save
+  // Handle save person
   const handleSave = () => {
     toggleSavePerson(selectedPerson.id);
-  };
-
-  // Handle share
-  const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/missing-persons/${selectedPerson.id}`;
-    const shareText = `Help find ${selectedPerson.name}, ${selectedPerson.age} years old, missing since ${formatDate(selectedPerson.dateMissing)}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Missing Person: ${selectedPerson.name}`,
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch (err) {
-        console.log('Share cancelled');
-      }
-    } else {
-      // Fallback - copy to clipboard
-      try {
-        await navigator.clipboard.writeText(shareUrl + ' ' + shareText);
-        alert('Link copied to clipboard!');
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
-    }
   };
 
   // Handle tip submission
@@ -150,8 +124,7 @@ const MissingPersonModal = ({ onClose }) => {
         reportedBy: sightingData.reportedBy,
         location: `${sightingData.address}, ${sightingData.city}`.trim(),
         dateTime: sightingData.dateTime || new Date().toISOString(),
-        description: sightingData.description,
-        verified: true
+        description: sightingData.description
       });
 
       // Then update the person's last seen information
@@ -253,13 +226,6 @@ const MissingPersonModal = ({ onClose }) => {
                     />
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
-                  <button
-                    onClick={handleShare}
-                    className="group relative p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl hover:bg-white hover:scale-110 transition-all duration-300 border border-white/30"
-                  >
-                    <Share2 className="w-5 h-5 text-gray-600 group-hover:text-blue-500 transition-colors" />
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
                 </div>
               </>
             ) : (
@@ -316,20 +282,44 @@ const MissingPersonModal = ({ onClose }) => {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Physical Description</h3>
                   <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50">
-                    <p className="text-gray-800 font-medium mb-4">{selectedPerson.description}</p>
-                    
-                    {selectedPerson.physicalAttributes && (
+                    {selectedPerson.physicalDescription && (
                       <div className="grid grid-cols-2 gap-4">
-                        {Object.entries(selectedPerson.physicalAttributes).map(([key, value]) => {
-                          if (!value) return null;
-                          const attr = PHYSICAL_ATTRIBUTES.find(a => a.key === key);
-                          return (
-                            <div key={key} className="flex items-center space-x-2 p-2 bg-white/60 rounded-lg">
-                              <span className="text-sm font-semibold text-gray-800">{attr?.label || key}:</span>
-                              <span className="font-bold text-gray-900">{value}</span>
-                            </div>
-                          );
-                        })}
+                        {selectedPerson.physicalDescription.height && (
+                          <div className="flex items-center space-x-2 p-2 bg-white/60 rounded-lg">
+                            <span className="text-sm font-semibold text-gray-800">Height:</span>
+                            <span className="font-bold text-gray-900">{selectedPerson.physicalDescription.height}</span>
+                          </div>
+                        )}
+                        {selectedPerson.physicalDescription.weight && (
+                          <div className="flex items-center space-x-2 p-2 bg-white/60 rounded-lg">
+                            <span className="text-sm font-semibold text-gray-800">Weight:</span>
+                            <span className="font-bold text-gray-900">{selectedPerson.physicalDescription.weight}</span>
+                          </div>
+                        )}
+                        {selectedPerson.physicalDescription.hairColor && (
+                          <div className="flex items-center space-x-2 p-2 bg-white/60 rounded-lg">
+                            <span className="text-sm font-semibold text-gray-800">Hair Color:</span>
+                            <span className="font-bold text-gray-900">{selectedPerson.physicalDescription.hairColor}</span>
+                          </div>
+                        )}
+                        {selectedPerson.physicalDescription.eyeColor && (
+                          <div className="flex items-center space-x-2 p-2 bg-white/60 rounded-lg">
+                            <span className="text-sm font-semibold text-gray-800">Eye Color:</span>
+                            <span className="font-bold text-gray-900">{selectedPerson.physicalDescription.eyeColor}</span>
+                          </div>
+                        )}
+                        {selectedPerson.physicalDescription.distinctiveMarks && (
+                          <div className="col-span-2 flex items-start space-x-2 p-2 bg-white/60 rounded-lg">
+                            <span className="text-sm font-semibold text-gray-800">Distinctive Marks:</span>
+                            <span className="font-bold text-gray-900">{selectedPerson.physicalDescription.distinctiveMarks}</span>
+                          </div>
+                        )}
+                        {selectedPerson.physicalDescription.clothing && (
+                          <div className="col-span-2 flex items-start space-x-2 p-2 bg-white/60 rounded-lg">
+                            <span className="text-sm font-semibold text-gray-800">Clothing:</span>
+                            <span className="font-bold text-gray-900">{selectedPerson.physicalDescription.clothing}</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -377,15 +367,17 @@ const MissingPersonModal = ({ onClose }) => {
                       <Phone className="w-5 h-5 text-gray-700" />
                       <div>
                         <p className="text-sm font-semibold text-gray-800">Phone</p>
-                        <p className="font-bold text-gray-900">{selectedPerson.contactPhone}</p>
+                        <p className="font-bold text-gray-900">{selectedPerson.reporterContact?.phone}</p>
                       </div>
                     </div>
-                    {selectedPerson.contactEmail && (
+                    {selectedPerson.reporterContact?.email && (
                       <div className="flex items-center space-x-3 p-3 bg-white/70 backdrop-blur-sm rounded-xl border border-gray-200/50 col-span-2">
-                        <Mail className="w-5 h-5 text-gray-700" />
+                        <div className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-bold text-gray-700">@</span>
+                        </div>
                         <div>
                           <p className="text-sm font-semibold text-gray-800">Email</p>
-                          <p className="font-bold text-gray-900">{selectedPerson.contactEmail}</p>
+                          <p className="font-bold text-gray-900">{selectedPerson.reporterContact?.email}</p>
                         </div>
                       </div>
                     )}
@@ -489,35 +481,29 @@ const MissingPersonModal = ({ onClose }) => {
             </div>
           )}
 
-        {/* Footer Actions */}
-        <div className="relative z-10 border-t border-white/20 bg-white/30 backdrop-blur-md p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={() => window.open(`tel:${selectedPerson.contactPhone}`)}
-              className="group relative flex-1 flex items-center justify-center space-x-3 p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-            >
-              <Phone className="w-5 h-5" />
-              <span className="font-semibold">Call Contact</span>
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
-            <button
-              onClick={() => window.open(`mailto:${selectedPerson.contactEmail}`)}
-              className="group relative flex-1 flex items-center justify-center space-x-3 p-4 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-            >
-              <Mail className="w-5 h-5" />
-              <span className="font-semibold">Email Contact</span>
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
-            <button
-              onClick={() => setShowTipForm(true)}
-              className="group relative flex-1 flex items-center justify-center space-x-3 p-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-            >
-              <MessageCircle className="w-5 h-5" />
-              <span className="font-semibold">Provide Tip</span>
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
+        {/* Footer Actions - Only show for Active missing persons */}
+        {selectedPerson.status === 'Active' && (
+          <div className="relative z-10 border-t border-white/20 bg-white/30 backdrop-blur-md p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => window.open(`tel:${selectedPerson.reporterContact?.phone}`)}
+                className="group relative flex-1 flex items-center justify-center space-x-3 p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+              >
+                <Phone className="w-5 h-5" />
+                <span className="font-semibold">Call Contact</span>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+              <button
+                onClick={() => setShowTipForm(true)}
+                className="group relative flex-1 flex items-center justify-center space-x-3 p-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span className="font-semibold">Provide Tip</span>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
