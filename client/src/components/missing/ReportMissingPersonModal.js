@@ -198,7 +198,8 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
   };
 
   // Handle next step
-  const handleNext = () => {
+  const handleNext = (e) => {
+    e?.preventDefault(); // Prevent form submission if called from form
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, 5));
     }
@@ -802,7 +803,7 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
                 {currentStep < 5 ? (
                   <button
                     type="button"
-                    onClick={handleNext}
+                    onClick={(e) => handleNext(e)}
                     className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium"
                   >
                     Next
