@@ -1,0 +1,783 @@
+{
+  "info": {
+    "_postman_id": "aadd2750-74ad-49b9-ac84-503533d3e96a",
+    "name": "Rescuenet - task management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "43157736"
+  },
+  "item": [
+    {
+      "name": "Admin Request Handling",
+      "item": [
+        {
+          "name": "Get help requests as Admin",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/admin/help-requests/699fd293b840da8057bc639f",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "help-requests",
+                "699fd293b840da8057bc639f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all help requests as Admin",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/admin/help-requests",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "help-requests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update admin fields in Requests",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"status\": \"verified\",\r\n  \"adminNotes\": \"Verified by admin. Awaiting assignment.\",\r\n  \"publishedToSocial\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/help-requests/699065911faa60f509f967f3",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "help-requests",
+                "699065911faa60f509f967f3"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign help request (use request ID on URL)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"organizationId\": \"69a134bfc4087a0e1d302fa9\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/help-requests/699fd293b840da8057bc639f/assign",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "help-requests",
+                "699fd293b840da8057bc639f",
+                "assign"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin NGO handling",
+      "item": [
+        {
+          "name": "Get all registered NGOs",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/admin/ngos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "ngos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add NGO details as admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"userEmail\": \"testerjcj12@gmail.com\",\r\n  \"organizationName\": \"ICE\",\r\n  \"registrationNumber\": \"NGO-2026-6067\",\r\n  \"type\": \"relief\",\r\n  \"contactPerson\": \"Kamal Harris\",\r\n  \"officialEmail\": \"contact@ice.com\",\r\n  \"contactPhone\": \"+104-77-123-4567\",\r\n  \"address\": {\r\n    \"street\": \"Rajagiriya\",\r\n    \"city\": \"Colombo\",\r\n    \"province\": \"Western\",\r\n    \"postalCode\": \"00160\"\r\n  },\r\n  \"services\": [\"flood-relief\", \"food-distribution\"],\r\n  \"serviceDistricts\": [\"Colombo\", \"Gampaha\"]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/ngos/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "ngos",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update NGO details as admin",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"contactPhone\": \"0763727137\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/ngos/69a134bfc4087a0e1d302fa9",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "ngos",
+                "69a134bfc4087a0e1d302fa9"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete NGO",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/admin/ngos/69acf877f8332d615a007752",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "ngos",
+                "69acf877f8332d615a007752"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "verify NGO as admin",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"approvalStatus\": \"approved\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/ngos/69ace1c29393ce08ba36c25f",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "ngos",
+                "69ace1c29393ce08ba36c25f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get single NGO",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/admin/ngos/69a134bfc4087a0e1d302fa9",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "ngos",
+                "69a134bfc4087a0e1d302fa9"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject approval of NGO as admin",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"approvalStatus\": \"rejected\",\r\n  \"rejectionReason\": \"Invalid registration documents\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/ngos/id",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "admin",
+                "ngos",
+                "id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "NGO registration (Gihan)",
+      "item": [
+        {
+          "name": "2. NGO step 2",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"registrationNumber\": \"NGO123456\",\r\n  \"contactPhone\": \"+94763727137\",\r\n  \"serviceDistricts\": [\"Colombo\"],\r\n  \"services\": [\"FOOD\",\"MEDICAL\",\"TRANSPORT\"],\r\n  \"availabilityStatus\": \"AVAILABLE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/profile-create",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "profile-create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1. Registering a user as NGO (Gihan)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Helping Hands\",\r\n  \"email\": \"jjayawardene610@gmail.com\",\r\n  \"password\": \"securePassword123\",\r\n  \"role\": \"NGO\",\r\n  \"registrationNumber\": \"NGO123456\",\r\n  \"address\": \"123 Main St, City\",\r\n  \"documents\": \"file_upload_reference\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "NGO task management",
+      "item": [
+        {
+          "name": "Login NGO (To get JWT)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"jjayawardene610@gmail.com\",\r\n  \"password\": \"securePassword123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "list my assigned tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/help-requests?status=assigned&page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "help-requests"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "assigned"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get performance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/help-requests/performance",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "help-requests",
+                "performance"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get single task",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/help-requests/699fd293b840da8057bc639f",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "help-requests",
+                "699fd293b840da8057bc639f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accept a task",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/help-requests/699fd293b840da8057bc639f/accept",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "help-requests",
+                "699fd293b840da8057bc639f",
+                "accept"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Decline a task",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"reason\": \"We do not have capacity for flood evacuations this week.\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/help-requests/:requestId/decline",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "help-requests",
+                ":requestId",
+                "decline"
+              ],
+              "variable": [
+                {
+                  "key": "requestId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark as \"In Progress\"",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/help-requests/:requestId/in-progress",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "help-requests",
+                ":requestId",
+                "in-progress"
+              ],
+              "variable": [
+                {
+                  "key": "requestId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "mark as complete",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/help-requests/:requestId/complete",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "help-requests",
+                ":requestId",
+                "complete"
+              ],
+              "variable": [
+                {
+                  "key": "requestId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark as online",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"availabilityStatus\": \"AVAILABLE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/ngo/profile/status-update",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "ngo",
+                "profile",
+                "status-update"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Basically registering as an NGO, done by gihab"
+    },
+    {
+      "name": "Admin Registration (Gihan)",
+      "item": [
+        {
+          "name": "1. Register Admin (Gihan)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Jcj\",\r\n  \"email\": \"rinay18569@pckage.com\",\r\n  \"password\": \"AdminPass123!\",\r\n  \"role\": \"ADMIN\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login as admin to get cookie",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"rinay18569@pckage.com\",\r\n  \"password\": \"AdminPass123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add new help requests (Heshan's part)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Jagath Liyanage\",\r\n  \"location\": \"Riverside District\",\r\n  \"realLocation\": \"Riverside, Cityname\",\r\n  \"contactNumber\": \"+1234567890\",\r\n  \"disasterType\": \"flood\",\r\n  \"message\": \"Water level rising, need immediate help\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/help",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "help"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get list of help (Heshan)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/help",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "help"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

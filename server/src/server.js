@@ -1,6 +1,6 @@
+import "./config/env.js";
 import express from "express";
 import http from "http";
-import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
@@ -30,9 +30,6 @@ import socketRoutes from "./routes/socketRoutes.js";
 import socketService from './services/socketService.js';
 import campaignRoutes from "./routes/campaignRoutes.js";
 import donationRoutes from "./routes/donationRoutes.js";
-
-
-dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
 
 if (!process.env.JWT_SECRET) {
   if (process.env.NODE_ENV === "test") {

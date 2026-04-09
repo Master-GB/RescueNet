@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, Outlet } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import AuthCookie from "../components/authentication/AuthCookie";
 import {
@@ -165,7 +165,7 @@ const DashboardLayout = ({
 
       {/* Main content */}
       <main className="pt-20 lg:pl-72 min-h-screen">
-        <div className="p-4 md:p-6 lg:p-8">{children}</div>
+        <div className="p-4 md:p-6 lg:p-8">{children || <Outlet />}</div>
       </main>
 
       {/* Global auth cookie consent component */}
