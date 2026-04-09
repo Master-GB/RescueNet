@@ -61,6 +61,7 @@ const CitizenHelpRequest = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const recordingIntervalRef = useRef(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -315,6 +316,21 @@ const CitizenHelpRequest = () => {
       setLoading(false);
     }
   };
+   // Scroll to top functionality
+    useEffect(() => {
+      // Scroll to top when page loads
+      window.scrollTo(0, 0);
+      
+      const handleScroll = () => {
+        setShowScrollTop(window.scrollY > 300);
+      };
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+  
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
   return (
     <DashboardLayout>
