@@ -164,7 +164,7 @@ const missingPersonSchema = new mongoose.Schema(
       description: String,
       verified: {
         type: Boolean,
-        default: false
+        default: true
       },
       createdAt: {
         type: Date,
