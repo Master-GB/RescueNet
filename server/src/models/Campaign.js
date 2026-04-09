@@ -41,6 +41,10 @@ const campaignSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    campaignImageUrl: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

@@ -1,3 +1,4 @@
+// client/src/routes/AppRoutes.js
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import GuestRoute from "../components/authentication/GuestRoute";
