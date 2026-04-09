@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from "../../layouts/DashboardLayout";
 import AreaSituationBanner from "../../components/citizenDashboard/AreaSituationBanner";
 import QuickActionCard from "../../components/citizenDashboard/QuickActionCard";
@@ -9,7 +10,7 @@ import WeatherDetailsCard from "../../components/citizenDashboard/WeatherDetails
 import RecentNotifications from "../../components/citizenDashboard/RecentNotifications";
 import ShelterMap from "../../components/citizenDashboard/ShelterMap";
 import locationService from '../../services/locationService.js';
-import { AlertTriangle, Shield, Phone, Radio, Heart, Zap, MapPin, Users, Mail, Accessibility, Baby, Wifi, AlertCircle } from "lucide-react";
+import { AlertTriangle, Shield, Phone, Radio, Heart, Zap, MapPin, Users, Mail, Accessibility, Baby, Wifi, AlertCircle, X } from "lucide-react";
 
 // Constants for shelter types and features
 const DISASTER_TYPES = [
@@ -38,11 +39,13 @@ const PROVINCES = [
 ];
 
 const CitizenDashboard = () => {
+  const navigate = useNavigate();
   const [sosProgress, setSosProgress] = useState(0);
   const [isSosActive, setIsSosActive] = useState(false);
   const [savedShelters, setSavedShelters] = useState([]);
   const [allShelters, setAllShelters] = useState([]);
   const [selectedShelter, setSelectedShelter] = useState(null);
+  const [showEmergencyPopup, setShowEmergencyPopup] = useState(false);
 
   // Debug savedShelters changes
   useEffect(() => {
@@ -130,6 +133,72 @@ const CitizenDashboard = () => {
 
   return (
     <DashboardLayout>
+      {/* Emergency Call Popup */}
+      {showEmergencyPopup && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full mx-4 shadow-2xl transform animate-pulse">
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-red-600 to-red-700 p-4 text-white rounded-t-3xl">
+              <button
+                onClick={() => setShowEmergencyPopup(false)}
+                className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+              
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-2xl">
+                  <Phone className="w-8 h-8 text-white animate-pulse" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-white">Emergency Call</h2>
+                  <p className="text-white/90 text-xs">Dial emergency services immediately</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Main Content */}
+            <div className="p-4 space-y-4">
+              <div className="text-center mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-3">
+                  <span className="text-3xl font-bold text-red-600">119</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Emergency Services</h3>
+                <p className="text-gray-600 text-center text-sm">
+                  Click the button below to dial emergency services (119) immediately
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => window.location.href = 'tel:119'}
+                  className="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl font-bold hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105 shadow-xl"
+                >
+                  <Phone className="w-5 h-5 inline mr-2" />
+                  Call 119 Now
+                </button>
+                
+                <button
+                  onClick={() => setShowEmergencyPopup(false)}
+                  className="w-full py-3 bg-gray-200 text-gray-700 rounded-2xl font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+              
+              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                <h4 className="text-base font-bold text-yellow-800 mb-2">Important Notice</h4>
+                <p className="text-yellow-700 text-xs">
+                  This is for emergency situations only. Please use responsibly.
+                </p>
+                <p className="text-yellow-700 text-xs font-medium">
+                  ⚠️ False emergency calls may result in legal consequences.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Shelter Detail Modal - Outside main container for full coverage */}
       {selectedShelter && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[99999]">
@@ -386,14 +455,13 @@ const CitizenDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <QuickActionCard
-              title="Emergency SOS"
-              description="Send immediate distress signal with your location to all emergency responders."
-              buttonText={isSosActive ? "Cancel SOS" : "Activate SOS"}
+              title="Request Help"
+              description="Request assistance for  emergency situations, or medical help needed."
+              buttonText="Request Help"
               variant="emergency"
-              icon={AlertTriangle}
-              status={isSosActive ? "Signal Active" : "Ready"}
-              progress={sosProgress > 0 ? sosProgress : undefined}
-              onClick={handleSosClick}
+              icon={Radio}
+              status="Available"
+              onClick={() => navigate('/citizen/help-request')}
             />
             <QuickActionCard
               title="Find Shelter"
@@ -402,7 +470,7 @@ const CitizenDashboard = () => {
               variant="primary"
               icon={Shield}
               status="Available"
-              onClick={() => console.log("Find shelters clicked")}
+              onClick={() => navigate('/citizen/shelters')}
             />
             <QuickActionCard
               title="Emergency Call"
@@ -411,7 +479,7 @@ const CitizenDashboard = () => {
               variant="success"
               icon={Phone}
               status="Ready"
-              onClick={() => console.log("Emergency call clicked")}
+              onClick={() => setShowEmergencyPopup(true)}
             />
             <QuickActionCard
               title="First Aid Guide"
@@ -420,7 +488,7 @@ const CitizenDashboard = () => {
               variant="warning"
               icon={Heart}
               status="Interactive"
-              onClick={() => console.log("First aid guide clicked")}
+              onClick={() => navigate('/citizen/first-aid-guide')}
             />
           </div>
         </section>

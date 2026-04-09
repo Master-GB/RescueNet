@@ -80,7 +80,7 @@ const QuickActionCard = ({
     
     switch (variant) {
       case "emergency":
-        return `${baseStyles} text-white animate-pulse`;
+        return `${baseStyles} text-white animate-bounce-slow`;
       case "primary":
         return `${baseStyles} text-white animate-bounce-slow`;
       case "success":

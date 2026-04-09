@@ -24,6 +24,7 @@ import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
 import NgoDashboard from "../pages/ngo/NgoDashboard";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
+import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
 
 const AppRoutes = () => {
   return (
@@ -111,6 +112,16 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <CitizenDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/citizen/first-aid-guide"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <FirstAidGuidePage />
+            </DashboardLayout>   
           </RoleRoute>
         )}
       />
