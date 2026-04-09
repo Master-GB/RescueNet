@@ -12,6 +12,8 @@ import {
   createCampaign,
   updateCampaign,
   getAllActiveCampaigns,
+  getMyCampaigns,
+  cancelCampaign,
   getCampaignById,
 } from "../controllers/campaignController.js";
 
@@ -19,9 +21,10 @@ const router = express.Router();
 
 // Public
 router.get("/active", getAllActiveCampaigns);
-router.get("/:id", getCampaignById);
 
 // NGO only
+router.get("/my-campaigns", protect, authorize("NGO"), getMyCampaigns);
+
 router.post(
   "/create",
   protect,
@@ -41,5 +44,14 @@ router.put(
   validateBody(updateCampaignSchema),
   updateCampaign
 );
+
+router.patch(
+  "/cancel/:id",
+  protect,
+  authorize("NGO"),
+  cancelCampaign
+);
+
+router.get("/:id", getCampaignById);
 
 export default router;

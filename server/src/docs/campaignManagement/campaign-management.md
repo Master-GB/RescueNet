@@ -226,6 +226,87 @@ For `multipart/form-data`, send nested fields as JSON strings (recommended):
 
 ---
 
+### Get My Campaigns (NGO Only)
+
+**Endpoint:** `GET /api/campaigns/my-campaigns`
+
+**Auth Required:** Yes
+**Roles:** `NGO`
+
+**Description:** Returns campaigns created by the authenticated NGO. Supports optional status filtering.
+
+**Query Params:**
+
+| Param   | Required | Values                              | Description                              |
+| ------- | -------- | ----------------------------------- | ---------------------------------------- |
+| `status`| ✗        | `Active`, `Completed`, `Cancelled` | Filter campaigns by status when provided |
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "campaigns": [
+    {
+      "_id": "665a1b2c3d4e5f6a7b8c9d0e",
+      "ngoId": "664f1a2b3c4d5e6f7a8b9c0d",
+      "title": "Southern Province Flood Relief",
+      "description": "Raising funds and supplies...",
+      "targetAmount": 500000,
+      "raisedAmount": 125000,
+      "status": "Active",
+      "bankDetails": { ... },
+      "acceptedItems": ["Clothes", "Dry Rations"],
+      "campaignImageUrl": "https://res.cloudinary.com/...",
+      "createdAt": "2026-02-27T10:00:00.000Z",
+      "updatedAt": "2026-02-27T12:30:00.000Z"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+
+| Status | Condition |
+| ------ | --------- |
+| 401    | Unauthenticated request |
+| 403    | Non-NGO role |
+| 500    | Server error |
+
+---
+
+### Cancel Campaign (Soft Delete)
+
+**Endpoint:** `PATCH /api/campaigns/cancel/:id`
+
+**Auth Required:** Yes
+**Roles:** `NGO` (owner only)
+
+**Description:** Performs soft delete by setting campaign status to `Cancelled`. Campaign data and donation history are preserved.
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Campaign cancelled successfully",
+  "campaign": {
+    "_id": "665a1b2c3d4e5f6a7b8c9d0e",
+    "status": "Cancelled"
+  }
+}
+```
+
+**Error Responses:**
+
+| Status | Condition |
+| ------ | --------- |
+| 404    | Campaign not found |
+| 403    | NGO does not own this campaign |
+| 500    | Server error |
+
+---
+
 ### Get All Active Campaigns
 
 **Endpoint:** `GET /api/campaigns/active`

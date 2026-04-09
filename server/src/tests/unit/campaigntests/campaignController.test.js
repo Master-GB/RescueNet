@@ -25,6 +25,8 @@ const {
   createCampaign,
   updateCampaign,
   getAllActiveCampaigns,
+  getMyCampaigns,
+  cancelCampaign,
   getCampaignById,
 } = await import("../../../controllers/campaignController.js");
 
@@ -359,6 +361,165 @@ describe("Campaign Controller - Unit Tests", () => {
         expect.objectContaining({
           success: false,
           message: "Failed to fetch campaigns",
+        })
+      );
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // getMyCampaigns
+  // ═══════════════════════════════════════════
+  describe("getMyCampaigns", () => {
+    test("should return NGO campaigns sorted with 200", async () => {
+      const myCampaigns = [mockCampaign, { ...mockCampaign, _id: "camp2" }];
+      const sortMock = jest.fn().mockResolvedValue(myCampaigns);
+      findMock.mockReturnValue({ sort: sortMock });
+
+      const req = { user: { _id: ngoUserId }, query: {} };
+      const res = makeRes();
+
+      await getMyCampaigns(req, res);
+
+      expect(findMock).toHaveBeenCalledWith({ ngoId: ngoUserId });
+      expect(sortMock).toHaveBeenCalledWith({ createdAt: -1 });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          campaigns: myCampaigns,
+        })
+      );
+    });
+
+    test("should include status filter when valid", async () => {
+      const sortMock = jest.fn().mockResolvedValue([mockCampaign]);
+      findMock.mockReturnValue({ sort: sortMock });
+
+      const req = {
+        user: { _id: ngoUserId },
+        query: { status: "Active" },
+      };
+      const res = makeRes();
+
+      await getMyCampaigns(req, res);
+
+      expect(findMock).toHaveBeenCalledWith({
+        ngoId: ngoUserId,
+        status: "Active",
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    test("should ignore status filter when invalid", async () => {
+      const sortMock = jest.fn().mockResolvedValue([mockCampaign]);
+      findMock.mockReturnValue({ sort: sortMock });
+
+      const req = {
+        user: { _id: ngoUserId },
+        query: { status: "InvalidStatus" },
+      };
+      const res = makeRes();
+
+      await getMyCampaigns(req, res);
+
+      expect(findMock).toHaveBeenCalledWith({ ngoId: ngoUserId });
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    test("should return 500 on database error", async () => {
+      findMock.mockReturnValue({
+        sort: jest.fn().mockRejectedValue(new Error("DB error")),
+      });
+
+      const req = { user: { _id: ngoUserId }, query: {} };
+      const res = makeRes();
+
+      await getMyCampaigns(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Failed to fetch NGO campaigns",
+        })
+      );
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // cancelCampaign
+  // ═══════════════════════════════════════════
+  describe("cancelCampaign", () => {
+    test("should return 404 when campaign does not exist", async () => {
+      findByIdMock.mockResolvedValue(null);
+
+      const req = { user: { _id: ngoUserId }, params: { id: "missing" } };
+      const res = makeRes();
+
+      await cancelCampaign(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Campaign not found",
+        })
+      );
+    });
+
+    test("should return 403 when NGO is not campaign owner", async () => {
+      findByIdMock.mockResolvedValue(mockCampaign);
+
+      const req = { user: { _id: otherUserId }, params: { id: "camp1" } };
+      const res = makeRes();
+
+      await cancelCampaign(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "You can only cancel your own campaigns",
+        })
+      );
+    });
+
+    test("should set status to Cancelled and return 200 for owner", async () => {
+      const saveable = { ...mockCampaign, status: "Active", save: jest.fn() };
+      saveable.save.mockResolvedValue(saveable);
+      findByIdMock.mockResolvedValue(saveable);
+
+      const req = { user: { _id: ngoUserId }, params: { id: "camp1" } };
+      const res = makeRes();
+
+      await cancelCampaign(req, res);
+
+      expect(saveable.status).toBe("Cancelled");
+      expect(saveable.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Campaign cancelled successfully",
+        })
+      );
+    });
+
+    test("should return 500 when save throws", async () => {
+      const saveable = { ...mockCampaign, save: jest.fn() };
+      saveable.save.mockRejectedValue(new Error("Save failed"));
+      findByIdMock.mockResolvedValue(saveable);
+
+      const req = { user: { _id: ngoUserId }, params: { id: "camp1" } };
+      const res = makeRes();
+
+      await cancelCampaign(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Failed to cancel campaign",
         })
       );
     });

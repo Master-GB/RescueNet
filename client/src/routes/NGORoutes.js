@@ -9,7 +9,6 @@ const NGORoutes = () => {
 			{/* Compatibility redirects for NGO URLs used across the app */}
 			<Route path="/ngo" element={<Navigate to="/ngo-dashboard" replace />} />
 			<Route path="/ngo/dashboard" element={<Navigate to="/ngo-dashboard" replace />} />
-			<Route path="/ngo/campaigns" element={<Navigate to="/ngo-dashboard" replace />} />
 
 			{/* Main NGO dashboard */}
 			<Route
