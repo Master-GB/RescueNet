@@ -1,0 +1,88 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 30
+      arrivalRate: 1
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 2
+      name: "Normal load"
+    - duration: 30
+      arrivalRate: 1
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 15
+  payload:
+    path: "missing-test-users.csv"
+    fields:
+      - "email"
+      - "password"
+      
+scenarios:
+  - name: "Missing Person - Read Operations"
+    weight: 60
+    flow:
+      - get:
+          url: "/api/missing-persons/statistics"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/missing-persons?status=Missing"
+          expect:
+            - statusCode: 200
+
+  - name: "Missing Person - Create and Sighting Flow"
+    weight: 40
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/missing-persons"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            name: "Test Missing Person {{ $randomNumber(1000, 9999) }}"
+            age: 25
+            gender: "Male"
+            lastSeenLocation: "Colombo"
+            description: "Wearing blue shirt"
+            status: "Missing"
+            contactName: "Contact {{ $randomNumber(1000, 9999) }}"
+            contactPhone: "071{{ $randomNumber(1000000, 9999999) }}"
+          capture:
+            - json: "$.data._id"
+              as: "reportId"
+          expect:
+            - statusCode: 201
+      - think: 2
+      - post:
+          url: "/api/missing-persons/{{ reportId }}/sightings"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            location: "Kandy"
+            date: "2024-05-15"
+            description: "Seen near station"
+            contactName: "Sighting Reporter"
+            contactPhone: "0771234567"
+          expect:
+            - statusCode: 201
+      - think: 1
+      - get:
+          url: "/api/missing-persons/{{ reportId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
