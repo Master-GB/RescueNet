@@ -1,0 +1,388 @@
+/* First Aid Guide Page Styles */
+
+/* Custom animations */
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  45% { transform: scale(1); }
+  60% { transform: scale(1.1); }
+  80% { transform: scale(1); }
+}
+
+/* Gradient backgrounds */
+.gradient-red-pink {
+  background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
+}
+
+.gradient-blue-purple {
+  background: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
+}
+
+.gradient-green-teal {
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+}
+
+.gradient-yellow-orange {
+  background: linear-gradient(135deg, #eab308 0%, #f97316 100%);
+}
+
+/* Glass morphism effects */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-effect-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Button effects */
+.btn-primary {
+  background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+/* Emergency button animation */
+.emergency-btn {
+  animation: pulse-red 2s infinite;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* Progress indicators */
+.progress-bar {
+  background: linear-gradient(90deg, #ef4444 0%, #ec4899 50%, #ef4444 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Interactive elements */
+.interactive-element {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.interactive-element::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.3);
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+.interactive-element:hover::after {
+  width: 100%;
+  height: 100%;
+}
+
+/* Certificate styles */
+.certificate-border {
+  border: 8px double #d4af37;
+  border-radius: 20px;
+  position: relative;
+  background: linear-gradient(45deg, #fef3c7 0%, #fef9e7 50%, #fef3c7 100%);
+}
+
+.certificate-seal {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+  position: relative;
+}
+
+.certificate-seal::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border: 2px solid #d4af37;
+  border-radius: 50%;
+}
+
+/* Quiz styles */
+.quiz-option {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.quiz-option:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: translateX(4px);
+}
+
+.quiz-option.correct {
+  border-color: #10b981;
+  background: #d1fae5;
+}
+
+.quiz-option.incorrect {
+  border-color: #ef4444;
+  background: #fee2e2;
+}
+
+.quiz-option::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #e2e8f0;
+  border-radius: 2px 0 0 2px;
+  transition: all 0.3s ease;
+}
+
+.quiz-option:hover::before {
+  background: #3b82f6;
+}
+
+.quiz-option.correct::before {
+  background: #10b981;
+}
+
+.quiz-option.incorrect::before {
+  background: #ef4444;
+}
+
+/* Timer styles */
+.timer {
+  font-family: 'Courier New', monospace;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #fbbf24;
+  border-radius: 8px;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+}
+
+.timer.warning {
+  animation: pulse-red 1s infinite;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* Category badges */
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.category-badge.emergency {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.category-badge.medical {
+  background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+  color: #9333ea;
+  border: 1px solid #e9d5ff;
+}
+
+.category-badge.injury {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.category-badge.environmental {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+/* Difficulty indicators */
+.difficulty-basic {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.difficulty-intermediate {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #d97706;
+  border: 1px solid #fcd34d;
+}
+
+.difficulty-advanced {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+/* Interactive guide styles */
+.step-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.step-indicator.active {
+  width: 32px;
+  background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
+  border-radius: 16px;
+}
+
+.step-indicator.completed {
+  background: #10b981;
+}
+
+/* Floating elements */
+.floating-heart {
+  animation: float 3s ease-in-out infinite;
+}
+
+.floating-heart:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.floating-heart:nth-child(3) {
+  animation-delay: 1s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+  
+  .btn-primary {
+    padding: 10px 20px;
+    font-size: 0.875rem;
+  }
+  
+  .certificate-seal {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .timer {
+    font-size: 1.25rem;
+  }
+}
+
+/* Print styles for certificate */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .certificate-border {
+    border: 12px double #d4af37;
+  }
+  
+  body {
+    background: white !important;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles */
+.focus-visible:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .quiz-option {
+    background: #1e293b;
+    border-color: #374151;
+    color: #f8fafc;
+  }
+  
+  .quiz-option:hover {
+    background: #1e3a8a;
+    border-color: #3b82f6;
+  }
+}

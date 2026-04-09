@@ -16,6 +16,8 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import VolunteerPendingApprovalPage from "../pages/auth/VolunteerPendingApprovalPage";
 import VolunteerProfileFormPage from "../pages/auth/VolunteerProfileFormPage";
 import CitizenDashboard from "../pages/citizen/CitizenDashboard";
+import CitizenProfilePage from "../pages/citizen/CitizenProfilePage";
+import EmergencyContactPage from "../pages/citizen/EmergencyContactPage";
 import ShelterPage from "../pages/citizen/ShelterPage";
 import DisasterPage from "../pages/citizen/DisasterPage";
 import MissingPersonPage from "../pages/citizen/MissingPersonPage";
@@ -23,6 +25,7 @@ import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
 import NgoDashboard from "../pages/ngo/NgoDashboard";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
+import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
 
 const AppRoutes = () => {
   return (
@@ -110,6 +113,36 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <CitizenDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/citizen/first-aid-guide"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <FirstAidGuidePage />
+            </DashboardLayout>   
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/citizen/profile"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <CitizenProfilePage />
+            </DashboardLayout>
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/citizen/emergency-contact"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <EmergencyContactPage />
+            </DashboardLayout>
           </RoleRoute>
         )}
       />
