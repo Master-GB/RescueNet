@@ -15,6 +15,8 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import VolunteerPendingApprovalPage from "../pages/auth/VolunteerPendingApprovalPage";
 import VolunteerProfileFormPage from "../pages/auth/VolunteerProfileFormPage";
 import CitizenDashboard from "../pages/citizen/CitizenDashboard";
+import CitizenProfilePage from "../pages/citizen/CitizenProfilePage";
+import EmergencyContactPage from "../pages/citizen/EmergencyContactPage";
 import ShelterPage from "../pages/citizen/ShelterPage";
 import DisasterPage from "../pages/citizen/DisasterPage";
 import MissingPersonPage from "../pages/citizen/MissingPersonPage";
@@ -109,6 +111,26 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <CitizenDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/citizen/profile"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <CitizenProfilePage />
+            </DashboardLayout>
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/citizen/emergency-contact"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <EmergencyContactPage />
+            </DashboardLayout>
           </RoleRoute>
         )}
       />
