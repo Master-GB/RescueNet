@@ -39,7 +39,13 @@
     "perf:help:basic": "artillery run src/tests/performanceTest/helpTest/basic-load.yml",
     "perf:help:stress": "artillery run src/tests/performanceTest/helpTest/stress-test.yml",
     "perf:help:spike": "artillery run src/tests/performanceTest/helpTest/spike-test.yml",
-    "perf:help:all": "npm run perf:help:basic && npm run perf:help:stress && npm run perf:help:spike"
+    "perf:help:all": "npm run perf:help:basic && npm run perf:help:stress && npm run perf:help:spike",
+    
+    "ready-missing": "node src/tests/performanceTest/missingPersonTest/create-missing-user.js",
+    "perf:missing:basic": "artillery run src/tests/performanceTest/missingPersonTest/basic-load.yml",
+    "perf:missing:stress": "artillery run src/tests/performanceTest/missingPersonTest/stress-test.yml",
+    "perf:missing:spike": "artillery run src/tests/performanceTest/missingPersonTest/spike-test.yml",
+    "perf:missing:all": "npm run perf:missing:basic && npm run perf:missing:stress && npm run perf:missing:spike"
     
   },
   "keywords": [],
