@@ -52,6 +52,10 @@ const NgoCampaignManagementPage = () => {
     navigate(`/ngo/campaigns/${campaign._id}/edit`);
   };
 
+  const handleManageDonations = (campaign) => {
+    navigate(`/ngo/campaigns/${campaign._id}/donations`);
+  };
+
   const handleCancelCampaign = async (campaign) => {
     const shouldCancel = window.confirm(
       `Cancel campaign "${campaign.title}"? This performs a soft delete by setting status to Cancelled.`,
@@ -89,6 +93,7 @@ const NgoCampaignManagementPage = () => {
         onStatusFilterChange={setStatusFilter}
         onCreateCampaign={handleCreateCampaign}
         onEditCampaign={handleEditCampaign}
+        onManageDonations={handleManageDonations}
         onCancelCampaign={handleCancelCampaign}
         cancelingCampaignId={cancelingCampaignId}
       />

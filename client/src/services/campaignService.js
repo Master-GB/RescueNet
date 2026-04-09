@@ -124,3 +124,16 @@ export const getCampaignById = async (campaignId) => {
     throw new Error(message);
   }
 };
+
+export const updateCampaignStatus = async (campaignId, status) => {
+  try {
+    const response = await apiClient.put(`/api/campaigns/update/${campaignId}`, {
+      status,
+    });
+    return response.data;
+  } catch (err) {
+    const message = extractApiErrorMessage(err);
+    console.error("updateCampaignStatus failed:", message, err);
+    throw new Error(message);
+  }
+};

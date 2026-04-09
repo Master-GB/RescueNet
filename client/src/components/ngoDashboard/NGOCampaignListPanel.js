@@ -33,6 +33,7 @@ const NGOCampaignListPanel = ({
   onStatusFilterChange,
   onCreateCampaign,
   onEditCampaign,
+  onManageDonations,
   onCancelCampaign,
   cancelingCampaignId,
 }) => {
@@ -123,7 +124,13 @@ const NGOCampaignListPanel = ({
 
                 <div className="space-y-4 p-5">
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="line-clamp-2 text-lg font-bold tracking-[-0.01em] text-on-surface">{campaign.title}</h3>
+                    <button
+                      type="button"
+                      onClick={() => onManageDonations(campaign)}
+                      className="line-clamp-2 text-left text-lg font-bold tracking-[-0.01em] text-on-surface transition hover:text-primary"
+                    >
+                      {campaign.title}
+                    </button>
                     <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${statusTone[campaign.status] || statusTone.Active}`}>
                       {campaign.status || "Active"}
                     </span>
@@ -148,22 +155,31 @@ const NGOCampaignListPanel = ({
                     Created {formatDate(campaign.createdAt)}
                   </p>
 
-                  <div className="flex items-center gap-2 pt-2">
+                  <div className="space-y-2 pt-2">
                     <button
                       type="button"
-                      onClick={() => onEditCampaign(campaign)}
-                      className="flex-1 rounded-lg bg-secondary px-3 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-container"
+                      onClick={() => onManageDonations(campaign)}
+                      className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-container"
                     >
-                      Update
+                      View donations
                     </button>
-                    <button
-                      type="button"
-                      disabled={campaign.status === "Cancelled" || cancelingCampaignId === campaign._id}
-                      onClick={() => onCancelCampaign(campaign)}
-                      className="flex-1 rounded-lg bg-surface-container px-3 py-2 text-sm font-semibold text-on-surface transition hover:bg-surface-bright disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {cancelingCampaignId === campaign._id ? "Cancelling..." : "Delete"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onEditCampaign(campaign)}
+                        className="flex-1 rounded-lg bg-secondary px-3 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-container"
+                      >
+                        Update
+                      </button>
+                      <button
+                        type="button"
+                        disabled={campaign.status === "Cancelled" || cancelingCampaignId === campaign._id}
+                        onClick={() => onCancelCampaign(campaign)}
+                        className="flex-1 rounded-lg bg-surface-container px-3 py-2 text-sm font-semibold text-on-surface transition hover:bg-surface-bright disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {cancelingCampaignId === campaign._id ? "Cancelling..." : "Delete"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </article>

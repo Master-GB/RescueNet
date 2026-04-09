@@ -1,6 +1,8 @@
 import Donation from "../models/Donation.js";
 import Campaign from "../models/Campaign.js";
 
+const DONATION_STATUSES = ["Pending", "Verified", "Rejected"];
+
 export const submitDonation = async (req, res) => {
   try {
     if (!req.file) {
@@ -64,9 +66,25 @@ export const getCampaignDonations = async (req, res) => {
       });
     }
 
-    const donations = await Donation.find({
+    const filter = {
       campaignId: req.params.campaignId,
-    }).populate("donorId", "name email");
+    };
+
+    const requestedStatus = String(req.query?.status || "").trim();
+    if (requestedStatus) {
+      if (!DONATION_STATUSES.includes(requestedStatus)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid donation status filter",
+        });
+      }
+
+      filter.status = requestedStatus;
+    }
+
+    const donations = await Donation.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("donorId", "name email");
 
     return res.status(200).json({
       success: true,
@@ -76,6 +94,47 @@ export const getCampaignDonations = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch donations",
+      error: error.message,
+    });
+  }
+};
+
+export const getDonationById = async (req, res) => {
+  try {
+    const donation = await Donation.findById(req.params.donationId).populate(
+      "donorId",
+      "name email"
+    );
+
+    if (!donation) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Donation not found" });
+    }
+
+    const campaign = await Campaign.findById(donation.campaignId);
+
+    if (!campaign) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Parent campaign not found" });
+    }
+
+    if (!campaign.ngoId.equals(req.user._id)) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only view donations for your own campaigns",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      donation,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch donation",
       error: error.message,
     });
   }
