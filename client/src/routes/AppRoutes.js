@@ -6,6 +6,7 @@ import OtpVerificationRoute from "../components/authentication/OtpVerificationRo
 import RoleRoute from "../components/authentication/RoleRoute";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminNgoManagementPage from "../pages/admin/AdminNgoManagementPage";
 import AdminTaskDetailPage from "../pages/admin/AdminTaskDetailPage";
 import AdminTaskManagementPage from "../pages/admin/AdminTaskManagementPage";
 import CitizenProfileFormPage from "../pages/auth/CitizenProfileFormPage";
@@ -272,6 +273,14 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
             <AdminDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/admin/ngos"
+        element={(
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <AdminNgoManagementPage />
           </RoleRoute>
         )}
       />
