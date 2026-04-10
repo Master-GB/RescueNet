@@ -20,7 +20,7 @@ const NGOnavbar = ({ ngoData, handleStatusToggle }) => {
       {/* Navlinks */}
       <div className="space-x-8 lg:flex hidden text-sm">
          <NavLink 
-          to="/ngo/dashboard" 
+          to="/ngo-dashboard" 
           className={({isActive}) => isActive ? 'border-b-2 border-primary text-primary pb-1 font-semibold' : 'hover:text-primary transition-colors pb-1'}
         >
           Task Management
