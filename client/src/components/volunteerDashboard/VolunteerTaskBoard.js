@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MapPin, Clock3, TriangleAlert, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { fetchHelpRequests, acceptHelpRequest } from "./volunteerDashboardApi";
 
 const toPriority = (urgency) => {
@@ -25,10 +26,12 @@ const getTimeAgo = (timestamp) => {
 };
 
 const VolunteerTaskBoard = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [acceptingTaskId, setAcceptingTaskId] = useState(null);
   const [acceptFeedback, setAcceptFeedback] = useState({});
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -83,6 +86,9 @@ const VolunteerTaskBoard = () => {
         eta: getTimeAgo(task.createdAt),
         priorityLabel: priority.label,
         badge: priority.badge,
+        contactNumber: task.contactNumber || "Not provided",
+        message: task.message || "No message provided",
+        status: task.status || "pending",
       };
     });
   }, [tasks]);
@@ -109,6 +115,7 @@ const VolunteerTaskBoard = () => {
         {mappedTasks.map((task) => {
           const feedback = acceptFeedback[task.id];
           const isAccepting = acceptingTaskId === task.id;
+          const isExpanded = expandedTaskId === task.id;
 
           return (
             <div
@@ -148,6 +155,14 @@ const VolunteerTaskBoard = () => {
                 </div>
               )}
 
+              {isExpanded && (
+                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 space-y-1">
+                  <p><span className="font-semibold">Status:</span> {task.status}</p>
+                  <p><span className="font-semibold">Contact:</span> {task.contactNumber}</p>
+                  <p><span className="font-semibold">Details:</span> {task.message}</p>
+                </div>
+              )}
+
               <div className="mt-4 flex items-center gap-3">
                 <button
                   onClick={() => handleAcceptTask(task.id)}
@@ -156,9 +171,22 @@ const VolunteerTaskBoard = () => {
                 >
                   {isAccepting ? "Accepting..." : "Accept Task"}
                 </button>
-                <button className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition inline-flex items-center gap-1">
-                  View Details
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedTaskId((prev) => (prev === task.id ? null : task.id))
+                  }
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition inline-flex items-center gap-1"
+                >
+                  {isExpanded ? "Hide Details" : "View Details"}
                   <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/volunteer/requests")}
+                  className="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition"
+                >
+                  Open Requests
                 </button>
               </div>
             </div>
