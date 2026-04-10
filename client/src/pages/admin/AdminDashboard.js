@@ -1,11 +1,8 @@
 import React from "react";
-import { LayoutDashboard, ShieldCheck,Home } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-
-const adminSidebarItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
-  { name: "Shelter Management", icon: Home, path: "/admin/shelter-management" },
-];
+import adminSidebarItems from "./adminSidebarItems";
 
 export default function AdminDashboard() {
   return (
@@ -26,6 +23,13 @@ export default function AdminDashboard() {
             <p className="mt-2 text-sm text-on-surface/80">
               This is the initial admin dashboard shell and now serves as the authenticated destination for ADMIN users.
             </p>
+            <Link
+              to="/admin/tasks"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary"
+            >
+              Open Task Management
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>

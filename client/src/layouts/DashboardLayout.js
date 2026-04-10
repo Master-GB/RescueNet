@@ -7,6 +7,7 @@ import {
   House,
   TriangleAlert,
   HandHelping,
+  HandCoins,
   Search,
   Phone,
   UserCircle,
@@ -23,6 +24,7 @@ const defaultSidebarItems = [
   { name: "Help Request", icon: HandHelping, path: "/citizen/help-request" },
   { name: "Missing Persons", icon: Search, path: "/citizen/missing-persons" },
   { name: "Emergency Contact", icon: Phone, path: "/citizen/emergency-contact" },
+  { name: "Donations", icon: HandCoins, path: "/donations" },
   { name: "Profile", icon: UserCircle, path: "/citizen/profile" },
 ];
 
@@ -142,7 +144,9 @@ const DashboardLayout = ({
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive =
+              location.pathname === item.path ||
+              location.pathname.startsWith(`${item.path}/`);
 
             return (
               <Link
