@@ -738,7 +738,7 @@ const EmergencyContactPage = () => {
                   </div>
                 ) : (
                   messages.map((msg, index) => {
-                    const isCitizen = msg.sender === 'citizen';
+                    const isCitizen = msg.sender === 'citizen' || msg.senderRole === 'Citizen';
                     return (
                       <div key={index} className={`flex items-start space-x-3 ${isCitizen ? 'justify-end' : ''}`}>
                         {!isCitizen && (
@@ -752,7 +752,7 @@ const EmergencyContactPage = () => {
                               ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-tr-none' 
                               : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
                           }`}>
-                            <p className="whitespace-pre-wrap">{msg.text}</p>
+                            <p className="whitespace-pre-wrap">{msg.content || msg.text}</p>
                           </div>
                           <span className="text-xs text-gray-400 mt-1 lowercase">
                             {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
