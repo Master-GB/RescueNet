@@ -6,6 +6,7 @@ import OtpVerificationRoute from "../components/authentication/OtpVerificationRo
 import RoleRoute from "../components/authentication/RoleRoute";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminNgoManagementPage from "../pages/admin/AdminNgoManagementPage";
 import AdminTaskDetailPage from "../pages/admin/AdminTaskDetailPage";
 import AdminTaskManagementPage from "../pages/admin/AdminTaskManagementPage";
 import CitizenProfileFormPage from "../pages/auth/CitizenProfileFormPage";
@@ -32,6 +33,7 @@ import NgoCreateCampaignPage from "../pages/ngo/NgoCreateCampaignPage";
 import NgoEditCampaignPage from "../pages/ngo/NgoEditCampaignPage";
 import NgoCampaignDonationsPage from "../pages/ngo/NgoCampaignDonationsPage";
 import NgoDonationReviewPage from "../pages/ngo/NgoDonationReviewPage";
+import NgoTaskManagementPage from "../pages/ngo/NgoTaskManagementPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
@@ -229,6 +231,14 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/ngo/tasks"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoTaskManagementPage />
+          </RoleRoute>
+        )}
+      />
+      <Route
         path="/ngo/campaigns"
         element={(
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
@@ -325,6 +335,14 @@ const AppRoutes = () => {
             </DashboardLayout>
           </RoleRoute>
         }
+      />
+      <Route
+        path="/admin/ngos"
+        element={(
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <AdminNgoManagementPage />
+          </RoleRoute>
+        )}
       />
       <Route
         path="/admin/tasks"
