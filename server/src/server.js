@@ -52,7 +52,7 @@ const server = http.createServer(app);
 // ✅ Socket.IO attached to server
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: ["http://localhost:3000", "http://localhost:5173", CLIENT_URL],
     credentials: true,
   },
 });
