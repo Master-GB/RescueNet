@@ -1,9 +1,10 @@
 import React from "react";
-import { LayoutDashboard, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, ShieldCheck,Home } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 const adminSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
+  { name: "Shelter Management", icon: Home, path: "/admin/shelter-management" },
 ];
 
 export default function AdminDashboard() {
