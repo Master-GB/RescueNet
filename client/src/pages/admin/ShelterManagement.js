@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { MapPin, Navigation, Phone, Star, Filter, Search, Grid, Map, Heart, Car, Users, Shield, Wifi, Baby, Accessibility, AlertCircle, Home, Mail, Camera } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Navigation, Phone, Star, Filter, Search, Grid, Map, Heart, Car, Users, Shield, ShieldCheck, Wifi, Baby, Accessibility, AlertCircle, Home, Mail, Camera, Plus, Edit, Trash2, X } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import locationService from '../../services/locationService.js';
 import DashboardLayout from "../../layouts/DashboardLayout";
+import ShelterCreationModal from "../../components/admin/ShelterCreationModal";
+import ShelterDeleteModal from "../../components/admin/ShelterDeleteModal";
+import ShelterUpdateModal from "../../components/admin/ShelterUpdateModal";
+import useAuth from '../../hooks/useAuth';
+import { MissingPersonProvider, useMissingPersonContext } from '../../contexts/MissingPersonContext';
+import NotificationContainer from '../../components/common/NotificationContainer';
 
 // Fix for default markers in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -57,13 +64,17 @@ const SPECIAL_SUPPORTS = [
   { key: 'pregnancySupport', label: 'Pregnancy Support', icon: Heart },
 ];
 
-const ShelterPage = () => {
-  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'nearby'
+const ShelterManagementContent = () => {
+  const { user } = useAuth(); // Get current logged-in user
+  const { addNotification } = useMissingPersonContext(); // Get notification function
+  const navigate = useNavigate(); // Navigation hook
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'nearby', 'saved', or 'my'
   const [allShelters, setAllShelters] = useState([]);
-  const [nearbyShelters, setNearbyShelters] = useState([]);
   const [allSheltersOriginal, setAllSheltersOriginal] = useState([]);
+  const [nearbyShelters, setNearbyShelters] = useState([]);
   const [nearbySheltersOriginal, setNearbySheltersOriginal] = useState([]);
   const [savedSheltersList, setSavedSheltersList] = useState([]);
+  const [myShelters, setMyShelters] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -76,6 +87,11 @@ const ShelterPage = () => {
   const [selectedRoute, setSelectedRoute] = useState(null); // for alternative routes
   const [navigationType, setNavigationType] = useState('driving'); // driving, walking, cycling
   const [isNavigating, setIsNavigating] = useState(false); // for in-map navigation mode
+  const [showCreateModal, setShowCreateModal] = useState(false); // for create shelter modal
+  const [showUpdateModal, setShowUpdateModal] = useState(false); // for update shelter modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // for delete shelter modal
+  const [isUpdating, setIsUpdating] = useState(false); // for update loading state
+  const [isDeleting, setIsDeleting] = useState(false); // for delete loading state
   const mapRef = React.useRef(null);
 
   // Filter states for each tab
@@ -137,17 +153,39 @@ const ShelterPage = () => {
     verified: 'true',
   });
 
+  const [myFilters, setMyFilters] = useState({
+    status: '',
+    shelterType: '',
+    city: '',
+    province: '',
+    disasterTypes: [],
+    wheelchairAccess: '',
+    medical: '',
+    food: '',
+    water: '',
+    power: '',
+    petFriendly: '',
+    childFriendly: '',
+    elderlySupport: '',
+    disabilitySupport: '',
+    pregnancySupport: '',
+    verified: 'true',
+  });
+
   const [allFiltersDraft, setAllFiltersDraft] = useState(allFilters);
   const [nearbyFiltersDraft, setNearbyFiltersDraft] = useState(nearbyFilters);
   const [savedFiltersDraft, setSavedFiltersDraft] = useState(savedFilters);
+  const [myFiltersDraft, setMyFiltersDraft] = useState(myFilters);
 
   // Search states for each tab
   const [allSearchTerm, setAllSearchTerm] = useState('');
   const [nearbySearchTerm, setNearbySearchTerm] = useState('');
   const [savedSearchTerm, setSavedSearchTerm] = useState('');
+  const [mySearchTerm, setMySearchTerm] = useState('');
   const [allSearchTermDraft, setAllSearchTermDraft] = useState('');
   const [nearbySearchTermDraft, setNearbySearchTermDraft] = useState('');
   const [savedSearchTermDraft, setSavedSearchTermDraft] = useState('');
+  const [mySearchTermDraft, setMySearchTermDraft] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
   const hasActiveFilters = (filters) =>
@@ -204,7 +242,7 @@ const ShelterPage = () => {
       setSavedFiltersDraft(savedFilters);
       setSavedSearchTermDraft(savedSearchTerm);
     }
-  }, [activeTab, allFilters, allSearchTerm, nearbyFilters, nearbySearchTerm, savedFilters, savedSearchTerm]);
+  }, [activeTab, allFilters, allSearchTerm, nearbyFilters, nearbySearchTerm, savedFilters, savedSearchTerm, myFilters, mySearchTerm]);
 
   // Statistics
   const allStatistics = useMemo(() => {
@@ -243,11 +281,59 @@ const ShelterPage = () => {
     return { total, open, full, closed, availableCapacity };
   }, [savedSheltersList]);
 
+  const myStatistics = useMemo(() => {
+    const total = myShelters.length;
+    const open = myShelters.filter(s => s.status === 'OPEN').length;
+    const full = myShelters.filter(s => s.status === 'FULL').length;
+    const closed = myShelters.filter(s => s.status === 'CLOSED').length;
+    const totalCapacity = myShelters.reduce((sum, s) => sum + (s.capacity?.total || 0), 0);
+    const currentOccupancy = myShelters.reduce((sum, s) => sum + (s.occupancy?.current || 0), 0);
+    const availableCapacity = totalCapacity - currentOccupancy;
+
+    return { total, open, full, closed, availableCapacity };
+  }, [myShelters]);
+
   // Statistics based on active tab
-  const statistics = activeTab === 'all' ? allStatistics : activeTab === 'nearby' ? nearbyStatistics : savedStatistics;
+  const statistics = activeTab === 'all' ? allStatistics : activeTab === 'nearby' ? nearbyStatistics : activeTab === 'saved' ? savedStatistics : myStatistics;
 
   // Filtered shelters based on active tab
-  const filteredShelters = activeTab === 'all' ? allShelters : activeTab === 'nearby' ? nearbyShelters : savedSheltersList;
+  const filteredShelters = activeTab === 'all' ? allShelters : activeTab === 'nearby' ? nearbyShelters : activeTab === 'saved' ? savedSheltersList : myShelters;
+
+  // Filter user's shelters for "My Shelters" tab
+  useEffect(() => {
+    const filterMyShelters = () => {
+      try {
+        setLoading(true);
+        
+        console.log('Current user:', user);
+        console.log('All shelters count:', allSheltersOriginal.length);
+        
+        if (!user || !user._id) {
+          console.log('No user found, setting empty shelters');
+          setMyShelters([]);
+          setLoading(false);
+          return;
+        }
+
+        // Filter shelters by createdBy field matching current user's ID
+        const userShelters = allSheltersOriginal.filter(shelter => {
+          return shelter.createdBy === user._id;
+        });
+        
+        console.log('User shelters found:', userShelters.length);
+        setMyShelters(userShelters);
+      } catch (error) {
+        console.error('Error filtering user shelters:', error);
+        setMyShelters([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activeTab === 'my') {
+      filterMyShelters();
+    }
+  }, [activeTab, allSheltersOriginal, user]);
 
   // Fetch all shelters for "All" tab
   useEffect(() => {
@@ -365,19 +451,67 @@ const ShelterPage = () => {
     }
   }, [savedShelters, allSheltersOriginal]);
 
-  // Search is applied immediately through handleSearchTermDraftChange function
-  // No auto-apply useEffect needed to avoid circular dependencies
+  // Auto-apply search term when draft changes (for immediate search experience)
+  useEffect(() => {
+    if (activeTab === 'all') {
+      setAllSearchTerm(allSearchTermDraft);
+    } else if (activeTab === 'nearby') {
+      setNearbySearchTerm(nearbySearchTermDraft);
+    } else if (activeTab === 'saved') {
+      setSavedSearchTerm(savedSearchTermDraft);
+    } else {
+      setMySearchTerm(mySearchTermDraft);
+    }
+  }, [allSearchTermDraft, nearbySearchTermDraft, savedSearchTermDraft, mySearchTermDraft, activeTab]);
 
   // Apply search and filters based on active tab
   useEffect(() => {
-    let filtered = activeTab === 'all' ? allSheltersOriginal : activeTab === 'nearby' ? nearbySheltersOriginal : savedSheltersList;
-    const searchTerm = activeTab === 'all' ? allSearchTerm : activeTab === 'nearby' ? nearbySearchTerm : savedSearchTerm;
-    const filters = activeTab === 'all' ? allFilters : activeTab === 'nearby' ? nearbyFilters : savedFilters;
+    let filtered = activeTab === 'all' ? allSheltersOriginal : activeTab === 'nearby' ? nearbySheltersOriginal : activeTab === 'saved' ? savedSheltersList : allSheltersOriginal;
+    const searchTerm = activeTab === 'all' ? allSearchTerm : activeTab === 'nearby' ? nearbySearchTerm : activeTab === 'saved' ? savedSearchTerm : mySearchTerm;
+    const filters = activeTab === 'all' ? allFilters : activeTab === 'nearby' ? nearbyFilters : activeTab === 'saved' ? savedFilters : myFilters;
+    
+    // For My tab, first filter by user's shelters, then apply other filters
+    if (activeTab === 'my') {
+      console.log('My tab - Filtering logic triggered');
+      console.log('My tab - User object:', user);
+      console.log('My tab - User ID:', user?._id);
+      console.log('My tab - All shelters available:', allSheltersOriginal.length);
+      
+      filtered = allSheltersOriginal.filter(shelter => {
+        console.log('Checking shelter:', shelter.name, 'createdBy:', shelter.createdBy, 'matches user ID:', shelter.createdBy === user?._id);
+        return shelter.createdBy === user?._id;
+      });
+      console.log('My tab - User shelters before filtering:', filtered.length);
+    }
     
     console.log('Filtering - Active Tab:', activeTab);
     console.log('Filtering - Original Data Count:', filtered.length);
     console.log('Filtering - Search Term:', searchTerm);
     console.log('Filtering - Filters:', filters);
+    
+    // Debug: Show which filters will be applied
+    console.log('Filters that will be applied:');
+    console.log('- food:', filters.food);
+    console.log('- water:', filters.water);
+    console.log('- medical:', filters.medical);
+    console.log('- power:', filters.power);
+    console.log('- wheelchairAccess:', filters.wheelchairAccess);
+    console.log('- petFriendly:', filters.petFriendly);
+    console.log('- disabilitySupport:', filters.disabilitySupport);
+    console.log('- childFriendly:', filters.childFriendly);
+    console.log('- elderlySupport:', filters.elderlySupport);
+    console.log('- pregnancySupport:', filters.pregnancySupport);
+    
+    // Debug: Show sample shelter data for My tab
+    if (activeTab === 'my' && filtered.length > 0) {
+      console.log('Sample shelter in My tab:', filtered[0]);
+      console.log('Shelter verified field:', filtered[0].verified);
+      console.log('Complete shelter structure:');
+      console.log('- supportFeatures:', filtered[0].supportFeatures);
+      console.log('- specialSupport:', filtered[0].specialSupport);
+      console.log('- supports:', filtered[0].supports);
+      console.log('- Full shelter data:', JSON.stringify(filtered[0], null, 2));
+    }
     
     // Apply search term
     if (searchTerm) {
@@ -409,32 +543,58 @@ const ShelterPage = () => {
       });
       console.log('After disaster type filter count:', filtered.length);
     }
-    if (filters.hasFood === 'true') {
-      filtered = filtered.filter(shelter => shelter.supportFeatures?.food === true);
+    if (filters.food === 'true') {
+      filtered = filtered.filter(shelter => shelter.supports?.food === true);
     }
-    if (filters.hasWater === 'true') {
-      filtered = filtered.filter(shelter => shelter.supportFeatures?.water === true);
+    if (filters.water === 'true') {
+      filtered = filtered.filter(shelter => shelter.supports?.water === true);
     }
-    if (filters.hasMedical === 'true') {
-      filtered = filtered.filter(shelter => shelter.supportFeatures?.medical === true);
+    if (filters.medical === 'true') {
+      filtered = filtered.filter(shelter => shelter.supports?.medical === true);
     }
-    if (filters.hasElectricity === 'true') {
-      filtered = filtered.filter(shelter => shelter.supportFeatures?.electricity === true);
+    if (filters.power === 'true') {
+      filtered = filtered.filter(shelter => shelter.supports?.power === true);
     }
-    if (filters.hasWifi === 'true') {
-      filtered = filtered.filter(shelter => shelter.supportFeatures?.wifi === true);
+    if (filters.wheelchairAccess === 'true') {
+      filtered = filtered.filter(shelter => shelter.supports?.wheelchairAccess === true);
     }
-    if (filters.hasParking === 'true') {
-      filtered = filtered.filter(shelter => shelter.supportFeatures?.parking === true);
+    if (filters.petFriendly === 'true') {
+      console.log('Pet Friendly filter - checking shelter.specialSupport?.petFriendly');
+      filtered = filtered.filter(shelter => {
+        console.log('Shelter petFriendly:', shelter.specialSupport?.petFriendly);
+        return shelter.specialSupport?.petFriendly === true;
+      });
     }
-    if (filters.hasPetFriendly === 'true') {
-      filtered = filtered.filter(shelter => shelter.specialSupport?.petFriendly === true);
+    if (filters.disabilitySupport === 'true') {
+      console.log('Disability Support filter - checking shelter.specialSupport?.disabilitySupport');
+      filtered = filtered.filter(shelter => {
+        console.log('Shelter disabilitySupport:', shelter.specialSupport?.disabilitySupport);
+        return shelter.specialSupport?.disabilitySupport === true;
+      });
     }
-    if (filters.hasAccessibility === 'true') {
-      filtered = filtered.filter(shelter => shelter.specialSupport?.accessibility === true);
+    if (filters.childFriendly === 'true') {
+      console.log('Child Friendly filter - checking shelter.specialSupport?.childFriendly');
+      filtered = filtered.filter(shelter => {
+        console.log('Shelter childFriendly:', shelter.specialSupport?.childFriendly);
+        return shelter.specialSupport?.childFriendly === true;
+      });
     }
-    if (filters.hasChildCare === 'true') {
-      filtered = filtered.filter(shelter => shelter.specialSupport?.childCare === true);
+    if (filters.elderlySupport === 'true') {
+      console.log('Elderly Support filter - checking shelter.specialSupport?.elderlySupport');
+      filtered = filtered.filter(shelter => {
+        console.log('Shelter elderlySupport:', shelter.specialSupport?.elderlySupport);
+        return shelter.specialSupport?.elderlySupport === true;
+      });
+    }
+    if (filters.pregnancySupport === 'true') {
+      console.log('Pregnancy Support filter - checking shelter.specialSupport?.pregnancySupport');
+      filtered = filtered.filter(shelter => {
+        console.log('Shelter pregnancySupport:', shelter.specialSupport?.pregnancySupport);
+        return shelter.specialSupport?.pregnancySupport === true;
+      });
+    }
+    if (filters.verified !== '') {
+      filtered = filtered.filter(shelter => shelter.verified === (filters.verified === 'true'));
     }
 
     console.log('Filtering - Final Filtered Count:', filtered.length);
@@ -444,10 +604,12 @@ const ShelterPage = () => {
       setAllShelters(filtered);
     } else if (activeTab === 'nearby') {
       setNearbyShelters(filtered);
-    } else {
+    } else if (activeTab === 'saved') {
       setSavedSheltersList(filtered);
+    } else {
+      setMyShelters(filtered);
     }
-  }, [allSheltersOriginal, nearbySheltersOriginal, savedSheltersList, allSearchTerm, nearbySearchTerm, savedSearchTerm, allFilters, nearbyFilters, savedFilters, activeTab]);
+  }, [allSheltersOriginal, nearbySheltersOriginal, savedSheltersList, allSearchTerm, nearbySearchTerm, savedSearchTerm, mySearchTerm, allFilters, nearbyFilters, savedFilters, myFilters, activeTab, user]);
 
   // Calculate distance between two coordinates in kilometers
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -538,14 +700,24 @@ const ShelterPage = () => {
     setNearbyFiltersDraft(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleSearch = (value) => {
+    if (activeTab === 'all') {
+      handleAllSearchTermDraftChange(value);
+    } else if (activeTab === 'nearby') {
+      handleNearbySearchTermDraftChange(value);
+    } else if (activeTab === 'saved') {
+      handleSavedSearchTermDraftChange(value);
+    } else if (activeTab === 'my') {
+      handleMySearchTermDraftChange(value);
+    }
+  };
+
   const handleAllSearchTermDraftChange = (value) => {
     setAllSearchTermDraft(value);
-    setAllSearchTerm(value); // Apply immediately
   };
 
   const handleNearbySearchTermDraftChange = (value) => {
     setNearbySearchTermDraft(value);
-    setNearbySearchTerm(value); // Apply immediately
   };
 
   const handleAllDisasterTypeChange = (type) => {
@@ -612,7 +784,36 @@ const ShelterPage = () => {
 
   const handleSavedSearchTermDraftChange = (value) => {
     setSavedSearchTermDraft(value);
-    setSavedSearchTerm(value); // Apply immediately
+  };
+
+  const handleMyFilterChange = (key, value) => {
+    setMyFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleMyFilterDraftChange = (key, value) => {
+    setMyFiltersDraft(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleMyDisasterTypeChange = (type) => {
+    setMyFilters(prev => ({
+      ...prev,
+      disasterTypes: prev.disasterTypes.includes(type)
+        ? prev.disasterTypes.filter(t => t !== type)
+        : [...prev.disasterTypes, type]
+    }));
+  };
+
+  const handleMyDisasterTypeDraftChange = (type) => {
+    setMyFiltersDraft(prev => ({
+      ...prev,
+      disasterTypes: prev.disasterTypes.includes(type)
+        ? prev.disasterTypes.filter(t => t !== type)
+        : [...prev.disasterTypes, type]
+    }));
+  };
+
+  const handleMySearchTermDraftChange = (value) => {
+    setMySearchTermDraft(value);
   };
 
   const clearAllFilters = () => {
@@ -682,28 +883,87 @@ const ShelterPage = () => {
     setSavedSearchTerm('');
   };
 
-  // Applied vs Draft values (Draft is used for UI; Applied drives actual filtering/fetching)
-  const currentFiltersApplied = activeTab === 'all' ? allFilters : activeTab === 'nearby' ? nearbyFilters : savedFilters;
-  const currentSearchTermApplied = activeTab === 'all' ? allSearchTerm : activeTab === 'nearby' ? nearbySearchTerm : savedSearchTerm;
-  const currentFiltersDraft = activeTab === 'all' ? allFiltersDraft : activeTab === 'nearby' ? nearbyFiltersDraft : savedFiltersDraft;
-  const currentSearchTermDraft = activeTab === 'all' ? allSearchTermDraft : activeTab === 'nearby' ? nearbySearchTermDraft : savedSearchTermDraft;
+  const clearMyFilters = () => {
+    console.log('clearMyFilters called');
+    // Clear both applied filters AND draft filters
+    const clearedFilters = {
+      status: '',
+      shelterType: '',
+      city: '',
+      province: '',
+      disasterTypes: [],
+      wheelchairAccess: '',
+      medical: '',
+      food: '',
+      water: '',
+      power: '',
+      petFriendly: '',
+      childFriendly: '',
+      elderlySupport: '',
+      disabilitySupport: '',
+      pregnancySupport: '',
+      verified: '', // Changed from 'true' to empty string
+    };
+    
+    setMyFilters(clearedFilters);
+    setMyFiltersDraft(clearedFilters); // Also clear draft filters to reset UI
+    setMySearchTerm('');
+    setMySearchTermDraft(''); // Also clear draft search term
+    console.log('clearMyFilters completed');
+  };
 
-  const setCurrentSearchTermDraft = activeTab === 'all' ? setAllSearchTermDraft : activeTab === 'nearby' ? setNearbySearchTermDraft : setSavedSearchTermDraft;
-  const setCurrentFiltersDraft = activeTab === 'all' ? setAllFiltersDraft : activeTab === 'nearby' ? setNearbyFiltersDraft : setSavedFiltersDraft;
-  const handleFilterDraftChange = activeTab === 'all' ? handleAllFilterDraftChange : activeTab === 'nearby' ? handleNearbyFilterDraftChange : handleSavedFilterDraftChange;
-  const handleDisasterTypeDraftChange = activeTab === 'all' ? handleAllDisasterTypeDraftChange : activeTab === 'nearby' ? handleNearbyDisasterTypeDraftChange : handleSavedDisasterTypeDraftChange;
-  const handleSearchTermDraftChange = activeTab === 'all' ? handleAllSearchTermDraftChange : activeTab === 'nearby' ? handleNearbySearchTermDraftChange : handleSavedSearchTermDraftChange;
+  const resetMyFiltersToDefaults = () => {
+    console.log('resetMyFiltersToDefaults called');
+    setMyFilters({
+      status: '',
+      shelterType: '',
+      city: '',
+      province: '',
+      disasterTypes: [],
+      wheelchairAccess: '',
+      medical: '',
+      food: '',
+      water: '',
+      power: '',
+      petFriendly: '',
+      childFriendly: '',
+      elderlySupport: '',
+      disabilitySupport: '',
+      pregnancySupport: '',
+      verified: 'true', // Default to verified shelters
+    });
+    setMySearchTerm('');
+    console.log('resetMyFiltersToDefaults completed');
+  };
+
+  // Applied vs Draft values (Draft is used for UI; Applied drives actual filtering/fetching)
+  const currentFiltersApplied = activeTab === 'all' ? allFilters : activeTab === 'nearby' ? nearbyFilters : activeTab === 'saved' ? savedFilters : myFilters;
+  const currentSearchTermApplied = activeTab === 'all' ? allSearchTerm : activeTab === 'nearby' ? nearbySearchTerm : activeTab === 'saved' ? savedSearchTerm : mySearchTerm;
+  const currentFiltersDraft = activeTab === 'all' ? allFiltersDraft : activeTab === 'nearby' ? nearbyFiltersDraft : activeTab === 'saved' ? savedFiltersDraft : myFiltersDraft;
+  const currentSearchTermDraft = activeTab === 'all' ? allSearchTermDraft : activeTab === 'nearby' ? nearbySearchTermDraft : activeTab === 'saved' ? savedSearchTermDraft : mySearchTermDraft;
+
+  const setCurrentSearchTermDraft = activeTab === 'all' ? setAllSearchTermDraft : activeTab === 'nearby' ? setNearbySearchTermDraft : activeTab === 'saved' ? setSavedSearchTermDraft : setMySearchTermDraft;
+  const setCurrentFiltersDraft = activeTab === 'all' ? setAllFiltersDraft : activeTab === 'nearby' ? setNearbyFiltersDraft : activeTab === 'saved' ? setSavedFiltersDraft : setMyFiltersDraft;
+  const handleFilterDraftChange = activeTab === 'all' ? handleAllFilterDraftChange : activeTab === 'nearby' ? handleNearbyFilterDraftChange : activeTab === 'saved' ? handleSavedFilterDraftChange : handleMyFilterDraftChange;
+  const handleDisasterTypeDraftChange = activeTab === 'all' ? handleAllDisasterTypeDraftChange : activeTab === 'nearby' ? handleNearbyDisasterTypeDraftChange : activeTab === 'saved' ? handleSavedDisasterTypeDraftChange : handleMyDisasterTypeDraftChange;
+  const handleSearchTermDraftChange = activeTab === 'all' ? handleAllSearchTermDraftChange : activeTab === 'nearby' ? handleNearbySearchTermDraftChange : activeTab === 'saved' ? handleSavedSearchTermDraftChange : handleMySearchTermDraftChange;
 
   const applyCurrentDraft = () => {
+    console.log('applyCurrentDraft - Active Tab:', activeTab);
     if (activeTab === 'all') {
       setAllFilters(allFiltersDraft);
       setAllSearchTerm(allSearchTermDraft);
     } else if (activeTab === 'nearby') {
       setNearbyFilters(nearbyFiltersDraft);
       setNearbySearchTerm(nearbySearchTermDraft);
-    } else {
+    } else if (activeTab === 'saved') {
       setSavedFilters(savedFiltersDraft);
       setSavedSearchTerm(savedSearchTermDraft);
+    } else {
+      console.log('Applying My tab filters:', myFiltersDraft);
+      console.log('Applying My tab search:', mySearchTermDraft);
+      setMyFilters(myFiltersDraft);
+      setMySearchTerm(mySearchTermDraft);
     }
   };
 
@@ -714,19 +974,26 @@ const ShelterPage = () => {
     } else if (activeTab === 'nearby') {
       setNearbyFiltersDraft(nearbyFilters);
       setNearbySearchTermDraft(nearbySearchTerm);
-    } else {
+    } else if (activeTab === 'saved') {
       setSavedFiltersDraft(savedFilters);
       setSavedSearchTermDraft(savedSearchTerm);
+    } else {
+      setMyFiltersDraft(myFilters);
+      setMySearchTermDraft(mySearchTerm);
     }
   };
 
   const clearApplied = () => {
+    console.log('clearApplied - Active Tab:', activeTab);
     if (activeTab === 'all') {
       clearAllFilters();
     } else if (activeTab === 'nearby') {
       clearNearbyFilters();
-    } else {
+    } else if (activeTab === 'saved') {
       clearSavedFilters();
+    } else {
+      console.log('Clearing My tab filters');
+      clearMyFilters();
     }
   };
 
@@ -737,6 +1004,15 @@ const ShelterPage = () => {
   const isDirty =
     !areFiltersEqual(currentFiltersDraft, currentFiltersApplied) ||
     String(currentSearchTermDraft ?? '') !== String(currentSearchTermApplied ?? '');
+
+  // Debug: Log isDirty state for My tab
+  if (activeTab === 'my') {
+    console.log('My tab - isDirty:', isDirty);
+    console.log('My tab - currentFiltersDraft:', currentFiltersDraft);
+    console.log('My tab - currentFiltersApplied:', currentFiltersApplied);
+    console.log('My tab - currentSearchTermDraft:', currentSearchTermDraft);
+    console.log('My tab - currentSearchTermApplied:', currentSearchTermApplied);
+  }
 
   // Draft handlers
   const handleFilter = (key, value) => {
@@ -851,6 +1127,147 @@ const ShelterPage = () => {
     setRouteInfo(null);
     setSelectedRoute(null);
   };
+
+  const handleShelterCreated = (newShelter) => {
+    // Add the new shelter to the appropriate lists
+    setAllShelters(prev => [newShelter, ...prev]);
+    setAllSheltersOriginal(prev => [newShelter, ...prev]);
+    setMyShelters(prev => [newShelter, ...prev]);
+    setShowCreateModal(false);
+    
+    // Show success notification
+    addNotification({
+      type: 'success',
+      title: 'Shelter Created',
+      message: 'Shelter has been created successfully.'
+    });
+  };
+
+  const handleShelterCreationError = (errorMessage) => {
+    setShowCreateModal(false);
+    
+    // Show error notification
+    addNotification({
+      type: 'error',
+      title: 'Creation Failed',
+      message: errorMessage || 'Failed to create shelter. Please try again.'
+    });
+  };
+
+  const handleDeleteShelter = async () => {
+    if (!selectedShelter) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/shelters/delete/${selectedShelter._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Remove shelter from all lists
+        setAllShelters(prev => prev.filter(shelter => shelter._id !== selectedShelter._id));
+        setAllSheltersOriginal(prev => prev.filter(shelter => shelter._id !== selectedShelter._id));
+        setMyShelters(prev => prev.filter(shelter => shelter._id !== selectedShelter._id));
+        
+        // Close modals
+        setShowDeleteModal(false);
+        setSelectedShelter(null);
+        
+        // Show success notification
+        addNotification({
+          type: 'success',
+          title: 'Shelter Deleted',
+          message: 'Shelter has been deleted successfully.'
+        });
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Delete Failed',
+          message: data.message || 'Failed to delete shelter'
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting shelter:', error);
+      addNotification({
+        type: 'error',
+        title: 'Delete Error',
+        message: 'Error deleting shelter. Please try again.'
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleUpdateShelter = async (updatedData) => {
+    if (!selectedShelter) return;
+    
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/shelters/update/${selectedShelter._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedData)
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update shelter in all lists
+        const updatedShelter = data.shelter;
+        setAllShelters(prev => prev.map(shelter => 
+          shelter._id === updatedShelter._id ? updatedShelter : shelter
+        ));
+        setAllSheltersOriginal(prev => prev.map(shelter => 
+          shelter._id === updatedShelter._id ? updatedShelter : shelter
+        ));
+        setMyShelters(prev => prev.map(shelter => 
+          shelter._id === updatedShelter._id ? updatedShelter : shelter
+        ));
+        
+        // Update selected shelter if still open
+        setSelectedShelter(updatedShelter);
+        
+        // Close modal
+        setShowUpdateModal(false);
+        
+        // Show success notification
+        addNotification({
+          type: 'success',
+          title: 'Shelter Updated',
+          message: 'Shelter has been updated successfully.'
+        });
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Update Failed',
+          message: data.message || 'Failed to update shelter'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating shelter:', error);
+      addNotification({
+        type: 'error',
+        title: 'Update Error',
+        message: 'Error updating shelter. Please try again.'
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleAddShelterClick = () => {
+    setShowCreateModal(true);
+  };
+
   const MapController = () => {
     const map = useMap();
     
@@ -956,6 +1373,20 @@ const ShelterPage = () => {
                   <span className="hidden sm:inline">List View</span>
                 </button>
               </div>
+              <button
+                onClick={handleAddShelterClick}
+                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl text-sm font-semibold transition-all duration-200 hover:from-green-700 hover:to-emerald-700 shadow-md hover:shadow-lg transform hover:scale-105"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">Add Shelter</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin/verify-shelters')}
+                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-semibold transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transform hover:scale-105"
+              >
+                <ShieldCheck className="w-5 h-5" />
+                <span className="hidden sm:inline">Verify Shelters</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1005,6 +1436,20 @@ const ShelterPage = () => {
               <span>Saved Shelters</span>
               <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
                 {savedStatistics.total}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('my')}
+              className={`flex items-center space-x-3 px-8 py-4 rounded-2xl font-bold transition-all duration-200 border border-gray-300 ${
+                activeTab === 'my'
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Home className="w-5 h-5" />
+              <span>My Shelters</span>
+              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                {myStatistics.total}
               </span>
             </button>
           </div>
@@ -1091,13 +1536,13 @@ const ShelterPage = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl px-8 py-3 border border-gray-200/50 shadow-xl">
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-5 top-7 transform -translate-y-1/2 text-gray-600 w-6 h-6" />
+              <Search className="absolute left-5 top-7 transform -translate-y-1/2 text-gray-600 w-6 h-6 z-10"  />
               <input
                 type="text"
                 placeholder={`Search ${activeTab === 'all' ? 'all shelters' : activeTab === 'nearby' ? 'nearby shelters' : 'saved shelters'} by name, city, or province...`}
                 value={currentSearchTermDraft}
-                onChange={(e) => handleSearchTermDraftChange(e.target.value)}
-                className="w-full pl-14 pr-6 py-3 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 text-lg text-gray-900 placeholder-gray-400"
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full pl-14 pr-5 py-4 text-gray-900 placeholder-gray-400 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-lg shadow-lg hover:shadow-xl"
               />
             </div>
             <button
@@ -1180,7 +1625,7 @@ const ShelterPage = () => {
                         value={currentFiltersDraft.city}
                         onChange={(e) => handleFilter('city', e.target.value)}
                         placeholder="Enter city name"
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition placeholder-gray-700 text-gray-800"
                       />
                     </div>
                   </div>
@@ -1191,11 +1636,11 @@ const ShelterPage = () => {
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 mb-5 pb-3 border-b border-gray-200/70">Distance Range</h3>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                      <label className="text-sm font-medium text-gray-700">Max Distance:</label>
+                      <label className="text-sm font-medium text-gray-800">Max Distance:</label>
                       <select 
                         value={currentFiltersDraft.maxDistance} 
                         onChange={(e) => handleFilter('maxDistance', e.target.value)}
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-900"
                       >
                         <option value="5">5 km</option>
                         <option value="10">10 km</option>
@@ -1215,14 +1660,14 @@ const ShelterPage = () => {
                       <button
                         key={type.value}
                         onClick={() => handleDisasterType(type.value)}
-                        className={`flex flex-col items-center space-y-2 p-3 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-gray-800 ${
+                        className={`flex flex-col items-center space-y-2 p-3 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
                           currentFiltersDraft.disasterTypes.includes(type.value) 
                             ? 'border-green-500 bg-green-50 text-green-700' 
                             : 'border-gray-200 hover:border-green-300 bg-white'
                         }`}
                       >
                         <span className="text-2xl">{type.icon}</span>
-                        <span className="text-sm font-medium">{type.label}</span>
+                        <span className="text-sm font-medium text-gray-800">{type.label}</span>
                       </button>
                     ))}
                   </div>
@@ -1462,6 +1907,7 @@ const ShelterPage = () => {
 
                   {/* Shelter Markers */}
                   {filteredShelters.map((shelter) => {
+                    if (!shelter?.location?.coordinates) return null;
                     const [lng, lat] = shelter.location.coordinates;
                     const isSaved = savedShelters.includes(shelter._id);
                     
@@ -1852,9 +2298,10 @@ const ShelterPage = () => {
                     </Marker>
                     
                     {/* Shelter Marker */}
-                    <Marker 
-                      position={[routeInfo.shelter.location.coordinates[1], routeInfo.shelter.location.coordinates[0]]}
-                      icon={createShelterIcon(routeInfo.shelter)}
+                    {routeInfo?.shelter?.location?.coordinates && (
+                      <Marker 
+                        position={[routeInfo.shelter.location.coordinates[1], routeInfo.shelter.location.coordinates[0]]}
+                        icon={createShelterIcon(routeInfo.shelter)}
                     >
                       <Popup>
                         <div className="text-sm">
@@ -1862,6 +2309,7 @@ const ShelterPage = () => {
                         </div>
                       </Popup>
                     </Marker>
+                    )}
                   </MapContainer>
                 </div>
                 
@@ -1935,14 +2383,37 @@ const ShelterPage = () => {
             <div className="bg-white/95 backdrop-blur-md rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
               {/* Header */}
               <div className="relative bg-gradient-to-r from-green-600 to-emerald-600 p-8 text-white">
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 flex items-center space-x-2">
+                  {/* Show Update and Delete buttons only for My Shelters tab */}
+                  {activeTab === 'my' && selectedShelter.createdBy === user?._id && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowUpdateModal(true);
+                        }}
+                        className="flex items-center gap-3 px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/30 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl border border-white/30"
+                        title="Update Shelter"
+                      >
+                        <Edit className="w-5 h-5" />
+                        <span className="text-base">Update</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDeleteModal(true);
+                        }}
+                        className="flex items-center gap-3 px-6 py-3  bg-red-500/30 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-red-500/40 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl border border-red-300/30"
+                        title="Delete Shelter"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        <span className="text-base">Delete</span>
+                      </button>
+                    </>
+                  )}
                   <button 
                     onClick={() => setSelectedShelter(null)} 
                     className="text-white/80 hover:text-white bg-white/20 backdrop-blur-sm rounded-full p-2 transition-all duration-200 hover:bg-white/30"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
                 
@@ -2204,8 +2675,51 @@ const ShelterPage = () => {
           </div>
         )}
       </div>
+
+      {/* Shelter Creation Modal */}
+      <ShelterCreationModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleShelterCreated}
+        onError={handleShelterCreationError}
+        setVerified={true}
+      />
+
+      {/* Shelter Delete Modal */}
+      <ShelterDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedShelter(null);
+        }}
+        onConfirm={handleDeleteShelter}
+        shelterName={selectedShelter?.name || ''}
+        isLoading={isDeleting}
+      />
+
+      {/* Shelter Update Modal */}
+      <ShelterUpdateModal
+        isOpen={showUpdateModal}
+        onClose={() => {
+          setShowUpdateModal(false);
+          setSelectedShelter(null);
+        }}
+        onUpdate={handleUpdateShelter}
+        shelter={selectedShelter}
+        isLoading={isUpdating}
+      />
+      <NotificationContainer />
     </div>
   );
 };
 
-export default ShelterPage;
+// Wrapper component to provide MissingPersonContext
+const ShelterManagement = () => {
+  return (
+    <MissingPersonProvider>
+      <ShelterManagementContent />
+    </MissingPersonProvider>
+  );
+};
+
+export default ShelterManagement;
