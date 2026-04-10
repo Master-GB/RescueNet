@@ -1,317 +1,748 @@
-import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Zap, FileText, Heart, Megaphone, Users, User, MapPin, CheckCircle } from 'lucide-react';
-import NGOnavbar from '../../components/ngoDashboard/NGOnavbar';
-import { getNgoProfile, updateNgoStatus } from '../../services/profileService';
-// TODO: Replace other mocked metrics with real API calls when available
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  CheckCircle2,
+  ClipboardList,
+  Heart,
+  MapPin,
+  Megaphone,
+  RefreshCw,
+  ShieldAlert,
+  User,
+  Users,
+  Zap,
+} from "lucide-react";
+import {
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "../../layouts/DashboardLayout";
+import NGOnavbar from "../../components/ngoDashboard/NGOnavbar";
+import NGOTaskToastRegion from "../../components/ngoDashboard/NGOTaskToastRegion";
+import {
+  resolveAssignmentStatus,
+  resolveNgoAssignment,
+} from "../../constants/ngoTaskConstants";
+import { getApiErrorMessage } from "../../services/authService";
+import { updateNgoStatus } from "../../services/profileService";
+import { fetchNgoDashboardRawData } from "../../services/ngoDashboardService";
+import ngoSidebarItems from "./ngoSidebarItems";
+
+const STATUS_COLORS = {
+  assigned: "#f59e0b",
+  accepted: "#2cda9d",
+  "in-progress": "#005f5f",
+  completed: "#16a34a",
+  declined: "#ef4444",
+};
+
+const URGENCY_RANK = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
+const createToast = (type, title, message) => ({
+  id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  type,
+  title,
+  message,
+});
+
+const toSafeDate = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+};
+
+const toDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const toLkr = (value = 0) => {
+  const number = Number(value) || 0;
+  return number.toLocaleString("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+const formatDateTime = (value) => {
+  const date = toSafeDate(value);
+  if (!date) {
+    return "-";
+  }
+
+  return date.toLocaleString("en-LK", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const getUrgencyPill = (urgency) => {
+  const normalizedUrgency = String(urgency || "").toLowerCase();
+  if (normalizedUrgency === "high") {
+    return "bg-danger/15 text-danger";
+  }
+
+  if (normalizedUrgency === "medium") {
+    return "bg-warning/15 text-yellow-800";
+  }
+
+  return "bg-success/15 text-green-700";
+};
+
+const NgoMetricCard = memo(function NgoMetricCard({
+  label,
+  value,
+  icon: Icon,
+  hint,
+  isLoading,
+}) {
+  return (
+    <article className="rounded-2xl border border-auth-border bg-auth-surface p-5 shadow-sm">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-auth-text-soft">{label}</p>
+        <span className="rounded-lg border border-auth-border bg-auth-bg p-2 text-auth-text-soft">
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+      <p className="mt-3 text-3xl font-extrabold text-auth-text-strong">
+        {isLoading ? "..." : value}
+      </p>
+      <p className="mt-2 text-xs text-auth-text-soft">{hint}</p>
+    </article>
+  );
+});
 
 const NgoDashboard = () => {
-  // Minimal mock for initial render; real profile will be loaded on mount
+  const navigate = useNavigate();
+
   const [ngoData, setNgoData] = useState({
-    registrationNumber: "NGO123456",
-    availabilityStatus: "AVAILABLE",
+    registrationNumber: "",
+    availabilityStatus: "OFFLINE",
     approvalStatus: "approved",
   });
-
-  const [metrics, setMetrics] = useState({
-    activeTasks: 24,
-    pendingDonations: 12450.00,
-    activeCampaigns: 12,
-    peopleAssisted: 1842
-  });
-
-  const [isLoading, setIsLoading] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
+  const [donations, setDonations] = useState([]);
+  const [performance, setPerformance] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [toasts, setToasts] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-  const donationData = [
-    { name: 'MON', value: 4000 },
-    { name: 'TUE', value: 3000 },
-    { name: 'WED', value: 5000 },
-    { name: 'THU', value: 4500 },
-    { name: 'FRI', value: 7000 },
-    { name: 'SAT', value: 8500 },
-    { name: 'SUN', value: 6500 },
-  ];
+  const addToast = useCallback((type, title, message) => {
+    setToasts((prev) => [...prev, createToast(type, title, message)]);
+  }, []);
 
-  const taskData = [
-    { name: 'In Progress', value: 18, color: '#005f5f' }, // Secondary Container
-    { name: 'Under Review', value: 4, color: '#2cda9d' }, // Primary Container
-    { name: 'Completed', value: 2, color: '#e5e7eb' },
-  ];
+  const dismissToast = useCallback((toastId) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== toastId));
+  }, []);
 
-  const pendingTasks = [
-    { id: 1, location: 'San Diego, CA', type: 'Shelter Support', category: 'Medical Supplies', severity: 'CRITICAL' },
-    { id: 2, location: 'Tucson, AZ', type: 'Logistics', category: 'Transport Ops', severity: 'MODERATE' },
-    { id: 3, location: 'El Paso, TX', type: 'Field Rescue', category: 'Emergency Food', severity: 'HIGH' },
-  ];
+  const loadDashboardData = useCallback(async ({ showLoading = true } = {}) => {
+    if (showLoading) {
+      setIsLoading(true);
+    }
 
-  const campaignFeeds = [
-    { id: 1, name: 'Elena S.', action: 'donated $500', campaign: '#CaliforniaWildfires', time: '2 minutes ago', type: 'donation' },
-    { id: 2, name: 'Global Corp', action: 'matched $5,000', campaign: '#GlobalCrisisRelief', time: '15 minutes ago', type: 'match' },
-    { id: 3, name: 'Mark J.', action: 'donated $120', campaign: '#FoodSecurityFund', time: '1 hour ago', type: 'donation' },
-    { id: 4, name: 'Target Met', action: 'Shelter B-12', campaign: '#TexasFloodRelief', time: '3 hours ago', type: 'target' },
-  ];
+    setServerError("");
 
-  const handleStatusToggle = async () => {
-    // Toggle locally first for snappy UI, then persist to backend
-    const nextStatus = ngoData.availabilityStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
-    setNgoData(prev => ({ ...prev, availabilityStatus: nextStatus }));
+    try {
+      const response = await fetchNgoDashboardRawData();
+
+      if (response.profile) {
+        setNgoData((prev) => ({
+          ...prev,
+          ...response.profile,
+        }));
+      }
+
+      setTasks(Array.isArray(response.tasks) ? response.tasks : []);
+      setCampaigns(Array.isArray(response.campaigns) ? response.campaigns : []);
+      setDonations(Array.isArray(response.donations) ? response.donations : []);
+      setPerformance(response.performance || null);
+      setLastUpdated(new Date());
+
+      if (response.donationErrors?.length) {
+        addToast(
+          "warning",
+          "Partial donation data",
+          `${response.donationErrors.length} campaign(s) could not be fully loaded.`,
+        );
+      }
+    } catch (error) {
+      const message = getApiErrorMessage(error, "Could not load NGO dashboard data.");
+      setServerError(message);
+      addToast("error", "Dashboard load failed", message);
+      throw error;
+    } finally {
+      if (showLoading) {
+        setIsLoading(false);
+      }
+    }
+  }, [addToast]);
+
+  useEffect(() => {
+    loadDashboardData().catch(() => {});
+  }, [loadDashboardData]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await loadDashboardData({ showLoading: false });
+      addToast("success", "Dashboard refreshed", "Latest NGO metrics are now visible.");
+    } catch {
+      // Error toast and inline state are handled in loadDashboardData.
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [addToast, loadDashboardData]);
+
+  const handleStatusToggle = useCallback(async () => {
+    const previousStatus = ngoData.availabilityStatus || "OFFLINE";
+    const nextStatus = previousStatus === "AVAILABLE" ? "OFFLINE" : "AVAILABLE";
+
+    setNgoData((prev) => ({
+      ...prev,
+      availabilityStatus: nextStatus,
+    }));
 
     try {
       await updateNgoStatus({ availabilityStatus: nextStatus });
-    } catch (err) {
-      // Revert locally and surface error
-      setNgoData(prev => ({ ...prev, availabilityStatus: prev.availabilityStatus === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE' }));
-      setServerError("Could not update availability status. Please try again.");
-      console.error("Failed to update NGO status", err);
+      addToast("success", "Availability updated", `NGO status changed to ${nextStatus}.`);
+    } catch (error) {
+      setNgoData((prev) => ({
+        ...prev,
+        availabilityStatus: previousStatus,
+      }));
+
+      const message = getApiErrorMessage(error, "Could not update availability status.");
+      setServerError(message);
+      addToast("error", "Status update failed", message);
     }
-  };
+  }, [addToast, ngoData.availabilityStatus]);
 
-  useEffect(() => {
-    let mounted = true;
-    const fetchProfile = async () => {
-      setIsLoading(true);
-      setServerError("");
-      try {
-        const data = await getNgoProfile();
-        if (!mounted) return;
-        if (data) {
-          // Map server response into local shape if needed
-          setNgoData(prev => ({ ...prev, ...data }));
+  const ngoProfileId = ngoData?._id || "";
+
+  const assignmentCountsFromTasks = useMemo(() => {
+    return tasks.reduce(
+      (acc, task) => {
+        const status = resolveAssignmentStatus(task, ngoProfileId);
+
+        if (status === "accepted") {
+          acc.accepted += 1;
+        } else if (status === "in-progress") {
+          acc.inProgress += 1;
+        } else if (status === "completed") {
+          acc.completed += 1;
+        } else if (status === "declined") {
+          acc.declined += 1;
+        } else {
+          acc.assigned += 1;
         }
-      } catch (err) {
-        console.error("Error fetching NGO profile", err);
-        if (mounted) setServerError("Could not load NGO profile.");
-      } finally {
-        if (mounted) setIsLoading(false);
+
+        return acc;
+      },
+      {
+        assigned: 0,
+        accepted: 0,
+        inProgress: 0,
+        completed: 0,
+        declined: 0,
+      },
+    );
+  }, [ngoProfileId, tasks]);
+
+  const assignmentCounts = useMemo(() => {
+    const performanceCounts = performance?.assignmentCounts || {};
+
+    return {
+      assigned: Number(performanceCounts.assigned ?? assignmentCountsFromTasks.assigned),
+      accepted: Number(performanceCounts.accepted ?? assignmentCountsFromTasks.accepted),
+      inProgress: Number(performanceCounts.inProgress ?? assignmentCountsFromTasks.inProgress),
+      completed: Number(performanceCounts.completed ?? assignmentCountsFromTasks.completed),
+      declined: Number(performanceCounts.declined ?? assignmentCountsFromTasks.declined),
+    };
+  }, [assignmentCountsFromTasks, performance?.assignmentCounts]);
+
+  const metrics = useMemo(() => {
+    const pendingDonations = donations.reduce((sum, donation) => {
+      if (donation?.status !== "Pending") {
+        return sum;
       }
-    };
 
-    fetchProfile();
-    return () => { mounted = false; };
-  }, []);
+      return sum + (Number(donation?.declaredAmount) || 0);
+    }, 0);
 
-  const getSeverityPill = (severity) => {
-    const colors = {
-      'CRITICAL': 'bg-red-100 text-red-700',
-      'HIGH': 'bg-orange-100 text-orange-700',
-      'MODERATE': 'bg-[#8ad3d3] text-gray-900', // Secondary
-      'LOW': 'bg-green-100 text-green-700',
+    return {
+      activeTasks: assignmentCounts.accepted + assignmentCounts.inProgress,
+      pendingDonationAmount: pendingDonations,
+      activeCampaigns: campaigns.filter((campaign) => campaign?.status === "Active").length,
+      peopleAssisted: Number(performance?.completedTasks ?? assignmentCounts.completed),
     };
-    return `px-2 py-0.5 rounded-full text-[10px] font-bold ${colors[severity] || 'bg-gray-100 text-gray-700'}`;
-  };
+  }, [assignmentCounts, campaigns, donations, performance?.completedTasks]);
+
+  const metricCards = useMemo(() => {
+    return [
+      {
+        key: "active-tasks",
+        label: "Active Tasks",
+        value: metrics.activeTasks,
+        icon: ClipboardList,
+        hint: `${assignmentCounts.assigned} pending assignment(s)`,
+      },
+      {
+        key: "pending-donations",
+        label: "Pending Donations",
+        value: `LKR ${toLkr(metrics.pendingDonationAmount)}`,
+        icon: Heart,
+        hint: `${donations.filter((donation) => donation?.status === "Pending").length} pending donation(s)`,
+      },
+      {
+        key: "active-campaigns",
+        label: "Active Campaigns",
+        value: metrics.activeCampaigns,
+        icon: Megaphone,
+        hint: `${campaigns.length} campaign(s) total`,
+      },
+      {
+        key: "people-assisted",
+        label: "People Assisted",
+        value: metrics.peopleAssisted.toLocaleString("en-LK"),
+        icon: Users,
+        hint: "Completed support assignments",
+      },
+    ];
+  }, [assignmentCounts.assigned, campaigns.length, donations, metrics.activeCampaigns, metrics.activeTasks, metrics.pendingDonationAmount, metrics.peopleAssisted]);
+
+  const donationTrendData = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dayFrames = Array.from({ length: 7 }, (_, index) => {
+      const frameDate = new Date(today);
+      frameDate.setDate(today.getDate() - (6 - index));
+      return {
+        key: toDateKey(frameDate),
+        label: frameDate.toLocaleDateString("en-LK", {
+          weekday: "short",
+        }),
+      };
+    });
+
+    const totals = dayFrames.reduce((acc, frame) => {
+      acc[frame.key] = {
+        total: 0,
+        verified: 0,
+      };
+      return acc;
+    }, {});
+
+    donations.forEach((donation) => {
+      const createdAt = toSafeDate(donation?.createdAt);
+      if (!createdAt) {
+        return;
+      }
+
+      const key = toDateKey(createdAt);
+      if (!totals[key]) {
+        return;
+      }
+
+      const declaredAmount = Number(donation?.declaredAmount) || 0;
+      totals[key].total += declaredAmount;
+
+      if (donation?.status === "Verified") {
+        totals[key].verified += declaredAmount;
+      }
+    });
+
+    return dayFrames.map((frame) => ({
+      name: frame.label,
+      total: totals[frame.key].total,
+      verified: totals[frame.key].verified,
+    }));
+  }, [donations]);
+
+  const taskStatusData = useMemo(() => {
+    const data = [
+      { name: "Pending", value: assignmentCounts.assigned, color: STATUS_COLORS.assigned },
+      { name: "Accepted", value: assignmentCounts.accepted, color: STATUS_COLORS.accepted },
+      { name: "In Progress", value: assignmentCounts.inProgress, color: STATUS_COLORS["in-progress"] },
+      { name: "Completed", value: assignmentCounts.completed, color: STATUS_COLORS.completed },
+      { name: "Declined", value: assignmentCounts.declined, color: STATUS_COLORS.declined },
+    ];
+
+    return data.filter((item) => item.value > 0);
+  }, [assignmentCounts]);
+
+  const urgentTasks = useMemo(() => {
+    return [...tasks]
+      .sort((a, b) => {
+        const urgencyDelta = (URGENCY_RANK[b?.urgency] || 0) - (URGENCY_RANK[a?.urgency] || 0);
+        if (urgencyDelta !== 0) {
+          return urgencyDelta;
+        }
+
+        const aDate = toSafeDate(a?.createdAt);
+        const bDate = toSafeDate(b?.createdAt);
+        if (!aDate && !bDate) return 0;
+        if (!aDate) return 1;
+        if (!bDate) return -1;
+        return bDate.getTime() - aDate.getTime();
+      })
+      .slice(0, 5)
+      .map((task) => {
+        const assignment = resolveNgoAssignment(task, ngoProfileId);
+
+        return {
+          id: task._id,
+          location: task?.location || task?.realLocation || "Unknown location",
+          missionType: assignment?.taskType || task?.disasterType || "General Relief",
+          category: task?.message || "No summary available",
+          urgency: task?.urgency || "low",
+        };
+      });
+  }, [ngoProfileId, tasks]);
+
+  const campaignFeed = useMemo(() => {
+    const donationEvents = donations.map((donation) => ({
+      id: `donation-${donation._id}`,
+      type: donation?.status === "Verified" ? "verified" : "donation",
+      title: donation?.donorId?.name || "Anonymous donor",
+      action:
+        donation?.status === "Verified"
+          ? `verified LKR ${toLkr(donation?.declaredAmount)}`
+          : `submitted LKR ${toLkr(donation?.declaredAmount)}`,
+      context: donation?.campaignTitle || "Campaign",
+      createdAt: donation?.createdAt,
+    }));
+
+    const campaignEvents = campaigns.map((campaign) => ({
+      id: `campaign-${campaign._id}`,
+      type: campaign?.status === "Completed" ? "target" : "campaign",
+      title: campaign?.title || "Campaign",
+      action:
+        campaign?.status === "Completed"
+          ? "marked as completed"
+          : `status is ${campaign?.status || "Active"}`,
+      context: `Raised LKR ${toLkr(campaign?.raisedAmount)}`,
+      createdAt: campaign?.updatedAt || campaign?.createdAt,
+    }));
+
+    return [...donationEvents, ...campaignEvents]
+      .sort((a, b) => {
+        const aDate = toSafeDate(a.createdAt);
+        const bDate = toSafeDate(b.createdAt);
+        if (!aDate && !bDate) return 0;
+        if (!aDate) return 1;
+        if (!bDate) return -1;
+        return bDate.getTime() - aDate.getTime();
+      })
+      .slice(0, 8);
+  }, [campaigns, donations]);
+
+  const totalTrackedTasks = useMemo(() => {
+    return (
+      assignmentCounts.assigned
+      + assignmentCounts.accepted
+      + assignmentCounts.inProgress
+      + assignmentCounts.completed
+      + assignmentCounts.declined
+    );
+  }, [assignmentCounts]);
+
+  const lastUpdatedText = useMemo(() => {
+    if (!lastUpdated) {
+      return "Not synced yet";
+    }
+
+    return lastUpdated.toLocaleString("en-LK");
+  }, [lastUpdated]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
-      {/* Top Navbar */}
-      <NGOnavbar ngoData={ngoData} handleStatusToggle={handleStatusToggle} />
+    <DashboardLayout
+      sidebarItems={ngoSidebarItems}
+      portalTitle="NGO Portal"
+      avatarLetter="N"
+      homePath="/ngo-dashboard"
+      searchPlaceholder="Search tasks, campaigns, and donations..."
+      contentClassName="bg-auth-bg"
+    >
+      <section className="space-y-5 rounded-2xl bg-auth-bg text-auth-text">
+        <NGOnavbar ngoData={ngoData} handleStatusToggle={handleStatusToggle} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Header Area */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome back, ActionAid Rescue</h1>
-            <p className="text-gray-500 mt-1 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} &bull; Operations Dashboard</p>
-          </div>
-          <button className="mt-4 md:mt-0 flex items-center bg-[#56f7b7] hover:bg-[#2cda9d] text-gray-900 px-5 py-2.5 rounded-lg shadow-ambient font-bold transition-all transform hover:scale-105">
-            <Zap size={18} className="mr-2" />
-            Quick Dispatch
-          </button>
-        </div>
+        <header className="rounded-2xl border border-auth-border bg-auth-surface p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-auth-text-soft">NGO Operations Center</p>
+              <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.02em] text-auth-text-strong">Dashboard Overview</h1>
+              <p className="mt-2 text-sm text-auth-text-soft">
+                Live NGO metrics built from raw help requests, campaigns, donations, and profile performance data.
+              </p>
+            </div>
 
-        {/* Top-Level Metric Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[
-            { label: 'ACTIVE TASKS', value: metrics.activeTasks, icon: FileText, badge: '+2 active', badgeColor: 'bg-[#2cfe4c] text-gray-900' },
-            { label: 'PENDING DONATIONS', value: `$${metrics.pendingDonations.toLocaleString()}`, icon: Heart },
-            { label: 'ACTIVE CAMPAIGNS', value: metrics.activeCampaigns, icon: Megaphone },
-            { label: 'PEOPLE ASSISTED', value: metrics.peopleAssisted.toLocaleString(), icon: Users }
-          ].map((metric, idx) => (
-            <div key={idx} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#56f7b7]"></div>
-              <div className="flex justify-between items-start">
-                <div className="p-2 bg-gray-50 rounded-lg text-gray-600">
-                  <metric.icon size={20} />
-                </div>
-                {metric.badge && (
-                  <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${metric.badgeColor}`}>
-                    {metric.badge}
-                  </span>
-                )}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="rounded-lg border border-auth-border bg-auth-bg px-3 py-2 text-xs text-auth-text-soft">
+                Last updated: {lastUpdatedText}
               </div>
-              <div className="mt-4">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{metric.label}</p>
-                <h3 className="text-3xl font-extrabold text-gray-900 mt-1">{metric.value}</h3>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Data Visualization Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Line Chart */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 lg:col-span-2">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-gray-900">Donations Received (Last 7 Days)</h2>
-              <select className="bg-gray-50 border-none text-sm font-semibold text-gray-600 rounded-md py-1.5 px-3">
-                <option>This Week</option>
-                <option>Last Week</option>
-              </select>
-            </div>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={donationData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  />
-                  <Line type="monotone" dataKey="value" stroke="#005f5f" strokeWidth={3} dot={false} activeDot={{r: 6, fill: '#56f7b7', stroke: '#005f5f'}} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Doughnut Chart */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Task Status</h2>
-            <div className="h-48 w-full relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={taskData}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {taskData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-extrabold text-gray-900">{metrics.activeTasks}</span>
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Tasks</span>
-              </div>
-            </div>
-            <div className="mt-4 space-y-2">
-              {taskData.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }}></div>
-                    <span className="text-gray-600 font-medium">{item.name}</span>
-                  </div>
-                  <span className="font-bold text-gray-900">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Actionable Lists Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Urgent Pending Tasks */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 lg:col-span-2 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-lg font-bold text-gray-900">Urgent Pending Tasks</h2>
-              <a href="#tasks" className="text-sm font-bold text-[#005f5f] hover:text-[#2cda9d] transition">View All Tasks</a>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50/50 text-[10px] uppercase tracking-wider text-gray-500 font-bold">
-                    <th className="px-6 py-4">Location</th>
-                    <th className="px-6 py-4">Mission Type</th>
-                    <th className="px-6 py-4 text-center">Severity</th>
-                    <th className="px-6 py-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {pendingTasks.map((task) => (
-                    <tr key={task.id} className="hover:bg-gray-50 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="bg-gray-100 p-2 rounded-lg mr-3 text-gray-500">
-                            <MapPin size={16} />
-                          </div>
-                          <div>
-                            <p className="font-bold text-gray-900">{task.location}</p>
-                            <p className="text-xs text-gray-500 font-medium">{task.type}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-700 text-sm">
-                        {task.category}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className={getSeverityPill(task.severity)}>{task.severity}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="bg-[#56f7b7] hover:bg-[#2cda9d] text-gray-900 px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition">
-                          Accept
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Campaign Feed */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Campaign Feed</h2>
-            </div>
-            <div className="p-6 flex-1 overflow-y-auto">
-              <div className="space-y-6">
-                {campaignFeeds.map((feed) => (
-                  <div key={feed.id} className="flex relative">
-                    {/* Minimal Timeline connector */}
-                    <div className="absolute left-4 top-10 bottom-[-24px] w-px bg-gray-100 last:hidden"></div>
-                    
-                    <div className="mr-4 relative z-10">
-                      {feed.type === 'target' ? (
-                        <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                          <CheckCircle size={16} />
-                        </div>
-                      ) : feed.type === 'match' ? (
-                        <div className="w-8 h-8 rounded-full bg-[#e0f2f1] text-[#005f5f] flex items-center justify-center">
-                          <FileText size={16} />
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center overflow-hidden">
-                          <User size={16} />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900 font-bold">
-                        {feed.name} <span className="font-normal text-gray-600">{feed.action}</span>
-                      </p>
-                      <p className="text-xs text-[#005f5f] font-semibold mt-0.5">{feed.campaign}</p>
-                      <p className="text-[10px] text-gray-400 font-medium mt-1 flex items-center">
-                        {feed.time}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="p-3 bg-gray-50 text-center rounded-b-xl border-t border-gray-100">
-              <button className="text-[#005f5f] hover:text-[#003d3d] text-xs font-bold transition">
-                Open Full Feed
+              <button
+                type="button"
+                onClick={() => navigate("/ngo/tasks")}
+                className="inline-flex items-center gap-2 rounded-lg border border-auth-border bg-auth-bg px-4 py-2 text-sm font-semibold text-auth-text transition hover:bg-auth-border-subtle"
+              >
+                <Zap className="h-4 w-4" />
+                Quick Dispatch
+              </button>
+              <button
+                type="button"
+                onClick={handleRefresh}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isLoading || isRefreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${(isLoading || isRefreshing) ? "animate-spin" : ""}`} />
+                Refresh
               </button>
             </div>
           </div>
-        </div>
 
-      </main>
-    </div>
+          {serverError ? (
+            <p className="mt-4 rounded-lg border border-auth-danger-border bg-auth-danger-bg px-4 py-3 text-sm text-auth-text">
+              {serverError}
+            </p>
+          ) : null}
+        </header>
+
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {metricCards.map((metric) => (
+            <NgoMetricCard
+              key={metric.key}
+              label={metric.label}
+              value={metric.value}
+              icon={metric.icon}
+              hint={metric.hint}
+              isLoading={isLoading}
+            />
+          ))}
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-3">
+          <article className="rounded-2xl border border-auth-border bg-auth-surface p-5 shadow-sm lg:col-span-2">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-auth-text-strong">Donations Received (Last 7 Days)</h2>
+                <p className="text-xs text-auth-text-soft">Total vs verified donation amounts based on submission date.</p>
+              </div>
+            </div>
+
+            <div className="h-72 w-full">
+              {isLoading ? (
+                <div className="h-full animate-pulse rounded-xl border border-auth-border bg-auth-bg" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={donationTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#d7dde5" vertical={false} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#58667a", fontSize: 12 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: "#58667a", fontSize: 12 }} />
+                    <Tooltip
+                      formatter={(value) => `LKR ${toLkr(value)}`}
+                      contentStyle={{ borderRadius: "12px", border: "1px solid #d7dde5" }}
+                    />
+                    <Line type="monotone" dataKey="total" stroke="#005f5f" strokeWidth={3} dot={false} name="Total" />
+                    <Line type="monotone" dataKey="verified" stroke="#2cda9d" strokeWidth={2} dot={false} name="Verified" />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-auth-border bg-auth-surface p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-auth-text-strong">Task Status Mix</h2>
+            <p className="mt-1 text-xs text-auth-text-soft">Current assignment distribution for this NGO profile.</p>
+
+            <div className="relative mt-4 h-52 w-full">
+              {isLoading ? (
+                <div className="h-full animate-pulse rounded-xl border border-auth-border bg-auth-bg" />
+              ) : taskStatusData.length ? (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={taskStatusData}
+                        dataKey="value"
+                        innerRadius={56}
+                        outerRadius={80}
+                        paddingAngle={2}
+                        stroke="none"
+                      >
+                        {taskStatusData.map((entry) => (
+                          <Cell key={entry.name} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                    <p className="text-2xl font-extrabold text-auth-text-strong">{totalTrackedTasks}</p>
+                    <p className="text-[10px] uppercase tracking-[0.08em] text-auth-text-soft">Tracked Tasks</p>
+                  </div>
+                </>
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-xl border border-auth-border bg-auth-bg">
+                  <p className="text-sm text-auth-text-soft">No assignment data yet.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {taskStatusData.map((item) => (
+                <div key={item.name} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-auth-text-soft">{item.name}</span>
+                  </div>
+                  <span className="font-semibold text-auth-text-strong">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-3">
+          <article className="overflow-hidden rounded-2xl border border-auth-border bg-auth-surface shadow-sm lg:col-span-2">
+            <div className="flex items-center justify-between border-b border-auth-border px-5 py-4">
+              <div>
+                <h2 className="text-lg font-semibold text-auth-text-strong">Urgent Pending Tasks</h2>
+                <p className="text-xs text-auth-text-soft">Sorted by urgency and recency from assigned request data.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate("/ngo/tasks")}
+                className="rounded-lg bg-auth-bg px-3 py-2 text-xs font-semibold text-auth-text transition hover:bg-auth-border-subtle"
+              >
+                View all tasks
+              </button>
+            </div>
+
+            {isLoading ? (
+              <div className="space-y-2 p-5">
+                {[1, 2, 3, 4].map((item) => (
+                  <div key={item} className="h-14 animate-pulse rounded-xl border border-auth-border bg-auth-bg" />
+                ))}
+              </div>
+            ) : urgentTasks.length ? (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[680px]">
+                  <thead>
+                    <tr className="bg-auth-bg text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-auth-text-soft">
+                      <th className="px-5 py-3">Location</th>
+                      <th className="px-5 py-3">Mission Type</th>
+                      <th className="px-5 py-3">Summary</th>
+                      <th className="px-5 py-3 text-center">Urgency</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {urgentTasks.map((task) => (
+                      <tr key={task.id} className="border-t border-auth-border">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="rounded-lg border border-auth-border bg-auth-bg p-1.5 text-auth-text-soft">
+                              <MapPin className="h-3.5 w-3.5" />
+                            </span>
+                            <span className="text-sm font-semibold text-auth-text-strong">{task.location}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-sm text-auth-text">{task.missionType}</td>
+                        <td className="px-5 py-3 text-sm text-auth-text-soft">
+                          <p className="line-clamp-2 max-w-[320px]">{task.category}</p>
+                        </td>
+                        <td className="px-5 py-3 text-center">
+                          <span className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase ${getUrgencyPill(task.urgency)}`}>
+                            {task.urgency}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-8 text-center">
+                <p className="text-sm text-auth-text-soft">No pending urgent tasks at the moment.</p>
+              </div>
+            )}
+          </article>
+
+          <article className="flex h-full flex-col rounded-2xl border border-auth-border bg-auth-surface shadow-sm">
+            <div className="border-b border-auth-border px-5 py-4">
+              <h2 className="text-lg font-semibold text-auth-text-strong">Campaign Feed</h2>
+              <p className="text-xs text-auth-text-soft">Latest donation and campaign status activity.</p>
+            </div>
+
+            <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
+              {isLoading ? (
+                [1, 2, 3, 4].map((item) => (
+                  <div key={item} className="h-14 animate-pulse rounded-xl border border-auth-border bg-auth-bg" />
+                ))
+              ) : campaignFeed.length ? (
+                campaignFeed.map((feed) => (
+                  <article key={feed.id} className="flex gap-3">
+                    <span className="mt-0.5 rounded-full border border-auth-border bg-auth-bg p-2 text-auth-text-soft">
+                      {feed.type === "target" ? (
+                        <CheckCircle2 className="h-4 w-4 text-success" />
+                      ) : feed.type === "verified" ? (
+                        <ShieldAlert className="h-4 w-4 text-warning" />
+                      ) : feed.type === "campaign" ? (
+                        <Megaphone className="h-4 w-4" />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                    </span>
+                    <div>
+                      <p className="text-sm text-auth-text-strong">
+                        <span className="font-semibold">{feed.title}</span> {feed.action}
+                      </p>
+                      <p className="text-xs text-auth-text-soft">{feed.context}</p>
+                      <p className="mt-0.5 text-[11px] text-auth-text-soft">{formatDateTime(feed.createdAt)}</p>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="text-sm text-auth-text-soft">No campaign feed events yet.</p>
+              )}
+            </div>
+
+            <div className="border-t border-auth-border px-5 py-3">
+              <button
+                type="button"
+                onClick={() => navigate("/ngo/campaigns")}
+                className="w-full rounded-lg bg-auth-bg px-3 py-2 text-xs font-semibold text-auth-text transition hover:bg-auth-border-subtle"
+              >
+                Open campaign operations
+              </button>
+            </div>
+          </article>
+        </section>
+
+        <NGOTaskToastRegion toasts={toasts} onDismiss={dismissToast} />
+      </section>
+    </DashboardLayout>
   );
 };
 

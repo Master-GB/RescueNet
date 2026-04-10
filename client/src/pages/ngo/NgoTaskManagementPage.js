@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, CheckCircle2, ClipboardList, Clock3, ShieldAlert } from "lucide-react";
+import DashboardLayout from "../../layouts/DashboardLayout";
 import NGOnavbar from "../../components/ngoDashboard/NGOnavbar";
 import NGOTaskCard from "../../components/ngoDashboard/NGOTaskCard";
 import NGOTaskDetailModal from "../../components/ngoDashboard/NGOTaskDetailModal";
 import NGOTaskFilters from "../../components/ngoDashboard/NGOTaskFilters";
 import NGOTaskToastRegion from "../../components/ngoDashboard/NGOTaskToastRegion";
+import ngoSidebarItems from "./ngoSidebarItems";
 import {
   NGO_TASK_FILTER_DEFAULTS,
   resolveAssignmentStatus,
@@ -334,158 +336,167 @@ export default function NgoTaskManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-auth-bg text-auth-text">
-      <NGOnavbar ngoData={ngoData} handleStatusToggle={handleStatusToggle} />
+    <DashboardLayout
+      sidebarItems={ngoSidebarItems}
+      portalTitle="NGO Portal"
+      avatarLetter="N"
+      homePath="/ngo-dashboard"
+      searchPlaceholder="Search tasks, campaigns, and donations..."
+      contentClassName="bg-auth-bg"
+    >
+      <section className="space-y-5 rounded-2xl bg-auth-bg text-auth-text">
+        <NGOnavbar ngoData={ngoData} handleStatusToggle={handleStatusToggle} />
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-auth-border bg-auth-surface p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-auth-text-soft">NGO Response Desk</p>
-              <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.02em] text-auth-text">Task Management</h1>
-              <p className="mt-2 text-sm text-auth-text-soft">
-                Review assigned help requests, update task status, and keep response work progressing.
-              </p>
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-xl border border-auth-border bg-auth-bg px-3 py-2 text-sm text-auth-text-soft">
-              <ClipboardList className="h-4 w-4" />
-              {pagination?.total || 0} total assignments
-            </div>
-          </div>
-        </header>
-
-        <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {summaryCardConfig.map((card) => {
-            const Icon = card.icon;
-            const value = performance?.assignmentCounts?.[card.key] || 0;
-
-            return (
-              <article
-                key={card.key}
-                className={`rounded-2xl border bg-auth-surface p-4 shadow-sm ${card.tone}`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-auth-text-soft">{card.title}</p>
-                  <Icon className="h-4 w-4" />
-                </div>
-                <p className="mt-3 text-2xl font-bold text-auth-text">
-                  {isPerformanceLoading ? "..." : value}
+        <main className="mx-auto w-full max-w-7xl px-1 py-1 sm:px-2 lg:px-2">
+          <header className="rounded-2xl border border-auth-border bg-auth-surface p-6 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-auth-text-soft">NGO Response Desk</p>
+                <h1 className="mt-2 text-3xl font-extrabold tracking-[-0.02em] text-auth-text">Task Management</h1>
+                <p className="mt-2 text-sm text-auth-text-soft">
+                  Review assigned help requests, update task status, and keep response work progressing.
                 </p>
-              </article>
-            );
-          })}
-        </section>
-
-        {profileError ? (
-          <p className="mt-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-auth-text">
-            {profileError}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {error}
-          </p>
-        ) : null}
-
-        {actionError ? (
-          <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {actionError}
-          </p>
-        ) : null}
-
-        <div className="mt-5">
-          <NGOTaskFilters
-            searchValue={searchInput}
-            onSearchChange={setSearchInput}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={handleClearFilters}
-            onRefresh={loadTasks}
-            isRefreshing={isLoading}
-          />
-        </div>
-
-        <section className="mt-5">
-          {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div
-                  key={item}
-                  className="h-56 animate-pulse rounded-2xl border border-auth-border bg-auth-surface"
-                />
-              ))}
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-xl border border-auth-border bg-auth-bg px-3 py-2 text-sm text-auth-text-soft">
+                <ClipboardList className="h-4 w-4" />
+                {pagination?.total || 0} total assignments
+              </div>
             </div>
-          ) : filteredTasks.length === 0 ? (
-            <section className="rounded-2xl border border-auth-border bg-auth-surface p-10 text-center shadow-sm">
-              <h2 className="text-xl font-semibold text-auth-text">No tasks found</h2>
-              <p className="mt-2 text-sm text-auth-text-soft">
-                Try changing your filters or clearing the search input.
-              </p>
+          </header>
+
+          <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {summaryCardConfig.map((card) => {
+              const Icon = card.icon;
+              const value = performance?.assignmentCounts?.[card.key] || 0;
+
+              return (
+                <article
+                  key={card.key}
+                  className={`rounded-2xl border bg-auth-surface p-4 shadow-sm ${card.tone}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-auth-text-soft">{card.title}</p>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <p className="mt-3 text-2xl font-bold text-auth-text">
+                    {isPerformanceLoading ? "..." : value}
+                  </p>
+                </article>
+              );
+            })}
+          </section>
+
+          {profileError ? (
+            <p className="mt-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-auth-text">
+              {profileError}
+            </p>
+          ) : null}
+
+          {error ? (
+            <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+              {error}
+            </p>
+          ) : null}
+
+          {actionError ? (
+            <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+              {actionError}
+            </p>
+          ) : null}
+
+          <div className="mt-5">
+            <NGOTaskFilters
+              searchValue={searchInput}
+              onSearchChange={setSearchInput}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={handleClearFilters}
+              onRefresh={loadTasks}
+              isRefreshing={isLoading}
+            />
+          </div>
+
+          <section className="mt-5">
+            {isLoading ? (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <div
+                    key={item}
+                    className="h-56 animate-pulse rounded-2xl border border-auth-border bg-auth-surface"
+                  />
+                ))}
+              </div>
+            ) : filteredTasks.length === 0 ? (
+              <section className="rounded-2xl border border-auth-border bg-auth-surface p-10 text-center shadow-sm">
+                <h2 className="text-xl font-semibold text-auth-text">No tasks found</h2>
+                <p className="mt-2 text-sm text-auth-text-soft">
+                  Try changing your filters or clearing the search input.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="mt-4 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-container"
+                >
+                  Clear filters
+                </button>
+              </section>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredTasks.map((task) => (
+                  <NGOTaskCard
+                    key={task._id}
+                    task={task}
+                    assignmentStatus={resolveAssignmentStatus(task, ngoProfileId)}
+                    onOpenDetails={handleOpenTask}
+                    isUpdating={isTaskUpdating(task._id)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-auth-border bg-auth-surface px-4 py-3 shadow-sm">
+            <p className="text-xs text-auth-text-soft">
+              Showing {filteredTasks.length} task(s). Page {currentPage} of {totalPages}.
+            </p>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handleClearFilters}
-                className="mt-4 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-container"
+                onClick={() => gotoPage(currentPage - 1)}
+                disabled={currentPage <= 1 || isLoading}
+                className="rounded-lg border border-auth-border bg-auth-bg px-3 py-2 text-xs font-semibold text-auth-text disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Clear filters
+                Previous
               </button>
-            </section>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredTasks.map((task) => (
-                <NGOTaskCard
-                  key={task._id}
-                  task={task}
-                  assignmentStatus={resolveAssignmentStatus(task, ngoProfileId)}
-                  onOpenDetails={handleOpenTask}
-                  isUpdating={isTaskUpdating(task._id)}
-                />
-              ))}
+              <button
+                type="button"
+                onClick={() => gotoPage(currentPage + 1)}
+                disabled={currentPage >= totalPages || isLoading}
+                className="rounded-lg border border-auth-border bg-auth-bg px-3 py-2 text-xs font-semibold text-auth-text disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
             </div>
-          )}
-        </section>
+          </footer>
+        </main>
 
-        <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-auth-border bg-auth-surface px-4 py-3 shadow-sm">
-          <p className="text-xs text-auth-text-soft">
-            Showing {filteredTasks.length} task(s). Page {currentPage} of {totalPages}.
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => gotoPage(currentPage - 1)}
-              disabled={currentPage <= 1 || isLoading}
-              className="rounded-lg border border-auth-border bg-auth-bg px-3 py-2 text-xs font-semibold text-auth-text disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              onClick={() => gotoPage(currentPage + 1)}
-              disabled={currentPage >= totalPages || isLoading}
-              className="rounded-lg border border-auth-border bg-auth-bg px-3 py-2 text-xs font-semibold text-auth-text disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </footer>
-      </main>
+        <NGOTaskDetailModal
+          isOpen={Boolean(selectedTaskId)}
+          task={selectedTaskFromList}
+          assignmentStatus={selectedAssignmentStatus}
+          isLoading={isDetailLoading}
+          isUpdating={isTaskUpdating(selectedTaskId)}
+          detailError={detailError}
+          actionError={actionError}
+          onClose={handleCloseTaskModal}
+          onAccept={handleAcceptTask}
+          onDecline={handleDeclineTask}
+          onMarkInProgress={handleMarkInProgress}
+          onMarkCompleted={handleMarkCompleted}
+        />
 
-      <NGOTaskDetailModal
-        isOpen={Boolean(selectedTaskId)}
-        task={selectedTaskFromList}
-        assignmentStatus={selectedAssignmentStatus}
-        isLoading={isDetailLoading}
-        isUpdating={isTaskUpdating(selectedTaskId)}
-        detailError={detailError}
-        actionError={actionError}
-        onClose={handleCloseTaskModal}
-        onAccept={handleAcceptTask}
-        onDecline={handleDeclineTask}
-        onMarkInProgress={handleMarkInProgress}
-        onMarkCompleted={handleMarkCompleted}
-      />
-
-      <NGOTaskToastRegion toasts={toasts} onDismiss={dismissToast} />
-    </div>
+        <NGOTaskToastRegion toasts={toasts} onDismiss={dismissToast} />
+      </section>
+    </DashboardLayout>
   );
 }
