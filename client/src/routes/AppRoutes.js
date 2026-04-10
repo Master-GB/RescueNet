@@ -32,6 +32,7 @@ import NgoCreateCampaignPage from "../pages/ngo/NgoCreateCampaignPage";
 import NgoEditCampaignPage from "../pages/ngo/NgoEditCampaignPage";
 import NgoCampaignDonationsPage from "../pages/ngo/NgoCampaignDonationsPage";
 import NgoDonationReviewPage from "../pages/ngo/NgoDonationReviewPage";
+import NgoTaskManagementPage from "../pages/ngo/NgoTaskManagementPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
@@ -215,6 +216,14 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/ngo/tasks"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoTaskManagementPage />
           </RoleRoute>
         )}
       />

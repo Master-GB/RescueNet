@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Zap, FileText, Heart, Megaphone, Users, User, MapPin, CheckCircle, Clock } from 'lucide-react';
+import { Zap, FileText, Heart, Megaphone, Users, User, MapPin, CheckCircle } from 'lucide-react';
 import NGOnavbar from '../../components/ngoDashboard/NGOnavbar';
-import NGOcard from '../../components/ngoDashboard/NGOcard';
 import { getNgoProfile, updateNgoStatus } from '../../services/profileService';
 // TODO: Replace other mocked metrics with real API calls when available
 
 const NgoDashboard = () => {
-  // Mock Data from MongoDB snippet provided
+  // Minimal mock for initial render; real profile will be loaded on mount
   const [ngoData, setNgoData] = useState({
-    _id: "69ace1c29393ce08ba36c25f",
     registrationNumber: "NGO123456",
-    contactPhone: "+94763727137",
-    serviceDistricts: ["Colombo"],
     availabilityStatus: "AVAILABLE",
-    services: ["FOOD", "MEDICAL", "TRANSPORT"],
-    verifiedByAdmin: true,
     approvalStatus: "approved",
-    assignedRequests: [],
-    acceptedRequests: [],
-    completedTasks: 0,
-    rating: 0,
-    isActive: true,
   });
 
   const [metrics, setMetrics] = useState({
