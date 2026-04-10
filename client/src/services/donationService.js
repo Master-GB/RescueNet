@@ -52,3 +52,29 @@ export const verifyDonationByNgo = async (donationId, payload) => {
     throw new Error(message);
   }
 };
+
+export const submitDonation = async (payload) => {
+  try {
+    const formData = new FormData();
+    formData.append("campaignId", payload.campaignId);
+    formData.append("donationType", payload.donationType || "Money");
+    formData.append("declaredAmount", payload.declaredAmount || 0);
+    formData.append("donorMessage", payload.donorMessage || "");
+    
+    if (payload.proofImage instanceof File) {
+      formData.append("proofImage", payload.proofImage);
+    }
+
+    const response = await apiClient.post("/api/donations/submit", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const message = extractApiErrorMessage(error);
+    console.error("submitDonation failed:", message, error);
+    throw new Error(message);
+  }
+};
