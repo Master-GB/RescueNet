@@ -23,6 +23,11 @@ import DisasterPage from "../pages/citizen/DisasterPage";
 import MissingPersonPage from "../pages/citizen/MissingPersonPage";
 import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
 import NgoDashboard from "../pages/ngo/NgoDashboard";
+import NgoCampaignManagementPage from "../pages/ngo/NgoCampaignManagementPage";
+import NgoCreateCampaignPage from "../pages/ngo/NgoCreateCampaignPage";
+import NgoEditCampaignPage from "../pages/ngo/NgoEditCampaignPage";
+import NgoCampaignDonationsPage from "../pages/ngo/NgoCampaignDonationsPage";
+import NgoDonationReviewPage from "../pages/ngo/NgoDonationReviewPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
@@ -186,6 +191,46 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/ngo/campaigns"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoCampaignManagementPage />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/ngo/campaigns/create"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoCreateCampaignPage />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/ngo/campaigns/:campaignId/edit"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoEditCampaignPage />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/ngo/campaigns/:campaignId/donations"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoCampaignDonationsPage />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/ngo/campaigns/:campaignId/donations/:donationId"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoDonationReviewPage />
           </RoleRoute>
         )}
       />
