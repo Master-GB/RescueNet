@@ -35,7 +35,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const ShelterCreationModal = ({ isOpen, onClose, onSuccess, onError }) => {
+const ShelterCreationModal = ({ isOpen, onClose, onSuccess, onError, setVerified = true }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -460,7 +460,7 @@ const handleSubmit = async (e) => {
   try {
     const shelterData = {
       ...formData,
-      verified: true  // Set verified to true when creating shelter
+      verified: setVerified  // Use setVerified prop to determine verification status
     };
     
     const response = await fetch('/api/shelters/create', {

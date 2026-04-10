@@ -28,6 +28,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
 import ShelterManagement from "../pages/admin/ShelterManagement";
 import VerifyShelter from "../pages/admin/VerifyShelter";
+import ShelterManagementNGO from "../pages/ngo/ShelterManagementNGO";
 
 const adminSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
@@ -219,6 +220,22 @@ const AppRoutes = () => {
               searchPlaceholder="Search users, approvals, and platform controls..."
             >
               <ShelterManagement />
+            </DashboardLayout>
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/admin/shelters"
+        element={
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={adminSidebarItems}
+              portalTitle="Admin Portal"
+              avatarLetter="A"
+              homePath="/admin-dashboard"
+              searchPlaceholder="Search users, approvals, and platform controls..."
+            >
+              <ShelterManagementNGO />
             </DashboardLayout>
           </RoleRoute>
         }

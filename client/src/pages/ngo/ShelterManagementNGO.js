@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Navigation, Phone, Star, Filter, Search, Grid, Map, Heart, Car, Users, Shield, ShieldCheck, Wifi, Baby, Accessibility, AlertCircle, Home, Mail, Camera, Plus, Edit, Trash2, X } from 'lucide-react';
+import { MapPin, Navigation, Phone, Star, Filter, Search, Grid, Map, Heart, Car, Users, Shield, Wifi, Baby, Accessibility, AlertCircle, Home, Mail, Camera, Plus, Edit, Trash2, X } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -75,6 +75,7 @@ const ShelterManagementContent = () => {
   const [nearbySheltersOriginal, setNearbySheltersOriginal] = useState([]);
   const [savedSheltersList, setSavedSheltersList] = useState([]);
   const [myShelters, setMyShelters] = useState([]);
+  const [mySheltersOriginal, setMySheltersOriginal] = useState([]); // New state for all user shelters (verified + unverified)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -159,17 +160,17 @@ const ShelterManagementContent = () => {
     city: '',
     province: '',
     disasterTypes: [],
-    wheelchairAccess: '',
-    medical: '',
     food: '',
     water: '',
+    medical: '',
     power: '',
+    wheelchairAccess: '',
     petFriendly: '',
+    disabilitySupport: '',
     childFriendly: '',
     elderlySupport: '',
-    disabilitySupport: '',
     pregnancySupport: '',
-    verified: 'true',
+    verified: 'all', // Show both verified and unverified shelters for My tab
   });
 
   const [allFiltersDraft, setAllFiltersDraft] = useState(allFilters);
@@ -299,41 +300,67 @@ const ShelterManagementContent = () => {
   // Filtered shelters based on active tab
   const filteredShelters = activeTab === 'all' ? allShelters : activeTab === 'nearby' ? nearbyShelters : activeTab === 'saved' ? savedSheltersList : myShelters;
 
-  // Filter user's shelters for "My Shelters" tab
+  // Fetch all user shelters (verified + unverified) for "My Shelters" tab
   useEffect(() => {
-    const filterMyShelters = () => {
+    const fetchMyShelters = async () => {
+      if (!user || !user._id) {
+        console.log('No user found, setting empty shelters');
+        setMySheltersOriginal([]);
+        setMyShelters([]);
+        return;
+      }
+
       try {
         setLoading(true);
-        
-        console.log('Current user:', user);
-        console.log('All shelters count:', allSheltersOriginal.length);
-        
-        if (!user || !user._id) {
-          console.log('No user found, setting empty shelters');
-          setMyShelters([]);
-          setLoading(false);
-          return;
-        }
+        console.log('Fetching all user shelters (verified + unverified) for user:', user._id);
 
-        // Filter shelters by createdBy field matching current user's ID
-        const userShelters = allSheltersOriginal.filter(shelter => {
-          return shelter.createdBy === user._id;
-        });
+        // Use get-list-verified API with verified=all to get both verified and unverified shelters
+        const apiUrl = `/api/shelters/get-list-verified?verified=all&createdBy=${user._id}`;
+        console.log('Fetching user shelters from API:', apiUrl);
         
-        console.log('User shelters found:', userShelters.length);
-        setMyShelters(userShelters);
-      } catch (error) {
-        console.error('Error filtering user shelters:', error);
+        const response = await fetch(apiUrl);
+        console.log('API response status:', response.status);
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('API response data:', result);
+          
+          if (result.success) {
+            const userShelters = result.shelters || [];
+            console.log('User shelters found (all verification status):', userShelters.length);
+            console.log('User shelters details:', userShelters.map(s => ({ 
+              name: s.name, 
+              verified: s.verified, 
+              createdBy: s.createdBy,
+              currentUser: user._id
+            })));
+            setMySheltersOriginal(userShelters);
+            setMyShelters(userShelters); // Initially show all user shelters
+          } else {
+            console.error('Failed to fetch user shelters:', result.message);
+            setMySheltersOriginal([]);
+            setMyShelters([]);
+          }
+        } else {
+          console.error('API call failed with status:', response.status);
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          throw new Error('Failed to fetch user shelters');
+        }
+      } catch (err) {
+        console.error('Error fetching user shelters:', err);
+        setMySheltersOriginal([]);
         setMyShelters([]);
       } finally {
         setLoading(false);
       }
     };
 
-    if (activeTab === 'my') {
-      filterMyShelters();
+    // Fetch when user is available or when switching to My tab
+    if (user && user._id && activeTab === 'my') {
+      fetchMyShelters();
     }
-  }, [activeTab, allSheltersOriginal, user]);
+  }, [activeTab, user]);
 
   // Fetch all shelters for "All" tab
   useEffect(() => {
@@ -466,21 +493,21 @@ const ShelterManagementContent = () => {
 
   // Apply search and filters based on active tab
   useEffect(() => {
-    let filtered = activeTab === 'all' ? allSheltersOriginal : activeTab === 'nearby' ? nearbySheltersOriginal : activeTab === 'saved' ? savedSheltersList : allSheltersOriginal;
+    let filtered = activeTab === 'all' ? allSheltersOriginal : activeTab === 'nearby' ? nearbySheltersOriginal : activeTab === 'saved' ? savedSheltersList : mySheltersOriginal;
     const searchTerm = activeTab === 'all' ? allSearchTerm : activeTab === 'nearby' ? nearbySearchTerm : activeTab === 'saved' ? savedSearchTerm : mySearchTerm;
     const filters = activeTab === 'all' ? allFilters : activeTab === 'nearby' ? nearbyFilters : activeTab === 'saved' ? savedFilters : myFilters;
     
-    // For My tab, first filter by user's shelters, then apply other filters
+    // For My tab, shelters are already filtered by user in mySheltersOriginal
     if (activeTab === 'my') {
       console.log('My tab - Filtering logic triggered');
       console.log('My tab - User object:', user);
       console.log('My tab - User ID:', user?._id);
-      console.log('My tab - All shelters available:', allSheltersOriginal.length);
+      console.log('My tab - User shelters available:', mySheltersOriginal.length);
+      console.log('My tab - User shelters (verified + unverified):', mySheltersOriginal.map(s => ({ name: s.name, verified: s.verified })));
+      console.log('My tab - Current filters object:', filters);
       
-      filtered = allSheltersOriginal.filter(shelter => {
-        console.log('Checking shelter:', shelter.name, 'createdBy:', shelter.createdBy, 'matches user ID:', shelter.createdBy === user?._id);
-        return shelter.createdBy === user?._id;
-      });
+      // No need to filter by createdBy - mySheltersOriginal already contains only user's shelters
+      filtered = mySheltersOriginal;
       console.log('My tab - User shelters before filtering:', filtered.length);
     }
     
@@ -593,8 +620,16 @@ const ShelterManagementContent = () => {
         return shelter.specialSupport?.pregnancySupport === true;
       });
     }
-    if (filters.verified !== '') {
-      filtered = filtered.filter(shelter => shelter.verified === (filters.verified === 'true'));
+    if (filters.verified !== '' && filters.verified !== 'all') {
+      console.log('Verified filter being applied:', filters.verified);
+      console.log('Verified filter condition:', filters.verified !== '' && filters.verified !== 'all');
+      filtered = filtered.filter(shelter => {
+        const shouldInclude = shelter.verified === (filters.verified === 'true');
+        console.log('Shelter:', shelter.name, 'verified:', shelter.verified, 'shouldInclude:', shouldInclude);
+        return shouldInclude;
+      });
+    } else {
+      console.log('Verified filter NOT applied - filters.verified is:', filters.verified);
     }
 
     console.log('Filtering - Final Filtered Count:', filtered.length);
@@ -609,7 +644,7 @@ const ShelterManagementContent = () => {
     } else {
       setMyShelters(filtered);
     }
-  }, [allSheltersOriginal, nearbySheltersOriginal, savedSheltersList, allSearchTerm, nearbySearchTerm, savedSearchTerm, mySearchTerm, allFilters, nearbyFilters, savedFilters, myFilters, activeTab, user]);
+  }, [allSheltersOriginal, nearbySheltersOriginal, savedSheltersList, mySheltersOriginal, allSearchTerm, nearbySearchTerm, savedSearchTerm, mySearchTerm, allFilters, nearbyFilters, savedFilters, myFilters, activeTab, user]);
 
   // Calculate distance between two coordinates in kilometers
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -1380,14 +1415,7 @@ const ShelterManagementContent = () => {
                 <Plus className="w-5 h-5" />
                 <span className="hidden sm:inline">Add Shelter</span>
               </button>
-              <button
-                onClick={() => navigate('/admin/verify-shelters')}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-sm font-semibold transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transform hover:scale-105"
-              >
-                <ShieldCheck className="w-5 h-5" />
-                <span className="hidden sm:inline">Verify Shelters</span>
-              </button>
-            </div>
+                          </div>
           </div>
         </div>
       </header>
@@ -1536,13 +1564,13 @@ const ShelterManagementContent = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl px-8 py-3 border border-gray-200/50 shadow-xl">
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-5 top-7 transform -translate-y-1/2 text-gray-600 w-6 h-6 z-10"  />
+              <Search className="absolute left-5 top-7 transform -translate-y-1/2 text-gray-600 w-6 h-6" />
               <input
                 type="text"
                 placeholder={`Search ${activeTab === 'all' ? 'all shelters' : activeTab === 'nearby' ? 'nearby shelters' : 'saved shelters'} by name, city, or province...`}
                 value={currentSearchTermDraft}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-14 pr-5 py-4 text-gray-900 placeholder-gray-400 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-lg shadow-lg hover:shadow-xl"
+                className="w-full pl-14 pr-5 py-4 text-gray-900 placeholder-gray-700 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-lg shadow-lg hover:shadow-xl"
               />
             </div>
             <button
@@ -1580,11 +1608,11 @@ const ShelterManagementContent = () => {
                   <h3 className="text-lg font-bold text-gray-900 mb-5 pb-3 border-b border-gray-200/70">Basic Filters</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-900">Status</label>
+                      <label className="text-sm font-medium text-gray-800">Status</label>
                       <select 
                         value={currentFiltersDraft.status} 
                         onChange={(e) => handleFilter('status', e.target.value)}
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-900"
                       >
                         <option value="">All Status</option>
                         <option value="OPEN">Open</option>
@@ -1593,11 +1621,11 @@ const ShelterManagementContent = () => {
                       </select>
                     </div>
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-900">Shelter Type</label>
+                      <label className="text-sm font-medium text-gray-800">Shelter Type</label>
                       <select 
                         value={currentFiltersDraft.shelterType} 
                         onChange={(e) => handleFilter('shelterType', e.target.value)}
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-900"
                       >
                         <option value="">All Types</option>
                         {SHELTER_TYPES.map(type => (
@@ -1606,11 +1634,11 @@ const ShelterManagementContent = () => {
                       </select>
                     </div>
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-900">Province</label>
+                      <label className="text-sm font-medium text-gray-800">Province</label>
                       <select 
                         value={currentFiltersDraft.province} 
                         onChange={(e) => handleFilter('province', e.target.value)}
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-900"
                       >
                         <option value="">All Provinces</option>
                         {PROVINCES.map(province => (
@@ -1619,13 +1647,13 @@ const ShelterManagementContent = () => {
                       </select>
                     </div>
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-900">City</label>
+                      <label className="text-sm font-medium text-gray-800">City</label>
                       <input
                         type="text"
                         value={currentFiltersDraft.city}
                         onChange={(e) => handleFilter('city', e.target.value)}
                         placeholder="Enter city name"
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition placeholder-gray-700 text-gray-800"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition placeholder-gray-700 text-gray-900"
                       />
                     </div>
                   </div>
@@ -1756,6 +1784,64 @@ const ShelterManagementContent = () => {
           )}
         </div>
       </div>
+
+        {/* Verification Filter Buttons for My Shelters Tab */}
+      {activeTab === 'my' && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-200/50 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-gray-900">Verification Status</h3>
+              <div className="text-sm text-gray-600">
+                Showing {filteredShelters.length} of {mySheltersOriginal.length} shelters
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => {
+                  handleMyFilterDraftChange('verified', 'all');
+                  setMyFilters(prev => ({ ...prev, verified: 'all' })); // Apply immediately
+                }}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
+                  myFilters.verified === 'all'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md transform scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                <Shield className="w-4 h-4 inline mr-2" />
+                ALL ({mySheltersOriginal.length})
+              </button>
+              <button
+                onClick={() => {
+                  handleMyFilterDraftChange('verified', 'true');
+                  setMyFilters(prev => ({ ...prev, verified: 'true' })); // Apply immediately
+                }}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
+                  myFilters.verified === 'true'
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md transform scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                <Shield className="w-4 h-4 inline mr-2" />
+                Verified ({mySheltersOriginal.filter(s => s.verified === true).length})
+              </button>
+              <button
+                onClick={() => {
+                  handleMyFilterDraftChange('verified', 'false');
+                  setMyFilters(prev => ({ ...prev, verified: 'false' })); // Apply immediately
+                }}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
+                  myFilters.verified === 'false'
+                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md transform scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                <AlertCircle className="w-4 h-4 inline mr-2" />
+                Unverified ({mySheltersOriginal.filter(s => s.verified === false).length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* Main Content */}
         <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 ${viewMode}`}>
@@ -1941,6 +2027,16 @@ const ShelterManagementContent = () => {
                                 {shelter.status || 'OPEN'}
                               </span>
                             </div>
+                            {/* Verification Badge for My Shelters Tab in Map Popup */}
+                            {activeTab === 'my' && !shelter.verified && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Verification:</span>
+                                <span className="font-medium text-amber-600 flex items-center">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Unverified
+                                </span>
+                              </div>
+                            )}
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-600">Capacity:</span>
                               <span className="font-medium text-gray-900">
@@ -2031,11 +2127,20 @@ const ShelterManagementContent = () => {
                                 {SHELTER_TYPES.find(t => t.value === shelter.shelterType)?.label || 'Other'}
                               </span>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              shelter.status === 'OPEN' ? 'bg-green-100 text-green-600' :
-                              shelter.status === 'FULL' ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'
-                            }`}>
-                              {shelter.status || 'OPEN'}
+                            <div className="flex items-center space-x-2">
+                              <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                shelter.status === 'OPEN' ? 'bg-green-100 text-green-600' :
+                                shelter.status === 'FULL' ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'
+                              }`}>
+                                {shelter.status || 'OPEN'}
+                              </div>
+                              {/* Verification Badge for My Shelters Tab */}
+                              {activeTab === 'my' && !shelter.verified && (
+                                <div className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-600 border border-amber-200">
+                                  <AlertCircle className="w-3 h-3 inline mr-1" />
+                                  Unverified
+                                </div>
+                              )}
                             </div>
                           </div>
                           
@@ -2682,7 +2787,7 @@ const ShelterManagementContent = () => {
         onClose={() => setShowCreateModal(false)}
         onSuccess={handleShelterCreated}
         onError={handleShelterCreationError}
-        setVerified={true}
+        setVerified={false}
       />
 
       {/* Shelter Delete Modal */}
@@ -2714,7 +2819,7 @@ const ShelterManagementContent = () => {
 };
 
 // Wrapper component to provide MissingPersonContext
-const ShelterManagement = () => {
+const ShelterManagementNGO = () => {
   return (
     <MissingPersonProvider>
       <ShelterManagementContent />
@@ -2722,4 +2827,4 @@ const ShelterManagement = () => {
   );
 };
 
-export default ShelterManagement;
+export default ShelterManagementNGO;

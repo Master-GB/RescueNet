@@ -365,16 +365,8 @@ const ShelterPage = () => {
     }
   }, [savedShelters, allSheltersOriginal]);
 
-  // Auto-apply search term when draft changes (for immediate search experience)
-  useEffect(() => {
-    if (activeTab === 'all') {
-      setAllSearchTerm(allSearchTermDraft);
-    } else if (activeTab === 'nearby') {
-      setNearbySearchTerm(nearbySearchTermDraft);
-    } else {
-      setSavedSearchTerm(savedSearchTermDraft);
-    }
-  }, [allSearchTermDraft, nearbySearchTermDraft, savedSearchTermDraft, activeTab]);
+  // Search is applied immediately through handleSearchTermDraftChange function
+  // No auto-apply useEffect needed to avoid circular dependencies
 
   // Apply search and filters based on active tab
   useEffect(() => {
@@ -548,10 +540,12 @@ const ShelterPage = () => {
 
   const handleAllSearchTermDraftChange = (value) => {
     setAllSearchTermDraft(value);
+    setAllSearchTerm(value); // Apply immediately
   };
 
   const handleNearbySearchTermDraftChange = (value) => {
     setNearbySearchTermDraft(value);
+    setNearbySearchTerm(value); // Apply immediately
   };
 
   const handleAllDisasterTypeChange = (type) => {
@@ -618,6 +612,7 @@ const ShelterPage = () => {
 
   const handleSavedSearchTermDraftChange = (value) => {
     setSavedSearchTermDraft(value);
+    setSavedSearchTerm(value); // Apply immediately
   };
 
   const clearAllFilters = () => {
@@ -1096,13 +1091,13 @@ const ShelterPage = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl px-8 py-3 border border-gray-200/50 shadow-xl">
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-5 top-7 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
+              <Search className="absolute left-5 top-7 transform -translate-y-1/2 text-gray-600 w-6 h-6" />
               <input
                 type="text"
                 placeholder={`Search ${activeTab === 'all' ? 'all shelters' : activeTab === 'nearby' ? 'nearby shelters' : 'saved shelters'} by name, city, or province...`}
                 value={currentSearchTermDraft}
                 onChange={(e) => handleSearchTermDraftChange(e.target.value)}
-                className="w-full pl-14 pr-6 py-3 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 text-lg"
+                className="w-full pl-14 pr-6 py-3 bg-gray-50 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 text-lg text-gray-900 placeholder-gray-400"
               />
             </div>
             <button
@@ -1140,11 +1135,11 @@ const ShelterPage = () => {
                   <h3 className="text-lg font-bold text-gray-900 mb-5 pb-3 border-b border-gray-200/70">Basic Filters</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Status</label>
+                      <label className="text-sm font-medium text-gray-900">Status</label>
                       <select 
                         value={currentFiltersDraft.status} 
                         onChange={(e) => handleFilter('status', e.target.value)}
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
                       >
                         <option value="">All Status</option>
                         <option value="OPEN">Open</option>
@@ -1153,11 +1148,11 @@ const ShelterPage = () => {
                       </select>
                     </div>
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Shelter Type</label>
+                      <label className="text-sm font-medium text-gray-900">Shelter Type</label>
                       <select 
                         value={currentFiltersDraft.shelterType} 
                         onChange={(e) => handleFilter('shelterType', e.target.value)}
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
                       >
                         <option value="">All Types</option>
                         {SHELTER_TYPES.map(type => (
@@ -1166,11 +1161,11 @@ const ShelterPage = () => {
                       </select>
                     </div>
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Province</label>
+                      <label className="text-sm font-medium text-gray-900">Province</label>
                       <select 
                         value={currentFiltersDraft.province} 
                         onChange={(e) => handleFilter('province', e.target.value)}
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
                       >
                         <option value="">All Provinces</option>
                         {PROVINCES.map(province => (
@@ -1179,13 +1174,13 @@ const ShelterPage = () => {
                       </select>
                     </div>
                     <div className="flex flex-col space-y-2">
-                      <label className="text-sm font-medium text-gray-700">City</label>
+                      <label className="text-sm font-medium text-gray-900">City</label>
                       <input
                         type="text"
                         value={currentFiltersDraft.city}
                         onChange={(e) => handleFilter('city', e.target.value)}
                         placeholder="Enter city name"
-                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                        className="px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition text-gray-800"
                       />
                     </div>
                   </div>
@@ -1220,7 +1215,7 @@ const ShelterPage = () => {
                       <button
                         key={type.value}
                         onClick={() => handleDisasterType(type.value)}
-                        className={`flex flex-col items-center space-y-2 p-3 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
+                        className={`flex flex-col items-center space-y-2 p-3 rounded-2xl border-2 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-gray-800 ${
                           currentFiltersDraft.disasterTypes.includes(type.value) 
                             ? 'border-green-500 bg-green-50 text-green-700' 
                             : 'border-gray-200 hover:border-green-300 bg-white'
