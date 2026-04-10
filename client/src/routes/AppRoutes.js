@@ -35,11 +35,16 @@ import NgoDonationReviewPage from "../pages/ngo/NgoDonationReviewPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
+import LandingPage from "../pages/LandingPage";
+import AboutPage from "../pages/AboutPage";
+import ContactPage from "../pages/ContactPage";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<TrafficCopRedirect />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
 
       <Route path="/volunteer" element={<Navigate to="/volunteer-dashboard" replace />} />
 
