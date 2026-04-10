@@ -6,6 +6,8 @@ import OtpVerificationRoute from "../components/authentication/OtpVerificationRo
 import RoleRoute from "../components/authentication/RoleRoute";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminTaskDetailPage from "../pages/admin/AdminTaskDetailPage";
+import AdminTaskManagementPage from "../pages/admin/AdminTaskManagementPage";
 import CitizenProfileFormPage from "../pages/auth/CitizenProfileFormPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import LoginPage from "../pages/auth/LoginPage";
@@ -22,6 +24,8 @@ import ShelterPage from "../pages/citizen/ShelterPage";
 import DisasterPage from "../pages/citizen/DisasterPage";
 import MissingPersonPage from "../pages/citizen/MissingPersonPage";
 import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
+import CitizenDonationsPage from "../pages/citizen/CitizenDonationsPage";
+import DonationDetailsPage from "../pages/citizen/DonationDetailsPage";
 import NgoDashboard from "../pages/ngo/NgoDashboard";
 import NgoCampaignManagementPage from "../pages/ngo/NgoCampaignManagementPage";
 import NgoCreateCampaignPage from "../pages/ngo/NgoCreateCampaignPage";
@@ -179,6 +183,26 @@ const AppRoutes = () => {
         )}
       />
       <Route
+        path="/donations"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <CitizenDonationsPage />
+            </DashboardLayout>
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/donations/:id"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <DonationDetailsPage />
+            </DashboardLayout>
+          </RoleRoute>
+        )}
+      />
+      <Route
         path="/volunteer-dashboard"
         element={(
           <RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
@@ -239,6 +263,22 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
             <AdminDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/admin/tasks"
+        element={(
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <AdminTaskManagementPage />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/admin/tasks/:taskId"
+        element={(
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <AdminTaskDetailPage />
           </RoleRoute>
         )}
       />
