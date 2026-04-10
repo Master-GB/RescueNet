@@ -287,11 +287,8 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
         ...formData,
         photoUrl: finalPhotoUrl,
       };
-      // remove temporary files from payload
-      delete payload.selectedFile;
-      delete payload.previewUrl;
-
-      console.log('Submitting form data:', payload);
+      
+      console.log('Submitting mapped payload:', payload);
       await missingPersonService.reportMissingPerson(payload);
       console.log('Report submitted successfully');
       onSuccess?.();
@@ -299,7 +296,6 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
     } catch (error) {
       console.error('Submission error:', error);
       
-      // Check if it's a validation error with specific field errors
       if (error.message && error.message.includes('HTTP 400')) {
         setErrors({ 
           submit: 'Validation failed. Please check all required fields and try again.' 
