@@ -51,7 +51,9 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
     medicalConditions: '',
     
     // Images
-    images: []
+    photoUrl: null, // this will hold the cloudinary URL after upload
+    selectedFile: null, // this holds the actual file before upload
+    previewUrl: null // this holds the local preview URL
   });
 
   // Special marks state
@@ -115,31 +117,42 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
 
   // Handle image upload
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const validFiles = files.filter(file => {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert(`File ${file.name} is too large. Maximum size is 5MB.`);
-        return false;
-      }
-      if (!file.type.startsWith('image/')) {
-        alert(`File ${file.name} is not an image.`);
-        return false;
-      }
-      return true;
-    });
+    const file = e.target.files[0];
+    if (!file) return;
 
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      alert(`File ${file.name} is too large. Maximum size is 5MB.`);
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert(`File ${file.name} is not an image (JPG/PNG only).`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    const preview = URL.createObjectURL(file);
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...validFiles]
+      selectedFile: file,
+      previewUrl: preview
     }));
   };
 
   // Remove image
-  const removeImage = (index) => {
+  const removeImage = () => {
+    if (formData.previewUrl) {
+      URL.revokeObjectURL(formData.previewUrl);
+    }
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      selectedFile: null,
+      previewUrl: null
     }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Validate step
@@ -239,8 +252,47 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
     setErrors({});
 
     try {
-      console.log('Submitting form data:', formData);
-      await missingPersonService.reportMissingPerson(formData);
+      let finalPhotoUrl = null;
+      
+      // Upload image to Cloudinary if one is selected
+      if (formData.selectedFile) {
+        setErrors({ submit: 'Uploading photo...' }); // temporary loading message
+        const uploadData = new FormData();
+        uploadData.append('file', formData.selectedFile);
+        uploadData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET);
+        
+        const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+        if (!cloudName || !process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET) {
+           throw new Error('Cloudinary environment variables missing. Please check client/.env');
+        }
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: uploadData,
+        });
+
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}));
+          console.error("Cloudinary error response:", errData);
+          throw new Error(`Cloudinary Error: ${errData.error?.message || 'Failed to upload image'}`);
+        }
+
+        const uploadJson = await uploadRes.json();
+        finalPhotoUrl = uploadJson.secure_url;
+      }
+
+      setErrors({ submit: 'Submitting report...' }); // temporary loading message
+      
+      const payload = {
+        ...formData,
+        photoUrl: finalPhotoUrl,
+      };
+      // remove temporary files from payload
+      delete payload.selectedFile;
+      delete payload.previewUrl;
+
+      console.log('Submitting form data:', payload);
+      await missingPersonService.reportMissingPerson(payload);
       console.log('Report submitted successfully');
       onSuccess?.();
       onClose();
@@ -427,30 +479,68 @@ const ReportMissingPersonModal = ({ onClose, onSuccess }) => {
                     {errors.dateMissing && <p className="text-red-500 text-sm mt-1">{errors.dateMissing}</p>}
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">
-                      Priority Level
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {PRIORITY_LEVELS.map(priority => (
-                        <button
-                          key={priority.value}
-                          type="button"
-                          onClick={() => handleInputChange('priority', priority.value)}
-                          className={`p-3 rounded-xl border-2 transition-all duration-200 ${
-                            formData.priority === priority.value
-                              ? `border-${priority.color}-500 bg-${priority.color}-50 text-${priority.color}-700`
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="text-sm font-medium">{priority.label}</div>
-                        </button>
-                      ))}
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">
+                        Priority Level
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {PRIORITY_LEVELS.map(priority => (
+                          <button
+                            key={priority.value}
+                            type="button"
+                            onClick={() => handleInputChange('priority', priority.value)}
+                            className={`p-3 rounded-xl border-2 transition-all duration-200 ${
+                              formData.priority === priority.value
+                                ? `border-${priority.color}-500 bg-${priority.color}-50 text-${priority.color}-700`
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="text-sm font-medium">{priority.label}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Image Upload UI */}
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">
+                        Upload Photo (Optional)
+                      </label>
+                      <div className="mt-2 flex items-center justify-center w-full">
+                        {formData.previewUrl ? (
+                          <div className="relative w-full max-w-sm rounded-xl overflow-hidden shadow-sm border border-gray-200">
+                            <img src={formData.previewUrl} alt="Preview" className="w-full h-auto object-cover" />
+                            <button
+                              type="button"
+                              onClick={removeImage}
+                              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                            <div className="flex flex-col items-center justify-center py-6">
+                              <Camera className="w-10 h-10 text-gray-400 mb-3" />
+                              <p className="mb-2 text-sm text-gray-500 font-semibold">
+                                Click to upload photo
+                              </p>
+                              <p className="text-xs text-gray-500">JPG or PNG (Max 5MB)</p>
+                            </div>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              className="hidden"
+                              accept="image/jpeg, image/png, image/jpg"
+                              onChange={handleImageUpload}
+                            />
+                          </label>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Step 2: Location & Description */}
             {currentStep === 2 && (
