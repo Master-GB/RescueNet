@@ -119,8 +119,8 @@ const VolunteerDonationsPage = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
-              <div className="p-2 bg-pink-100 rounded-xl">
-                <Heart className="w-8 h-8 text-pink-600 fill-pink-600" />
+              <div className="p-2 bg-blue-100 rounded-xl">
+                <Heart className="w-8 h-8 text-blue-600 fill-blue-600" />
               </div>
               Relief Campaigns
             </h1>
@@ -136,7 +136,7 @@ const VolunteerDonationsPage = () => {
               placeholder="Search campaigns..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none shadow-sm transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 text-slate-900 focus:border-transparent outline-none shadow-sm transition-all"
             />
           </div>
         </div>
@@ -144,7 +144,7 @@ const VolunteerDonationsPage = () => {
         {/* Campaign Grid */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-12 h-12 text-pink-500 animate-spin mb-4" />
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
             <p className="text-slate-500 font-medium">Loading active campaigns...</p>
           </div>
         ) : error ? (
@@ -185,8 +185,8 @@ const VolunteerDonationsPage = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-50 to-orange-50">
-                            <Heart className="w-12 h-12 text-pink-200" />
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-emerald-50">
+                            <Heart className="w-12 h-12 text-blue-200" />
                         </div>
                     )}
                     <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-xs font-bold text-slate-900 shadow-sm">
@@ -209,12 +209,12 @@ const VolunteerDonationsPage = () => {
                                 <TrendingUp className="w-4 h-4" />
                                 Raised: LKR {campaign.raisedAmount.toLocaleString()}
                             </span>
-                            <span className="text-pink-600">{progress}%</span>
+                            <span className="text-blue-600">{progress}%</span>
                         </div>
                         
                         <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                             <div 
-                                className="h-full bg-gradient-to-r from-pink-500 to-rose-500 rounded-full transition-all duration-1000"
+                                className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-1000"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
@@ -232,7 +232,7 @@ const VolunteerDonationsPage = () => {
 
                         <button 
                           onClick={() => handleOpenDonateModal(campaign)}
-                          className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-100 flex items-center justify-center gap-2"
+                          className="w-full py-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
                         >
                           Donate Now
                           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -261,15 +261,15 @@ const VolunteerDonationsPage = () => {
                             <>
                                 <div className="mb-6">
                                     <h2 className="text-2xl font-black text-slate-900">Make a Donation</h2>
-                                    <p className="text-slate-500 mt-1">Supporting: <span className="font-bold text-pink-600">{selectedCampaign.title}</span></p>
+                                    <p className="text-slate-500 mt-1">Supporting: <span className="font-bold text-emerald-600">{selectedCampaign.title}</span></p>
                                 </div>
 
-                                <div className="bg-pink-50 rounded-2xl p-5 mb-8 border border-pink-100">
-                                    <h4 className="text-sm font-bold text-pink-800 mb-3 flex items-center gap-2">
+                                <div className="bg-blue-50 rounded-2xl p-5 mb-8 border border-blue-100">
+                                    <h4 className="text-sm font-bold text-blue-800 mb-3 flex items-center gap-2">
                                         <Building2 className="w-4 h-4" />
                                         Bank Details
                                     </h4>
-                                    <div className="grid grid-cols-1 gap-2 text-sm text-pink-900">
+                                    <div className="grid grid-cols-1 gap-2 text-sm text-blue-900">
                                         <p><span className="opacity-60">Bank:</span> {selectedCampaign.bankDetails?.bankName}</p>
                                         <p><span className="opacity-60">Account:</span> {selectedCampaign.bankDetails?.accountNumber}</p>
                                         <p><span className="opacity-60">Name:</span> {selectedCampaign.bankDetails?.accountName}</p>
@@ -283,8 +283,8 @@ const VolunteerDonationsPage = () => {
                                             onClick={() => setFormData(p => ({ ...p, donationType: 'Money' }))}
                                             className={`flex-1 py-3 rounded-2xl border-2 font-bold transition flex items-center justify-center gap-2 ${
                                                 formData.donationType === 'Money' 
-                                                ? 'bg-pink-600 border-pink-600 text-white' 
-                                                : 'bg-white border-slate-100 text-slate-500 hover:border-pink-200'
+                                                ? 'bg-blue-600 border-blue-600 text-white' 
+                                                : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'
                                             }`}
                                         >
                                             <DollarSign className="w-4 h-4" />
@@ -295,8 +295,8 @@ const VolunteerDonationsPage = () => {
                                             onClick={() => setFormData(p => ({ ...p, donationType: 'Supplies' }))}
                                             className={`flex-1 py-3 rounded-2xl border-2 font-bold transition flex items-center justify-center gap-2 ${
                                                 formData.donationType === 'Supplies' 
-                                                ? 'bg-pink-600 border-pink-600 text-white' 
-                                                : 'bg-white border-slate-100 text-slate-500 hover:border-pink-200'
+                                                ? 'bg-blue-600 border-blue-600 text-white' 
+                                                : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'
                                             }`}
                                         >
                                             <Package className="w-4 h-4" />
@@ -313,7 +313,7 @@ const VolunteerDonationsPage = () => {
                                                 value={formData.declaredAmount}
                                                 onChange={(e) => setFormData(p => ({ ...p, declaredAmount: e.target.value }))}
                                                 placeholder="Amount you've transferred"
-                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-pink-500"
+                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl focus:ring-2 focus:ring-blue-500"
                                             />
                                         </div>
                                     )}
@@ -331,7 +331,7 @@ const VolunteerDonationsPage = () => {
                                             <div className={`w-full py-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition ${
                                                 formData.proofImage 
                                                 ? 'border-emerald-500 bg-emerald-50' 
-                                                : 'border-slate-200 bg-slate-50 group-hover:border-pink-300 group-hover:bg-pink-50'
+                                                : 'border-slate-200 bg-slate-50 group-hover:border-blue-300 group-hover:bg-blue-50'
                                             }`}>
                                                 {formData.proofImage ? (
                                                     <div className="flex flex-col items-center text-emerald-700">
@@ -358,7 +358,7 @@ const VolunteerDonationsPage = () => {
                                     <button 
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-4 bg-pink-600 text-white rounded-2xl font-black text-lg hover:bg-pink-700 transition shadow-xl shadow-pink-100 flex items-center justify-center gap-2 disabled:bg-pink-400 disabled:shadow-none"
+                                        className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-lg hover:bg-emerald-700 transition shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 disabled:bg-emerald-400 disabled:shadow-none"
                                     >
                                         {isSubmitting ? (
                                             <>
