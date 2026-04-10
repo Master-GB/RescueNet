@@ -22,6 +22,8 @@ import ShelterPage from "../pages/citizen/ShelterPage";
 import DisasterPage from "../pages/citizen/DisasterPage";
 import MissingPersonPage from "../pages/citizen/MissingPersonPage";
 import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
+import CitizenDonationsPage from "../pages/citizen/CitizenDonationsPage";
+import DonationDetailsPage from "../pages/citizen/DonationDetailsPage";
 import NgoDashboard from "../pages/ngo/NgoDashboard";
 import NgoCampaignManagementPage from "../pages/ngo/NgoCampaignManagementPage";
 import NgoCreateCampaignPage from "../pages/ngo/NgoCreateCampaignPage";
@@ -175,6 +177,26 @@ const AppRoutes = () => {
               <ShelterPage />
             </DashboardLayout>
             
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/donations"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <CitizenDonationsPage />
+            </DashboardLayout>
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/donations/:id"
+        element={(
+          <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
+            <DashboardLayout>
+              <DonationDetailsPage />
+            </DashboardLayout>
           </RoleRoute>
         )}
       />
