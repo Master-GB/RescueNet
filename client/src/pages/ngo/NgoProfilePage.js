@@ -161,7 +161,7 @@ const NgoProfilePage = () => {
   if (!user || !profile) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
       </div>
     );
   }
@@ -174,15 +174,15 @@ const NgoProfilePage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <UserCircle className="w-8 h-8 text-white" />
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-teal-600 rounded-full flex items-center justify-center">
+                <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   Profile Settings
                 </h1>
                 <p className="text-gray-600 mt-1">Manage your account and organization information</p>
@@ -191,7 +191,7 @@ const NgoProfilePage = () => {
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl hover:from-teal-700 hover:to-teal-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <Edit2 className="w-5 h-5" />
                 <span className="font-semibold">Edit Profile</span>
@@ -207,7 +207,7 @@ const NgoProfilePage = () => {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl hover:from-teal-700 hover:to-teal-800 disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:scale-100 font-semibold"
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:scale-100 font-semibold"
                 >
                   {saving ? (
                     <>
@@ -230,11 +230,11 @@ const NgoProfilePage = () => {
       {/* Success/Error Messages */}
       {success && (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-4 flex items-center space-x-3 shadow-md">
-            <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-teal-600" />
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex items-center space-x-3 shadow-md">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
-            <p className="text-teal-800 font-medium">{success}</p>
+            <p className="text-green-800 font-medium">{success}</p>
           </div>
         </div>
       )}
@@ -256,7 +256,7 @@ const NgoProfilePage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               {/* Profile Header with clickable avatar */}
-              <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white">
                 <div className="flex items-center space-x-4">
                   {/* Clickable Avatar */}
                   <div
@@ -295,7 +295,7 @@ const NgoProfilePage = () => {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold">{user.name}</h2>
-                    <p className="text-teal-100">NGO</p>
+                    <p className="text-emerald-100">NGO</p>
                     {photoError && (
                       <p className="text-red-300 text-xs mt-1">{photoError}</p>
                     )}
@@ -306,15 +306,15 @@ const NgoProfilePage = () => {
               {/* Account Information */}
               <div className="p-6 space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Shield className="w-5 h-5 mr-2 text-teal-600" />
+                  <Shield className="w-5 h-5 mr-2 text-green-600" />
                   Account Information
                 </h3>
                 
                 <div className="space-y-4">
                   <div className="group p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Mail className="w-5 h-5 text-teal-600" />
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Mail className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-gray-500">Email Address</p>
@@ -325,8 +325,8 @@ const NgoProfilePage = () => {
 
                   <div className="group p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Award className="w-5 h-5 text-teal-600" />
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Award className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-gray-500">Account Type</p>
@@ -337,17 +337,17 @@ const NgoProfilePage = () => {
 
                   <div className="group p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <CheckCircle className="w-5 h-5 text-teal-600" />
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-gray-500">Account Status</p>
                         <div className="flex items-center space-x-2">
-                          <p className="font-medium text-teal-600">
+                          <p className="font-medium text-green-600">
                             {user.isAccountVerified && profile.approvalStatus === 'approved' ? "Verified" : "Not Verified"}
                           </p>
                           {user.isAccountVerified && profile.approvalStatus === 'approved' && (
-                            <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
+                            <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                           )}
                         </div>
                       </div>
@@ -356,8 +356,8 @@ const NgoProfilePage = () => {
 
                   <div className="group p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Calendar className="w-5 h-5 text-teal-600" />
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Calendar className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-gray-500">Member Since</p>
@@ -396,7 +396,7 @@ const NgoProfilePage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               {/* Profile Header */}
-              <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -404,7 +404,7 @@ const NgoProfilePage = () => {
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold">Profile Details</h2>
-                      <p className="text-teal-100">Manage your organization details</p>
+                      <p className="text-emerald-100">Manage your organization details</p>
                     </div>
                   </div>
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
@@ -419,7 +419,7 @@ const NgoProfilePage = () => {
                   {/* Phone Number */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                      <Phone className="w-4 h-4 mr-2 text-teal-600" />
+                      <Phone className="w-4 h-4 mr-2 text-green-600" />
                       Phone Number
                     </label>
                     {isEditing ? (
@@ -428,7 +428,7 @@ const NgoProfilePage = () => {
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => handleInputChange("phone", e.target.value)}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
                           placeholder="Enter phone number"
                         />
                         <div className="absolute right-3 top-3.5 text-gray-400">
@@ -438,8 +438,8 @@ const NgoProfilePage = () => {
                     ) : (
                       <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                            <Phone className="w-5 h-5 text-teal-600" />
+                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-green-600" />
                           </div>
                           <span className="text-gray-900 font-medium">
                             {profile.phone || "Not provided"}
@@ -452,7 +452,7 @@ const NgoProfilePage = () => {
                   {/* Address */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                      <Home className="w-4 h-4 mr-2 text-teal-600" />
+                      <Home className="w-4 h-4 mr-2 text-green-600" />
                       Address
                     </label>
                     {isEditing ? (
@@ -462,7 +462,7 @@ const NgoProfilePage = () => {
                             type="text"
                             value={formData.address.street}
                             onChange={(e) => handleInputChange("address.street", e.target.value)}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
                             placeholder="Street address"
                           />
                           <div className="absolute right-3 top-3.5 text-gray-400">
@@ -475,7 +475,7 @@ const NgoProfilePage = () => {
                               type="text"
                               value={formData.address.city}
                               onChange={(e) => handleInputChange("address.city", e.target.value)}
-                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
                               placeholder="City / District"
                             />
                             <div className="absolute right-3 top-3.5 text-gray-400">
@@ -487,7 +487,7 @@ const NgoProfilePage = () => {
                               type="text"
                               value={formData.address.province}
                               onChange={(e) => handleInputChange("address.province", e.target.value)}
-                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
+                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400"
                               placeholder="Province"
                             />
                             <div className="absolute right-3 top-3.5 text-gray-400">
@@ -500,8 +500,8 @@ const NgoProfilePage = () => {
                       <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <div className="space-y-3">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                              <Home className="w-5 h-5 text-teal-600" />
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                              <Home className="w-5 h-5 text-green-600" />
                             </div>
                             <div>
                               <p className="text-gray-900 font-medium">
@@ -520,13 +520,13 @@ const NgoProfilePage = () => {
                   {/* Registration Number (Non-editable) */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                      <Hash className="w-4 h-4 mr-2 text-teal-600" />
+                      <Hash className="w-4 h-4 mr-2 text-green-600" />
                       Registration Number
                     </label>
                     <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                          <Hash className="w-5 h-5 text-teal-600" />
+                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                          <Hash className="w-5 h-5 text-green-600" />
                         </div>
                         <span className="text-gray-900 font-medium">
                           {profile.registrationNumber || "Not provided"}
@@ -538,13 +538,13 @@ const NgoProfilePage = () => {
                   {/* Organization Type (Non-editable) */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                      <Building className="w-4 h-4 mr-2 text-teal-600" />
+                      <Building className="w-4 h-4 mr-2 text-green-600" />
                       Organization Type
                     </label>
                     <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                          <Building className="w-5 h-5 text-teal-600" />
+                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                          <Building className="w-5 h-5 text-green-600" />
                         </div>
                         <span className="text-gray-900 font-medium">
                           {profile.organizationType || "Not provided"}
@@ -556,7 +556,7 @@ const NgoProfilePage = () => {
                   {/* Description / About */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                      <FileText className="w-4 h-4 mr-2 text-teal-600" />
+                      <FileText className="w-4 h-4 mr-2 text-green-600" />
                       About / Description
                     </label>
                     {isEditing ? (
@@ -565,7 +565,7 @@ const NgoProfilePage = () => {
                           value={formData.description}
                           onChange={(e) => handleInputChange("description", e.target.value)}
                           rows={4}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-gray-900 placeholder-gray-400 resize-none"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 placeholder-gray-400 resize-none"
                           placeholder="Describe your organization..."
                         />
                         <div className="absolute right-3 top-3.5 text-gray-400">
@@ -575,8 +575,8 @@ const NgoProfilePage = () => {
                     ) : (
                       <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <div className="flex items-start space-x-3">
-                          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-teal-600" />
+                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-green-600" />
                           </div>
                           <div className="flex-1">
                             <p className="text-gray-900 font-medium">
@@ -591,7 +591,7 @@ const NgoProfilePage = () => {
                   {/* Availability Status */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                      <ToggleLeft className="w-4 h-4 mr-2 text-teal-600" />
+                      <ToggleLeft className="w-4 h-4 mr-2 text-green-600" />
                       Availability Status
                     </label>
                     {isEditing ? (
@@ -599,7 +599,7 @@ const NgoProfilePage = () => {
                         <select
                           value={formData.availabilityStatus}
                           onChange={(e) => handleInputChange("availabilityStatus", e.target.value)}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-gray-900 bg-white"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900 bg-white"
                         >
                           <option value="AVAILABLE">Available</option>
                           <option value="UNAVAILABLE">Unavailable</option>
@@ -609,11 +609,11 @@ const NgoProfilePage = () => {
                       <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <div className="space-y-3">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${profile.availabilityStatus === 'AVAILABLE' ? 'bg-teal-100' : 'bg-red-100'}`}>
-                              <ToggleLeft className={`w-5 h-5 ${profile.availabilityStatus === 'AVAILABLE' ? 'text-teal-600' : 'text-red-600'}`} />
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${profile.availabilityStatus === 'AVAILABLE' ? 'bg-green-100' : 'bg-red-100'}`}>
+                              <ToggleLeft className={`w-5 h-5 ${profile.availabilityStatus === 'AVAILABLE' ? 'text-green-600' : 'text-red-600'}`} />
                             </div>
                             <div>
-                              <p className={`font-medium ${profile.availabilityStatus === 'AVAILABLE' ? 'text-teal-600' : 'text-red-600'}`}>
+                              <p className={`font-medium ${profile.availabilityStatus === 'AVAILABLE' ? 'text-green-600' : 'text-red-600'}`}>
                                 {profile.availabilityStatus === 'AVAILABLE' ? 'Available' : 'Unavailable'}
                               </p>
                             </div>
