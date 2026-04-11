@@ -41,10 +41,12 @@ export const submitDonation = async (req, res) => {
       donation,
     });
   } catch (error) {
+    console.error("submitDonation error:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to submit donation",
       error: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 };

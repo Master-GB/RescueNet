@@ -28,7 +28,15 @@ export const logoutUser = async () => {
 };
 
 export const fetchMe = async () => {
-  const response = await apiClient.get("/api/auth/me");
+  const response = await apiClient.get("/api/auth/me", {
+    params: {
+      _ts: Date.now(),
+    },
+    headers: {
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
+  });
   return response.data;
 };
 

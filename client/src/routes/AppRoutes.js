@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import GuestRoute from "../components/authentication/GuestRoute";
 import OtpVerificationRoute from "../components/authentication/OtpVerificationRoute";
 import RoleRoute from "../components/authentication/RoleRoute";
+import { renderVolunteerRoutes } from "./AppRouteVolunteer";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminNgoManagementPage from "../pages/admin/AdminNgoManagementPage";
@@ -98,26 +99,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/volunteer/profile-setup"
-        element={
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerProfileFormPage />
-          </RoleRoute>
-        }
-      />
-      <Route
         path="/ngo/profile-setup"
         element={
           <RoleRoute allowedRoles={["NGO"]}>
             <NgoProfileFormPage />
-          </RoleRoute>
-        }
-      />
-      <Route
-        path="/volunteer/pending-approval"
-        element={
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerPendingApprovalPage />
           </RoleRoute>
         }
       />
@@ -213,14 +198,6 @@ const AppRoutes = () => {
             </DashboardLayout>
           </RoleRoute>
         )}
-      />
-      <Route
-        path="/volunteer-dashboard"
-        element={
-          <RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
-            <VolunteerDashboard />
-          </RoleRoute>
-        }
       />
       <Route
         path="/ngo-dashboard"
@@ -369,6 +346,8 @@ const AppRoutes = () => {
           </RoleRoute>
         }
       />
+
+      {renderVolunteerRoutes()}
 
       <Route path="*" element={<TrafficCopRedirect />} />
     </Routes>

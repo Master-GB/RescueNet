@@ -147,6 +147,7 @@ export async function createHelpRequest(req, res) {
     // 5. Save to DB
     const helpRequest = await HelpRequest.create({
       name,
+      userId: req.user._id, // Set the owner
       location,
       disasterType,
       message,
@@ -175,7 +176,12 @@ export async function getAllRequests(req, res) {
     const skip = (page - 1) * limit;
 
     // Query: exclude heavy binary fields to reduce response size
-    const requests = await HelpRequest.find()
+    let query = {};
+    if (req.user.role !== "ADMIN") {
+      query.userId = req.user._id; // Only show their own requests
+    }
+
+    const requests = await HelpRequest.find(query)
       .select("-voiceMessage -images")  // Exclude large Buffer fields
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -183,7 +189,7 @@ export async function getAllRequests(req, res) {
       .lean();  // Return plain JS objects (faster)
 
     // Get total count for pagination metadata
-    const total = await HelpRequest.countDocuments();
+    const total = await HelpRequest.countDocuments(query);
 
     res.json({
       data: requests,
@@ -235,6 +241,31 @@ export async function updateHelpRequest(req, res) {
       return res.status(404).json({ message: "Help request not found" });
     }
 
+    // Authorization check: Ensure user owns the request or is an admin or is a volunteer accepting/managing the task
+    const isOwner = helpRequest.userId && helpRequest.userId.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === "ADMIN";
+    const isVolunteer = req.user.role === "VOLUNTEER";
+
+    // Allow volunteer to update IF they are accepted into the task OR if it is pending and they are accepting
+    let canVolunteerUpdate = false;
+    if (isVolunteer) {
+      if (helpRequest.status === "pending" && req.body.status === "assigned") {
+        canVolunteerUpdate = true;
+        // Auto-assign to this volunteer
+        helpRequest.assignedVolunteerId = req.user._id;
+        helpRequest.assignedAt = new Date();
+      } else if (helpRequest.assignedVolunteerId && helpRequest.assignedVolunteerId.toString() === req.user._id.toString()) {
+        canVolunteerUpdate = true;
+      }
+    }
+
+    if (!isOwner && !isAdmin && !canVolunteerUpdate) {
+      return res.status(403).json({ 
+        success: false,
+        message: "Access denied: You don't have permission to update this request" 
+      });
+    }
+
     // Update fields if provided
     if (name) helpRequest.name = name;
     if (location) helpRequest.location = location;
@@ -243,6 +274,7 @@ export async function updateHelpRequest(req, res) {
     if (contactNumber) helpRequest.contactNumber = contactNumber;
     if (realLocation) helpRequest.realLocation = realLocation;
     if (urgency) helpRequest.urgency = urgency;
+    if (req.body.status) helpRequest.status = req.body.status;
 
     // Handle voice message update
     if (voiceMessage?.data) {
@@ -278,12 +310,24 @@ export async function updateHelpRequest(req, res) {
 export async function deleteHelpRequest(req, res) {
   try {
     const { id } = req.params;
-    const helpRequest = await HelpRequest.findByIdAndDelete(id);
+    const helpRequest = await HelpRequest.findById(id);
     
     if (!helpRequest) {
       return res.status(404).json({ message: "Help request not found" });
     }
-    
+
+    // Authorization check: Ensure user owns the request or is an admin
+    const isOwner = helpRequest.userId && helpRequest.userId.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === "ADMIN";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ 
+        success: false,
+        message: "Access denied: You don't have permission to delete this request" 
+      });
+    }
+
+    await HelpRequest.findByIdAndDelete(id);
     res.json({ message: "Help request deleted successfully", id });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
