@@ -479,7 +479,6 @@ const NgoDashboard = () => {
 
     return lastUpdated.toLocaleString("en-LK");
   }, [lastUpdated]);
->>>>>>> remotes/origin/feat/upload-profile-photo
 
   return (
     <DashboardLayout
