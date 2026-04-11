@@ -49,6 +49,18 @@ module.exports = {
         ambient: "var(--ambient-shadow)",
         "auth-shell-panel": "var(--auth-shell-panel-shadow)",
       },
+      animation: {
+        'bounce-slow': 'bounce 2s infinite',
+        'fade-in': 'fadeIn 1s ease-in-out',
+        'spin-slow': 'spin 3s linear infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
     },
   },
   plugins: [],
