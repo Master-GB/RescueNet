@@ -95,13 +95,17 @@ export function AuthProvider({ children }) {
   const handleUnauthorized = useCallback(() => {
     clearSession();
 
+    const currentPath = window.location.pathname || location.pathname || "/";
     const publicPaths = ["/", "/about", "/contact"];
-    const isPublicPath = publicPaths.includes(location.pathname) || location.pathname.startsWith("/auth");
+    const isPublicPath = publicPaths.includes(currentPath) || currentPath.startsWith("/auth");
+
+    console.log("[AuthContext] handleUnauthorized hit. Path:", currentPath, "isPublicPath:", isPublicPath);
 
     if (!isPublicPath) {
+      console.log("[AuthContext] Redirecting to /auth/login because path is not public");
       navigate("/auth/login", {
         replace: true,
-        state: { from: location.pathname },
+        state: { from: currentPath },
       });
     }
   }, [clearSession, location.pathname, navigate]);
