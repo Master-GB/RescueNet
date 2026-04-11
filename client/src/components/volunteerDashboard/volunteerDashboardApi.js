@@ -17,6 +17,12 @@ const toQueryString = (params) => {
 const apiRequest = async (url, options = {}) => {
   const response = await fetch(url, {
     credentials: "include",
+    cache: "no-store",
+    headers: {
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+      ...(options.headers || {}),
+    },
     ...options,
   });
 
@@ -90,10 +96,10 @@ export const updateVolunteerAvailability = async (availabilityStatus) => {
   });
 };
 
-export const acceptHelpRequest = async (helpRequestId) => {
+export const acceptHelpRequest = async (helpRequestId, payload = {}) => {
   return apiRequest(`/api/help/update/${helpRequestId}`, {
     method: "PUT",
     headers: jsonHeaders,
-    body: JSON.stringify({ status: "assigned" }),
+    body: JSON.stringify({ status: "assigned", ...payload }),
   });
 };
