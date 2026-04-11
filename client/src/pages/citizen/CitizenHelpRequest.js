@@ -55,7 +55,12 @@ const RecenterMap = ({ center }) => {
   return null;
 };
 
-const CitizenHelpRequest = () => {
+const CitizenHelpRequest = ({
+  sidebarItems,
+  portalTitle = "Citizen Portal",
+  avatarLetter = "C",
+  homePath = "/citizen-dashboard",
+}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -427,7 +432,12 @@ const CitizenHelpRequest = () => {
     };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      sidebarItems={sidebarItems}
+      portalTitle={portalTitle}
+      avatarLetter={avatarLetter}
+      homePath={homePath}
+    >
       <div className="w-full max-w-none mx-0 space-y-6">
         {/* Header with Tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">

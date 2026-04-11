@@ -7,5 +7,6 @@ export const volunteerSidebarItems = [
   { name: "Team Alerts", icon: BellRing, path: "/volunteer/alerts" },
   { name: "Relief Requests", icon: HandHelping, path: "/volunteer/requests" },
   { name: "Donations", icon: Heart, path: "/volunteer/donations" },
+  { name: "Request Help", icon: HandHelping, path: "/volunteer/help-request" },
   { name: "Profile", icon: UserCircle, path: "/volunteer/profile" },
 ];

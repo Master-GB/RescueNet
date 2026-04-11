@@ -61,6 +61,11 @@ const helpRequestSchema = new mongoose.Schema(
     adminNotes: { type: String },
     rejectionReason: { type: String },
     resolvedAt: { type: Date },
+    assignedVolunteerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
+    assignedAt: { type: Date },
     publishedToSocial: { type: Boolean, default: false }
   },
 

@@ -10,6 +10,8 @@ import VolunteerProfilePage from "../pages/volunteer/VolunteerProfilePage";
 import VolunteerRequestsPage from "../pages/volunteer/VolunteerRequestsPage";
 import VolunteerTasksPage from "../pages/volunteer/VolunteerTasksPage";
 import VolunteerDonationsPage from "../pages/volunteer/VolunteerDonationsPage";
+import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
+import { volunteerSidebarItems } from "../pages/volunteer/volunteerLayoutConfig";
 
 export const renderVolunteerRoutes = () => (
 	<>
@@ -92,6 +94,19 @@ export const renderVolunteerRoutes = () => (
 			element={(
 				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
 					<VolunteerDonationsPage />
+				</RoleRoute>
+			)}
+		/>
+		<Route
+			path="/volunteer/help-request"
+			element={(
+				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
+					<CitizenHelpRequest 
+						sidebarItems={volunteerSidebarItems}
+						portalTitle="Volunteer Portal"
+						avatarLetter="V"
+						homePath="/volunteer-dashboard"
+					/>
 				</RoleRoute>
 			)}
 		/>
