@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const helpRequestSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
     location: { type: String, required: true },
     // New fields
     contactNumber: { type: String, required: true },
@@ -67,6 +68,7 @@ const helpRequestSchema = new mongoose.Schema(
 );
 
 // Index for faster queries
+helpRequestSchema.index({ userId: 1 });
 helpRequestSchema.index({ status: 1 });
 helpRequestSchema.index({ "assignments.ngoId": 1 });
 helpRequestSchema.index({ disasterType: 1 });

@@ -1,4 +1,5 @@
 import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
 import {
   createHelpRequest,
   getAllRequests,
@@ -8,6 +9,9 @@ import {
 } from "../controllers/HelpController.js";
 
 const router = express.Router();
+
+// Protect all routes below
+router.use(protect);
 
 // Create new help request
 router.post("/add", createHelpRequest);

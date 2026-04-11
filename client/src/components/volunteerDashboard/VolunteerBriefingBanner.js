@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { RadioTower, Siren, UsersRound, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   fetchAreaSituation,
   fetchHelpRequests,
@@ -7,6 +8,7 @@ import {
 } from "./volunteerDashboardApi";
 
 const VolunteerBriefingBanner = () => {
+  const navigate = useNavigate();
   const [situation, setSituation] = useState(null);
   const [helpRequests, setHelpRequests] = useState([]);
 
@@ -70,11 +72,19 @@ const VolunteerBriefingBanner = () => {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <button className="px-4 py-2 rounded-xl bg-white text-emerald-700 font-semibold hover:bg-emerald-50 transition inline-flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => navigate("/volunteer/alerts")}
+          className="px-4 py-2 rounded-xl bg-white text-emerald-700 font-semibold hover:bg-emerald-50 transition inline-flex items-center gap-2"
+        >
           <Siren className="w-4 h-4" />
           Join Priority Channel
         </button>
-        <button className="px-4 py-2 rounded-xl bg-emerald-800/60 border border-emerald-300/30 hover:bg-emerald-800 text-white font-semibold transition inline-flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => navigate("/volunteer/tasks")}
+          className="px-4 py-2 rounded-xl bg-emerald-800/60 border border-emerald-300/30 hover:bg-emerald-800 text-white font-semibold transition inline-flex items-center gap-2"
+        >
           <UsersRound className="w-4 h-4" />
           View Team Assignments
           <ArrowRight className="w-4 h-4" />

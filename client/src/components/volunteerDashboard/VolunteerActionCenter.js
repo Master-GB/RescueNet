@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Radio, Route, ClipboardCheck, Package, ArrowUpRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   fetchVolunteerProfile,
   updateVolunteerAvailability,
@@ -47,6 +48,7 @@ const nextAvailability = {
 };
 
 const VolunteerActionCenter = () => {
+  const navigate = useNavigate();
   const [availability, setAvailability] = useState("OFFLINE");
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -76,7 +78,19 @@ const VolunteerActionCenter = () => {
       return;
     }
 
-    setStatusMessage(`${actionId} connected. Backend endpoint for this action is not configured yet.`);
+    if (actionId === "route") {
+      navigate("/volunteer/map");
+      return;
+    }
+
+    if (actionId === "verify") {
+      navigate("/volunteer/tasks");
+      return;
+    }
+
+    if (actionId === "supplies") {
+      navigate("/volunteer/requests");
+    }
   };
 
   const actionLabel = useMemo(() => {
