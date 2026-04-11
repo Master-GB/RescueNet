@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { MapPin, Clock3, TriangleAlert, ArrowRight, X, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
-import { fetchHelpRequests, acceptHelpRequest } from "./volunteerDashboardApi";
+import { calculateDistance, formatDistance } from "../../utils/distanceUtils";
+import { fetchHelpRequests, acceptHelpRequest, fetchVolunteerProfile, getCurrentCoordinates } from "./volunteerDashboardApi";
 
 const HELP_OPTIONS = [
   { id: "medical", label: "Medical Assistance", icon: "🏥" },
@@ -35,6 +36,56 @@ const getTimeAgo = (timestamp) => {
 
   const diffHours = Math.floor(diffMinutes / 60);
   return `${diffHours} hr ago`;
+};
+
+const parseCoords = (raw) => {
+  if (!raw || typeof raw !== "string") return null;
+  const parts = raw.split(",").map((item) => Number(item.trim()));
+  if (parts.length !== 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return null;
+  return { lat: parts[0], lon: parts[1] };
+};
+
+const estimateEtaMinutes = (distanceKm) => {
+  if (distanceKm == null) return null;
+  const avgResponseSpeedKmh = 35;
+  return Math.max(1, Math.round((distanceKm / avgResponseSpeedKmh) * 60));
+};
+
+const skillKeywordsByDisaster = {
+  flood: ["water", "rescue", "boat", "first aid", "logistics"],
+  tsunami: ["rescue", "evacuation", "first aid", "medical"],
+  landslide: ["rescue", "medical", "logistics"],
+  cyclone: ["shelter", "logistics", "medical", "communication"],
+  other: ["general", "coordination", "logistics"],
+};
+
+const normalizeText = (value) => String(value || "").toLowerCase().trim();
+
+const getSkillMatchScore = (task, volunteerSkills) => {
+  const disaster = normalizeText(task?.disasterType);
+  const needed = skillKeywordsByDisaster[disaster] || skillKeywordsByDisaster.other;
+  const normalizedSkills = (volunteerSkills || []).map(normalizeText);
+  const matches = needed.filter((keyword) => normalizedSkills.some((skill) => skill.includes(keyword))).length;
+  return Math.min(25, matches * 8);
+};
+
+const getUrgencyScore = (urgency) => {
+  const normalized = normalizeText(urgency);
+  if (normalized === "high") return 35;
+  if (normalized === "medium") return 22;
+  return 12;
+};
+
+const getAvailabilityScore = (status) => {
+  const normalized = String(status || "").toUpperCase();
+  if (normalized === "AVAILABLE") return 20;
+  if (normalized === "BUSY") return 8;
+  return -25;
+};
+
+const getDistanceScore = (distanceKm) => {
+  if (distanceKm == null) return 0;
+  return Math.max(0, 20 - distanceKm * 1.5);
 };
 
 const isTaskClosedStatus = (status) => {
@@ -79,6 +130,8 @@ const VolunteerTaskBoard = () => {
   const [selectedHelpType, setSelectedHelpType] = useState(null);
   const [helpDescription, setHelpDescription] = useState("");
   const [contactNumber, setContactNumber] = useState("");
+  const [currentCoords, setCurrentCoords] = useState(null);
+  const [volunteerProfile, setVolunteerProfile] = useState(null);
 
   const loadTasks = async () => {
     try {
@@ -94,6 +147,61 @@ const VolunteerTaskBoard = () => {
   useEffect(() => {
     loadTasks();
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      try {
+        const data = await fetchVolunteerProfile();
+        if (isMounted) {
+          setVolunteerProfile(data?.profileData || data?.profile || null);
+        }
+      } catch {
+        if (isMounted) {
+          setVolunteerProfile(null);
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCurrentCoords = async () => {
+      const coords = await getCurrentCoordinates();
+      if (isMounted && coords) {
+        setCurrentCoords(coords);
+      }
+    };
+
+    loadCurrentCoords();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleOpenRoute = (task) => {
+    if (!task?.coords) {
+      alert("Route unavailable: task location coordinates are missing");
+      return;
+    }
+
+    const destination = `${task.coords.lat},${task.coords.lon}`;
+    const base = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+    const routeUrl = currentCoords
+      ? `${base}&origin=${encodeURIComponent(`${currentCoords.lat},${currentCoords.lon}`)}`
+      : base;
+
+    window.open(routeUrl, "_blank", "noopener,noreferrer");
+  };
 
   const handleOpenAcceptModal = (taskId) => {
     setModalTaskId(taskId);
@@ -150,6 +258,7 @@ const VolunteerTaskBoard = () => {
   const mappedTasks = useMemo(() => {
     return tasks.map((task) => {
       const priority = toPriority(task.urgency);
+      const taskCoords = parseCoords(task.realLocation) || parseCoords(task.location);
       const myAcceptance = (task.volunteerAcceptances || []).find((entry) => {
         const volunteerId =
           typeof entry?.volunteerId === "object" ? entry?.volunteerId?._id : entry?.volunteerId;
@@ -159,13 +268,16 @@ const VolunteerTaskBoard = () => {
       return {
         id: task._id,
         title: `${String(task.disasterType || "General").toUpperCase()} Support Request`,
+        disasterType: task.disasterType || "other",
         location: task.realLocation || task.location || "Location unavailable",
         eta: getTimeAgo(task.createdAt),
         priorityLabel: priority.label,
         badge: priority.badge,
         contactNumber: task.contactNumber || "Not provided",
         message: task.message || "No message provided",
+        urgencyRaw: task.urgency || "low",
         status: task.status || "pending",
+        coords: taskCoords,
         assignedVolunteerId: task.assignedVolunteerId || null,
         volunteerAcceptances: Array.isArray(task.volunteerAcceptances)
           ? task.volunteerAcceptances
@@ -173,9 +285,34 @@ const VolunteerTaskBoard = () => {
         mySupportType: myAcceptance?.helpType || "",
         mySupportDescription: myAcceptance?.helpDescription || "",
         mySupportContact: myAcceptance?.volunteerContactNumber || "",
+        distanceKm: currentCoords && taskCoords
+          ? calculateDistance(
+              currentCoords.lat,
+              currentCoords.lon,
+              taskCoords.lat,
+              taskCoords.lon,
+            )
+          : null,
+        smartScore: 0,
       };
-    });
-  }, [tasks, currentUserId]);
+    }).map((item) => {
+      const score =
+        getUrgencyScore(item.urgencyRaw) +
+        getDistanceScore(item.distanceKm) +
+        getSkillMatchScore(item, volunteerProfile?.skills || []) +
+        getAvailabilityScore(volunteerProfile?.availabilityStatus);
+
+      return {
+        ...item,
+        smartScore: Math.round(score),
+      };
+    }).sort((a, b) => b.smartScore - a.smartScore);
+  }, [tasks, currentUserId, currentCoords, volunteerProfile]);
+
+  const bestForYou = useMemo(
+    () => mappedTasks.filter((task) => !isTaskClosedStatus(task.status)).slice(0, 3),
+    [mappedTasks],
+  );
 
   if (loading) {
     return (
@@ -195,6 +332,22 @@ const VolunteerTaskBoard = () => {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+      {bestForYou.length > 0 && (
+        <div className="mb-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+          <p className="text-sm font-bold text-indigo-800">Best for you</p>
+          <div className="mt-2 space-y-2">
+            {bestForYou.map((task) => (
+              <div key={`best-${task.id}`} className="flex items-center justify-between gap-3 text-sm">
+                <p className="font-semibold text-slate-800 truncate">{task.title}</p>
+                <span className="inline-flex items-center rounded-full bg-indigo-100 border border-indigo-200 px-2 py-0.5 text-xs font-bold text-indigo-700">
+                  Match {task.smartScore}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4">
         {mappedTasks.map((task) => {
           const feedback = acceptFeedback[task.id];
@@ -308,6 +461,20 @@ const VolunteerTaskBoard = () => {
                 >
                   Open Requests
                 </button>
+                <button
+                  type="button"
+                  onClick={() => handleOpenRoute(task)}
+                  disabled={!task.coords}
+                  className="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 disabled:bg-slate-100 disabled:text-slate-400 text-indigo-700 text-sm font-semibold transition"
+                >
+                  Route & ETA
+                </button>
+              </div>
+
+              <div className="mt-2 text-xs text-slate-500">
+                {task.distanceKm != null
+                  ? `Distance ${formatDistance(task.distanceKm)} • ETA ${estimateEtaMinutes(task.distanceKm)} min`
+                  : "ETA available after location permission is granted"}
               </div>
             </div>
           );

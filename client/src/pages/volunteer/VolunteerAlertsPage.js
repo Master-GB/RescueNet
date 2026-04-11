@@ -1,10 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { BellRing, RefreshCcw, TriangleAlert } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { BellRing, MapPin, RefreshCcw, TriangleAlert } from "lucide-react";
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import VolunteerSectionHeader from "../../components/volunteerDashboard/VolunteerSectionHeader";
-import { fetchHelpRequests } from "../../components/volunteerDashboard/volunteerDashboardApi";
+import useAuth from "../../hooks/useAuth";
+import { useVolunteerContext } from "../../contexts/VolunteerContext";
+import { calculateDistance, formatDistance } from "../../utils/distanceUtils";
+import { fetchHelpRequests, getCurrentCoordinates } from "../../components/volunteerDashboard/volunteerDashboardApi";
 import { volunteerSidebarItems } from "./volunteerLayoutConfig";
 
 const DEFAULT_CENTER = [6.9271, 79.8612];
@@ -23,10 +26,51 @@ const parseCoords = (raw) => {
   return [parts[0], parts[1]];
 };
 
+const isAcceptedByCurrentVolunteer = (request, currentUserId) => {
+  if (!currentUserId) return false;
+
+  const assignedVolunteerId =
+    typeof request?.assignedVolunteerId === "object"
+      ? request?.assignedVolunteerId?._id
+      : request?.assignedVolunteerId;
+
+  if (assignedVolunteerId && String(assignedVolunteerId) === String(currentUserId)) {
+    return true;
+  }
+
+  return (request?.volunteerAcceptances || []).some((entry) => {
+    const volunteerId = typeof entry?.volunteerId === "object" ? entry?.volunteerId?._id : entry?.volunteerId;
+    return volunteerId && String(volunteerId) === String(currentUserId);
+  });
+};
+
 const VolunteerAlertsPage = () => {
+  const { user } = useAuth();
+  const { addNotification, notifications } = useVolunteerContext();
+  const currentUserId = user?._id || user?.id || null;
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastSyncedAt, setLastSyncedAt] = useState(null);
+  const [currentCoords, setCurrentCoords] = useState(null);
+  const previousAlertsRef = useRef(new Map());
+  const geofenceNotifiedRef = useRef(new Set());
+
+  const pushUiNotification = (payload) => {
+    addNotification({
+      ...payload,
+      createdAt: new Date().toISOString(),
+    });
+  };
+
+  const pushBrowserNotification = (title, body, tag) => {
+    if (!("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+
+    new Notification(title, {
+      body,
+      tag,
+    });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -66,9 +110,38 @@ const VolunteerAlertsPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadMyCoords = async () => {
+      const coords = await getCurrentCoordinates();
+      if (isMounted && coords) {
+        setCurrentCoords(coords);
+      }
+    };
+
+    loadMyCoords();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const alerts = useMemo(() => {
     return requests
-      .filter((item) => item.status === "pending" || item.urgency === "high")
+      .filter(
+        (item) =>
+          item.status === "pending" ||
+          item.urgency === "high" ||
+          isAcceptedByCurrentVolunteer(item, currentUserId),
+      )
       .map((item) => {
         const coords = parseCoords(item.realLocation) || parseCoords(item.location);
 
@@ -79,10 +152,83 @@ const VolunteerAlertsPage = () => {
           status: item.status || "pending",
           urgency: item.urgency || "medium",
           createdAt: item.createdAt,
+          assignedVolunteerId: item.assignedVolunteerId || null,
+          acceptedByCurrentVolunteer: (item.volunteerAcceptances || []).some((entry) => {
+            const volunteerId = typeof entry?.volunteerId === "object" ? entry?.volunteerId?._id : entry?.volunteerId;
+            return currentUserId && volunteerId && String(volunteerId) === String(currentUserId);
+          }),
           coords,
         };
       });
-  }, [requests]);
+  }, [requests, currentUserId]);
+
+  useEffect(() => {
+    const prevMap = previousAlertsRef.current;
+    const nextMap = new Map();
+
+    alerts.forEach((alert) => {
+      const prev = prevMap.get(alert.id);
+      nextMap.set(alert.id, {
+        status: alert.status,
+        urgency: alert.urgency,
+        acceptedByCurrentVolunteer: alert.acceptedByCurrentVolunteer,
+      });
+
+      const isNewAlert = !prev;
+      const isPriority = alert.urgency === "high";
+
+      if (isNewAlert && isPriority) {
+        pushUiNotification({
+          type: "priority",
+          title: "Priority Alert",
+          message: `${alert.title} at ${alert.location}`,
+        });
+        pushBrowserNotification("Priority Alert", `${alert.title} near ${alert.location}`, `priority-${alert.id}`);
+      }
+
+      if (currentCoords && Array.isArray(alert.coords)) {
+        const distanceKm = calculateDistance(currentCoords.lat, currentCoords.lon, alert.coords[0], alert.coords[1]);
+        const geofenceRadiusKm = 5;
+        const geofenceKey = `${alert.id}-${Math.floor(distanceKm)}`;
+
+        if (distanceKm <= geofenceRadiusKm && !geofenceNotifiedRef.current.has(geofenceKey)) {
+          geofenceNotifiedRef.current.add(geofenceKey);
+          const distanceLabel = formatDistance(distanceKm);
+          pushUiNotification({
+            type: "geofence",
+            title: "Nearby Incident",
+            message: `${alert.title} is ${distanceLabel} away`,
+          });
+          pushBrowserNotification("Nearby Incident", `${alert.title} is ${distanceLabel} from your location`, `geo-${alert.id}`);
+        }
+      }
+
+      if (prev) {
+        const statusChanged = prev.status !== alert.status;
+        const volunteerLostTask = prev.acceptedByCurrentVolunteer && !alert.acceptedByCurrentVolunteer;
+
+        if (statusChanged && alert.acceptedByCurrentVolunteer) {
+          pushUiNotification({
+            type: "update",
+            title: "Task Updated",
+            message: `${alert.title} status changed to ${alert.status}`,
+          });
+          pushBrowserNotification("Task Updated", `${alert.title} status is now ${alert.status}`, `update-${alert.id}`);
+        }
+
+        if (volunteerLostTask) {
+          pushUiNotification({
+            type: "reassigned",
+            title: "Task Reassigned",
+            message: `${alert.title} is no longer assigned to you`,
+          });
+          pushBrowserNotification("Task Reassigned", `${alert.title} was reassigned`, `reassigned-${alert.id}`);
+        }
+      }
+    });
+
+    previousAlertsRef.current = nextMap;
+  }, [alerts, currentCoords]);
 
   const mapAlerts = useMemo(
     () => alerts.filter((alert) => Array.isArray(alert.coords)),
@@ -114,6 +260,31 @@ const VolunteerAlertsPage = () => {
             Refresh
           </button>
         </div>
+
+        {notifications.length > 0 && (
+          <div className="space-y-2">
+            {notifications.slice(0, 4).map((item) => (
+              <div
+                key={item.id}
+                className={`rounded-xl border p-3 text-sm ${
+                  item.type === "priority"
+                    ? "bg-red-50 border-red-200 text-red-800"
+                    : item.type === "geofence"
+                      ? "bg-amber-50 border-amber-200 text-amber-800"
+                      : item.type === "reassigned"
+                        ? "bg-slate-100 border-slate-300 text-slate-800"
+                        : "bg-blue-50 border-blue-200 text-blue-800"
+                }`}
+              >
+                <div className="font-semibold inline-flex items-center gap-2">
+                  {item.type === "geofence" ? <MapPin className="w-4 h-4" /> : <BellRing className="w-4 h-4" />}
+                  {item.title}
+                </div>
+                <p className="mt-1">{item.message}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-5 text-slate-500">Loading alerts...</div>

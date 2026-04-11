@@ -88,6 +88,10 @@ export const fetchVolunteerProfile = async () => {
   return apiRequest("/api/volunteer/profile-get");
 };
 
+export const fetchTeamPresence = async () => {
+  return apiRequest("/api/volunteer/team-presence");
+};
+
 export const updateVolunteerAvailability = async (availabilityStatus) => {
   return apiRequest("/api/volunteer/profile/status-update", {
     method: "PATCH",
