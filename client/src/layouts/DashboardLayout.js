@@ -32,6 +32,7 @@ const DashboardLayout = ({
   avatarLetter = "C",
   homePath = "/citizen-dashboard",
   searchPlaceholder = "Search shelters, alerts, requests...",
+  themeColor = "green",
 }) => {
   const location = useLocation();
   const { logout } = useAuth();
@@ -77,7 +78,7 @@ const DashboardLayout = ({
         <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Left */}
           <Link to={homePath} className="flex items-center gap-3 min-w-fit transition-opacity">
-            <div className="w-11 h-11 rounded-2xl bg-green-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+            <div className={`w-11 h-11 rounded-2xl ${themeColor === "teal" ? "bg-teal-600" : "bg-green-600"} text-white flex items-center justify-center font-bold text-lg shadow-sm`}>
               R
             </div>
             <div>
@@ -95,7 +96,7 @@ const DashboardLayout = ({
               <input
                 type="text"
                 placeholder={searchPlaceholder}
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                className={`w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${themeColor === "teal" ? "focus:ring-teal-500 focus:border-teal-500" : "focus:ring-green-500 focus:border-green-500"} text-sm`}
               />
             </div>
           </div>
@@ -107,7 +108,7 @@ const DashboardLayout = ({
               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
             </button>
 
-            <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase">
+            <div className={`w-11 h-11 rounded-full ${themeColor === "teal" ? "bg-teal-100 text-teal-700 border-teal-200" : "bg-green-100 text-green-700 border-green-200"} flex items-center justify-center font-bold border uppercase`}>
               {avatarLetter}
             </div>
 
@@ -138,8 +139,8 @@ const DashboardLayout = ({
                 to={item.path}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition font-medium ${
                   isActive
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "text-white hover:bg-green-600 hover:text-white"
+                    ? `${themeColor === "teal" ? "bg-teal-600" : "bg-green-600"} text-white shadow-sm`
+                    : `text-white ${themeColor === "teal" ? "hover:bg-teal-600" : "hover:bg-green-600"} hover:text-white`
                 }`}
               >
                 <Icon className="w-5 h-5" />

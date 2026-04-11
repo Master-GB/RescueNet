@@ -1,9 +1,10 @@
 import React from "react";
-import { LayoutDashboard, Landmark } from "lucide-react";
+import { LayoutDashboard, Landmark, UserCircle } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-const ngoSidebarItems = [
+export const ngoSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/ngo-dashboard" },
+  { name: "Profile", icon: UserCircle, path: "/ngo/profile" },
 ];
 
 export default function NgoDashboard() {
@@ -14,6 +15,7 @@ export default function NgoDashboard() {
       avatarLetter="N"
       homePath="/ngo-dashboard"
       searchPlaceholder="Search assigned requests, districts, and resources..."
+      themeColor="teal"
     >
       <section className="rounded-2xl bg-surface-container-low p-6 ghost-outline">
         <div className="flex items-start gap-3">

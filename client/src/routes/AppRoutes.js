@@ -24,6 +24,8 @@ import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
 import NgoDashboard from "../pages/ngo/NgoDashboard";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
+import NgoProfilePage from "../pages/ngo/NgoProfilePage";
+import { ngoSidebarItems } from "../pages/ngo/NgoDashboard";
 
 const AppRoutes = () => {
   return (
@@ -174,6 +176,22 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoDashboard />
+          </RoleRoute>
+        )}
+      />
+      <Route
+        path="/ngo/profile"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={ngoSidebarItems}
+              portalTitle="NGO Portal"
+              avatarLetter="N"
+              homePath="/ngo-dashboard"
+              themeColor="teal"
+            >
+              <NgoProfilePage />
+            </DashboardLayout>
           </RoleRoute>
         )}
       />

@@ -29,3 +29,18 @@ export const createNgoProfile = async (payload) => {
   const response = await apiClient.post("/api/ngo/profile-create", payload);
   return response.data;
 };
+
+export const getNgoProfile = async () => {
+  const response = await apiClient.get("/api/ngo/profile-get");
+  return response.data;
+};
+
+export const updateNgoProfile = async (payload) => {
+  const response = await apiClient.patch("/api/ngo/profile-update", payload);
+  return response.data;
+};
+
+export const deleteNgoProfile = async () => {
+  const response = await apiClient.delete("/api/ngo/profile-delete");
+  return response.data;
+};
