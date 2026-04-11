@@ -121,4 +121,13 @@ export const contactActionsService = {
   }
 };
 
+// Emergency Chat Service
+export const emergencyChatService = {
+  // Get chat history by service type
+  getMessagesByService: async (serviceType) => {
+    const response = await apiClient.get(`/api/emergency/messages/${serviceType}`);
+    return response.data;
+  }
+};
+
 export default emergencyContactService;

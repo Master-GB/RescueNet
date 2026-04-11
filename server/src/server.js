@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import { connectDB } from "./config/db.js";
 import { registerShelterSocket } from "./sockets/shelter.socket.js";
 import { registerVolunteerSocket } from "./sockets/volunteer.socket.js";
+import { registerEmergencySocket } from "./sockets/emergency.socket.js";
 
 // Routes
 import adminHelpRoutes from "./routes/adminHelpRoutes.js";
@@ -32,6 +33,7 @@ import socketRoutes from "./routes/socketRoutes.js";
 import socketService from './services/socketService.js';
 import campaignRoutes from "./routes/campaignRoutes.js";
 import donationRoutes from "./routes/donationRoutes.js";
+import emergencyMessageRoutes from "./routes/emergencyMessageRoutes.js";
 
 if (!process.env.JWT_SECRET) {
   if (process.env.NODE_ENV === "test") {
@@ -55,6 +57,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [ CLIENT_URL],
+    origin: ["http://localhost:3000", "http://localhost:5173", CLIENT_URL],
     credentials: true,
   },
 });
@@ -62,6 +65,7 @@ const io = new Server(server, {
 registerShelterSocket(io);
 registerVolunteerSocket(io);
 socketService.initialize(io);
+registerEmergencySocket(io);
 
 // ✅ make io available in controllers
 app.use("/api/shelters", (req, res, next) => {
@@ -103,6 +107,7 @@ app.use("/api/missing-persons", missingPersonRoutes);
 app.use("/api/socket", socketRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/donations", donationRoutes);
+app.use("/api/emergency", emergencyMessageRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
