@@ -313,6 +313,37 @@ export async function updateHelpRequest(req, res) {
       });
     }
 
+    // Volunteers can update only status for tasks they accepted but do not own.
+    if (isVolunteer && !isOwner && !isAdmin) {
+      const restrictedFields = [
+        "name",
+        "location",
+        "disasterType",
+        "message",
+        "contactNumber",
+        "realLocation",
+        "urgency",
+        "voiceMessage",
+        "images",
+        "userId",
+      ];
+
+      const hasRestrictedUpdate = restrictedFields.some((field) => req.body[field] !== undefined);
+      if (hasRestrictedUpdate) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied: Volunteers can only update task status for accepted tasks",
+        });
+      }
+
+      if (req.body.status && !["assigned", "in-progress", "resolved"].includes(req.body.status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status update for volunteer",
+        });
+      }
+    }
+
     // Update fields if provided
     if (name) helpRequest.name = name;
     if (location) helpRequest.location = location;
@@ -363,7 +394,7 @@ export async function deleteHelpRequest(req, res) {
       return res.status(404).json({ message: "Help request not found" });
     }
 
-    // Authorization check: Ensure user owns the request or is an admin
+    // Authorization check: only owner or admin can delete a request
     const isOwner = helpRequest.userId && helpRequest.userId.toString() === req.user._id.toString();
     const isAdmin = req.user.role === "ADMIN";
 
