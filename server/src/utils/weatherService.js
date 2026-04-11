@@ -4,6 +4,7 @@ import axios from "axios";
 // const UNITS = (process.env.WEATHER_UNITS || "metric").toLowerCase(); // metric | imperial
 
 // Providers and Units are now read inside the function to allow dynamic changes (useful for testing)
+//name mismatch
 
 const codeMap = {
   0: "Clear",
