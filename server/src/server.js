@@ -117,4 +117,14 @@ if (process.env.NODE_ENV !== "test") {
     });
 }
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "An unexpected error occurred",
+    error: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
+
 export default app;
