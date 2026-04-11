@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
-import { getCitizenProfile, updateCitizenProfile, deleteCitizenProfile } from "../../services/profileService";
+import { getCitizenProfile, updateCitizenProfile, deleteCitizenProfile, updateAccountProfileImage } from "../../services/profileService";
+import ProfileAvatar from "../../components/common/ProfileAvatar";
+import { PROFILE_IMAGE_ACCEPT, PROFILE_IMAGE_HELP_TEXT, validateProfileImageFile } from "../../utils/profileImageValidation";
 import {
   User, Mail, Phone, MapPin, Home, AlertTriangle, Edit2, Save, X,
   Shield, Calendar, Clock, CheckCircle, Trash2, ChevronRight, Loader2,
@@ -18,6 +20,9 @@ const CitizenProfilePage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profileImagePreviewUrl, setProfileImagePreviewUrl] = useState("");
+  const [profileImageSaving, setProfileImageSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -46,6 +51,89 @@ const CitizenProfilePage = () => {
       });
     }
   }, [profile]);
+
+  useEffect(() => {
+    return () => {
+      if (profileImagePreviewUrl) {
+        URL.revokeObjectURL(profileImagePreviewUrl);
+      }
+    };
+  }, [profileImagePreviewUrl]);
+
+  const resetProfileImageSelection = () => {
+    if (profileImagePreviewUrl) {
+      URL.revokeObjectURL(profileImagePreviewUrl);
+    }
+
+    setProfileImageFile(null);
+    setProfileImagePreviewUrl("");
+  };
+
+  const handleProfileImageSelection = (event) => {
+    const selectedFile = event.target.files?.[0];
+
+    if (!selectedFile) {
+      resetProfileImageSelection();
+      return;
+    }
+
+    const validationError = validateProfileImageFile(selectedFile);
+    if (validationError) {
+      resetProfileImageSelection();
+      setError(validationError);
+      return;
+    }
+
+    if (profileImagePreviewUrl) {
+      URL.revokeObjectURL(profileImagePreviewUrl);
+    }
+
+    setProfileImageFile(selectedFile);
+    setProfileImagePreviewUrl(URL.createObjectURL(selectedFile));
+    setError("");
+    setSuccess("");
+  };
+
+  const handleProfileImageUpload = async () => {
+    if (!(profileImageFile instanceof File)) {
+      setError("Select an image before uploading.");
+      return;
+    }
+
+    setProfileImageSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await updateAccountProfileImage({ file: profileImageFile });
+      await refreshSession();
+      resetProfileImageSelection();
+      setSuccess("Profile image updated successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || requestError.message || "Failed to update profile image");
+    } finally {
+      setProfileImageSaving(false);
+    }
+  };
+
+  const handleProfileImageRemove = async () => {
+    setProfileImageSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await updateAccountProfileImage({ remove: true });
+      await refreshSession();
+      resetProfileImageSelection();
+      setSuccess("Profile image removed successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || requestError.message || "Failed to remove profile image");
+    } finally {
+      setProfileImageSaving(false);
+    }
+  };
 
   const handleInputChange = (field, value) => {
     if (field.includes(".")) {
@@ -98,6 +186,7 @@ const CitizenProfilePage = () => {
       });
     }
     setIsEditing(false);
+    resetProfileImageSelection();
     setError("");
     setSuccess("");
   };
@@ -218,14 +307,58 @@ const CitizenProfilePage = () => {
               {/* Profile Header */}
               <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white">
                 <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <UserCircle className="w-10 h-10 text-white" />
-                  </div>
+                  <ProfileAvatar
+                    imageUrl={profileImagePreviewUrl || user?.profileImageUrl || ""}
+                    fallbackText={user?.name?.trim()?.slice(0, 1) || "C"}
+                    alt="Citizen profile image"
+                    wrapperClassName="w-20 h-20"
+                    imageClassName="w-20 h-20 rounded-full object-cover border border-white/40"
+                    fallbackClassName="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold text-white"
+                    fallbackIconClassName="w-9 h-9 text-white"
+                  />
                   <div>
                     <h2 className="text-2xl font-bold">{user.name}</h2>
                     <p className="text-green-100">{user.role}</p>
                   </div>
                 </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <label className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30 cursor-pointer">
+                    <Camera className="w-4 h-4" />
+                    Choose Image
+                    <input
+                      type="file"
+                      accept={PROFILE_IMAGE_ACCEPT}
+                      onChange={handleProfileImageSelection}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={handleProfileImageUpload}
+                    disabled={profileImageSaving || !(profileImageFile instanceof File)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {profileImageSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Upload
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleProfileImageRemove}
+                    disabled={profileImageSaving}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500/40 disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2"
+                  >
+                    {profileImageSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Remove Current Photo
+                  </button>
+                </div>
+
+                <p className="mt-2 text-xs text-green-100">{PROFILE_IMAGE_HELP_TEXT}</p>
+                {profileImageFile ? (
+                  <p className="mt-1 text-xs text-white/90">Selected: {profileImageFile.name}</p>
+                ) : null}
               </div>
               
               {/* Account Information */}

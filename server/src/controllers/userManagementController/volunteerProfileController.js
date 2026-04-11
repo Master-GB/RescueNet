@@ -2,6 +2,7 @@ import VolunteerProfile from "../../models/userProfileModel/VolunteerProfile.js"
 import User from "../../models/user.js";
 import Location from "../../models/Location.js";
 import HelpRequest from "../../models/HelpRequest.js";
+import { destroyCloudinaryAssetByPublicId } from "../../services/cloudinaryAssetService.js";
 
 const parseCoords = (raw) => {
   if (!raw || typeof raw !== "string") return null;
@@ -184,6 +185,17 @@ export const deleteVolunteerProfile = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    let cleanupWarning = "";
+    if (deletedUser.profileImagePublicId) {
+      const cleanupResult = await destroyCloudinaryAssetByPublicId(deletedUser.profileImagePublicId);
+      if (!cleanupResult.success) {
+        cleanupWarning = "Volunteer account deleted, but failed to remove profile image from Cloudinary.";
+        console.warn(
+          `[CloudinaryCleanup] Failed for volunteer user ${deletedUser._id}: ${cleanupResult.reason}`,
+        );
+      }
+    }
+
      const deletedProfile = await VolunteerProfile.findOneAndDelete({
       userId: req.user._id,
     });
@@ -202,12 +214,18 @@ export const deleteVolunteerProfile = async (req, res) => {
       sameSite: isProd ? "none" : "lax",
     });
 
+    const responsePayload = {
+      success: true,
+      message: "Volunteer profile deleted successfully",
+    };
+
+    if (cleanupWarning) {
+      responsePayload.warning = cleanupWarning;
+    }
+
     return res
       .status(200)
-      .json({
-        success: true,
-        message: "Volunteer profile deleted successfully",
-      });
+      .json(responsePayload);
   } catch (error) {
     return res
       .status(500)

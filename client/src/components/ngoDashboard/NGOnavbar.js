@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { User } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 import NGOstatuspill from './NGOstatuspill';
 import NGOprofilepop from './NGOprofilepop';
+import useAuth from '../../hooks/useAuth';
+import ProfileAvatar from '../common/ProfileAvatar';
 
 const NGOnavbar = ({ ngoData, handleStatusToggle }) => {
   const [profileOpen, setProfileOpen] = useState(false);
+  const { user } = useAuth();
+
+  const avatarFallbackLetter = useMemo(() => {
+    const letter = typeof user?.name === 'string' ? user.name.trim().slice(0, 1) : '';
+    return letter ? letter.toUpperCase() : 'N';
+  }, [user?.name]);
 
   return (
     <nav className="sticky top-20 z-[1300] rounded-2xl border border-auth-border bg-auth-surface px-5 py-4 shadow-sm">
@@ -21,13 +28,19 @@ const NGOnavbar = ({ ngoData, handleStatusToggle }) => {
           <NGOstatuspill status={ngoData?.availabilityStatus} />
 
           <button
-            className="rounded-full border border-auth-border bg-auth-bg p-2 text-auth-text-soft transition hover:text-auth-text"
+            className="rounded-full border border-auth-border bg-auth-bg p-1 text-auth-text-soft transition hover:text-auth-text"
             aria-label="Profile"
             onClick={() => setProfileOpen(!profileOpen)}
           >
-            <div className="flex items-center space-x-2">
-               <User size={20} className="text-primary"/>
-            </div>
+            <ProfileAvatar
+              imageUrl={user?.profileImageUrl}
+              fallbackText={avatarFallbackLetter}
+              alt="NGO profile image"
+              wrapperClassName="h-8 w-8"
+              imageClassName="h-8 w-8 rounded-full object-cover border border-auth-border"
+              fallbackClassName="h-8 w-8 rounded-full bg-auth-bg border border-auth-border text-primary flex items-center justify-center text-xs font-bold"
+              fallbackIconClassName="h-4 w-4 text-primary"
+            />
           </button>
 
           {/* Profile Popover */}

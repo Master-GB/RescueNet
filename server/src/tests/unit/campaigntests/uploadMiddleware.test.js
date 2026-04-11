@@ -31,7 +31,11 @@ process.env.CLOUDINARY_API_KEY = "test_key";
 process.env.CLOUDINARY_API_SECRET = "test_secret";
 
 // ── import after mocks ──
-const { upload } = await import("../../../middleware/uploadMiddleware.js");
+const {
+  upload,
+  uploadCampaignImage,
+  handleProfileImageUpload,
+} = await import("../../../middleware/uploadMiddleware.js");
 
 describe("Upload Middleware - Unit Tests", () => {
   test("should call cloudinary.config with env variables", () => {
@@ -47,6 +51,16 @@ describe("Upload Middleware - Unit Tests", () => {
       expect.objectContaining({
         params: expect.objectContaining({
           folder: "rescuenet_donations",
+        }),
+      })
+    );
+  });
+
+  test("should create CloudinaryStorage for profile images", () => {
+    expect(CloudinaryStorageMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: expect.objectContaining({
+          folder: "rescuenet_profiles",
         }),
       })
     );
@@ -70,5 +84,7 @@ describe("Upload Middleware - Unit Tests", () => {
 
   test("should export an upload object", () => {
     expect(upload).toBeDefined();
+    expect(uploadCampaignImage).toBeDefined();
+    expect(handleProfileImageUpload).toBeDefined();
   });
 });

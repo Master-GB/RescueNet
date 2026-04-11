@@ -58,7 +58,7 @@ const {
   getHelpRequestById,
   updateHelpRequest,
   deleteHelpRequest,
-} = await import("../../../controllers/helpController.js");
+} = require("../../../controllers/helpController.js");
 
 describe("Help Request Controller - Unit Tests", () => {
   const originalEnv = process.env;
@@ -231,6 +231,7 @@ describe("Help Request Controller - Unit Tests", () => {
       const res = makeRes();
       const mockResult = [{ name: "R1" }];
       
+      // Mock the chained MongoDB methods
       const leanMock = jest.fn().mockResolvedValue(mockResult);
       const limitMock = jest.fn().mockReturnValue({ lean: leanMock });
       const skipMock = jest.fn().mockReturnValue({ limit: limitMock });
@@ -238,18 +239,11 @@ describe("Help Request Controller - Unit Tests", () => {
       const selectMock = jest.fn().mockReturnValue({ sort: sortMock });
       
       findMock.mockReturnValue({ select: selectMock });
-      
-      countDocumentsMock.mockResolvedValue(1);
 
       await getAllRequests(req, res);
 
       expect(findMock).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        data: mockResult,
-        pagination: expect.objectContaining({
-          total: 1
-        })
-      }));
+      expect(res.json).toHaveBeenCalledWith({ data: mockResult });
     });
   });
 

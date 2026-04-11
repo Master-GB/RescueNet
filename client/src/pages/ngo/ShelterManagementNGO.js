@@ -5,7 +5,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import locationService from '../../services/locationService.js';
-import DashboardLayout from "../../layouts/DashboardLayout";
 import ShelterCreationModal from "../../components/admin/ShelterCreationModal";
 import ShelterDeleteModal from "../../components/admin/ShelterDeleteModal";
 import ShelterUpdateModal from "../../components/admin/ShelterUpdateModal";

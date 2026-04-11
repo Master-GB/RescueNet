@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { useVolunteerContext } from "../contexts/VolunteerContext";
 import AuthCookie from "../components/authentication/AuthCookie";
+import ProfileAvatar from "../components/common/ProfileAvatar";
 import {
   LayoutDashboard,
   House,
@@ -17,6 +18,8 @@ import {
   SearchIcon,
   X,
 } from "lucide-react";
+import RNlogodarkthemed from "../assets/images/RN-darkthemed.png";
+import RNlogo from "../assets/images/RNlogo2.png";
 
 const defaultSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/citizen-dashboard" },
@@ -39,7 +42,8 @@ const DashboardLayout = ({
   contentClassName = "",
 }) => {
   const location = useLocation();
-  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
   const {
     notifications,
     markNotificationRead,
@@ -49,7 +53,26 @@ const DashboardLayout = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchInputRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
+
+  const userProfileImageUrl = useMemo(() => user?.profileImageUrl || "", [user?.profileImageUrl]);
+
+  const avatarFallbackLetter = useMemo(() => {
+    const explicitLetter = typeof avatarLetter === "string" ? avatarLetter.trim() : "";
+    if (explicitLetter) {
+      return explicitLetter.slice(0, 1).toUpperCase();
+    }
+
+    const derivedLetter = typeof user?.name === "string" ? user.name.trim().slice(0, 1) : "";
+    return derivedLetter ? derivedLetter.toUpperCase() : "U";
+  }, [avatarLetter, user?.name]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -94,9 +117,151 @@ const DashboardLayout = ({
     setShowLogoutConfirm(false);
   };
 
-  const isVolunteerPortal = portalTitle === "Volunteer Portal";
-  const unreadCount = (notifications || []).filter((item) => !item.read).length;
-  const notificationItems = (notifications || []).slice(0, 8);
+  // Search functionality
+  const performSearch = useCallback(async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // Search across multiple endpoints
+      const [sheltersResponse, helpRequestsResponse, updatesResponse] = await Promise.all([
+        fetch(`/api/shelters/search?q=${encodeURIComponent(query)}`),
+        fetch(`/api/help-requests/search?q=${encodeURIComponent(query)}`),
+        fetch(`/api/disasters/updates/search?q=${encodeURIComponent(query)}`)
+      ]);
+
+      const results = [];
+
+      // Process shelters
+      if (sheltersResponse.ok) {
+        const sheltersData = await sheltersResponse.json();
+        if (sheltersData.success && sheltersData.data) {
+          sheltersData.data.slice(0, 3).forEach(shelter => {
+            results.push({
+              id: `shelter-${shelter._id}`,
+              type: 'shelter',
+              title: shelter.name,
+              subtitle: shelter.address?.city || 'Location unknown',
+              icon: House,
+              iconColor: 'text-blue-600',
+              bgColor: 'bg-blue-50',
+              borderColor: 'border-blue-200',
+              path: `/citizen/shelters`,
+              data: shelter
+            });
+          });
+        }
+      }
+
+      // Process help requests
+      if (helpRequestsResponse.ok) {
+        const helpData = await helpRequestsResponse.json();
+        if (helpData.success && helpData.data) {
+          helpData.data.slice(0, 3).forEach(request => {
+            results.push({
+              id: `request-${request._id}`,
+              type: 'help-request',
+              title: request.title || 'Help Request',
+              subtitle: request.description?.substring(0, 60) + '...',
+              icon: HandHelping,
+              iconColor: 'text-red-600',
+              bgColor: 'bg-red-50',
+              borderColor: 'border-red-200',
+              path: `/citizen/help-request`,
+              data: request
+            });
+          });
+        }
+      }
+
+      // Process disaster updates
+      if (updatesResponse.ok) {
+        const updatesData = await updatesResponse.json();
+        if (updatesData.success && updatesData.data) {
+          const allUpdates = [
+            ...(updatesData.data.reports || []),
+            ...(updatesData.data.disasters || [])
+          ];
+          allUpdates.slice(0, 3).forEach(update => {
+            results.push({
+              id: `update-${update.id}`,
+              type: update.kind || 'report',
+              title: update.title,
+              subtitle: update.date,
+              icon: update.kind === 'disaster' ? TriangleAlert : Search,
+              iconColor: update.kind === 'disaster' ? 'text-amber-600' : 'text-green-600',
+              bgColor: update.kind === 'disaster' ? 'bg-amber-50' : 'bg-green-50',
+              borderColor: update.kind === 'disaster' ? 'border-amber-200' : 'border-green-200',
+              path: update.url,
+              isExternal: true,
+              data: update
+            });
+          });
+        }
+      }
+
+      setSearchResults(results);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  // Debounced search
+  const handleSearchChange = useCallback((e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout for debounced search
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  }, [performSearch]);
+
+  // Handle result selection
+  const handleResultClick = (result) => {
+    setShowSearchResults(false);
+    setSearchQuery("");
+    
+    if (result.isExternal) {
+      window.open(result.path, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(result.path);
+    }
+  };
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-200">
@@ -105,94 +270,107 @@ const DashboardLayout = ({
         <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Left */}
           <Link to={homePath} className="flex items-center gap-3 min-w-fit transition-opacity">
-            <div className="w-11 h-11 rounded-2xl bg-green-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-              R
-            </div>
+          {/* added square logo */}
+            <img
+              src={RNlogo}
+              alt="RescueNet logo"
+              className="w-11 h-11 object-cover shadow-sm"
+            />
             <div>
-              <h1 className="text-xl font-extrabold text-white">
-                RescueNet
-              </h1>
+              {/* text logo image */}
+              <img 
+                src={RNlogodarkthemed} 
+                alt="RescueNet" 
+                className="h-5 w-auto object-contain"
+              />
               <p className="text-xs text-gray-300">{portalTitle}</p>
             </div>
           </Link>
 
           {/* Search bar */}
-          <div className="hidden md:flex flex-1 max-w-2xl mx-6">
+          <div className="hidden md:flex flex-1 max-w-2xl mx-6" ref={searchInputRef}>
             <div className="w-full relative">
-              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
                 placeholder={searchPlaceholder}
                 className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
               />
+              
+              {/* Search Results Dropdown */}
+              {showSearchResults && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 max-h-96 overflow-y-auto z-[1300]">
+                  {isSearching ? (
+                    <div className="flex items-center justify-center py-8 text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mr-3"></div>
+                      <span>Searching...</span>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-2">
+                      {searchResults.map((result) => {
+                        const Icon = result.icon;
+                        return (
+                          <button
+                            key={result.id}
+                            onClick={() => handleResultClick(result)}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left group"
+                          >
+                            <div className={`w-10 h-10 rounded-xl ${result.bgColor} ${result.borderColor} border flex items-center justify-center flex-shrink-0`}>
+                              <Icon className={`w-5 h-5 ${result.iconColor}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-gray-900 group-hover:text-green-600 transition-colors truncate">
+                                {result.title}
+                              </div>
+                              <div className="text-sm text-gray-500 truncate">
+                                {result.subtitle}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${result.bgColor} ${result.iconColor}`}>
+                                {result.type === 'shelter' ? 'Shelter' : 
+                                 result.type === 'help-request' ? 'Help Request' :
+                                 result.type === 'disaster' ? 'Disaster' : 'Report'}
+                              </span>
+                              {result.isExternal && (
+                                <div className="w-4 h-4 text-gray-400">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : searchQuery.trim() ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                      <SearchIcon className="w-8 h-8 mb-3 text-gray-300" />
+                      <p className="text-sm font-medium">No results found</p>
+                      <p className="text-xs text-gray-400 mt-1">Try searching for shelters, help requests, or updates</p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right */}
           <div className="flex items-center gap-6">
-            <button
-              type="button"
-              onClick={() => setShowNotifications((prev) => !prev)}
-              className="relative w-11 h-11 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition flex items-center justify-center"
-            >
-              <Bell className="w-5 h-5 text-white" />
-              {isVolunteerPortal && unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </button>
-
-            {showNotifications && isVolunteerPortal && (
-              <div className="absolute top-16 right-28 w-[360px] max-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl z-[1300]">
-                <div className="p-3 border-b border-slate-200 flex items-center justify-between">
-                  <h4 className="font-bold text-slate-800">Notifications</h4>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={markAllNotificationsRead}
-                      className="text-xs font-semibold text-blue-700 hover:text-blue-800"
-                    >
-                      Mark all read
-                    </button>
-                    <button
-                      type="button"
-                      onClick={clearNotifications}
-                      className="text-xs font-semibold text-slate-600 hover:text-slate-800"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-
-                <div className="max-h-[360px] overflow-y-auto">
-                  {notificationItems.length === 0 ? (
-                    <p className="p-4 text-sm text-slate-500">No notifications yet.</p>
-                  ) : (
-                    notificationItems.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => markNotificationRead(item.id)}
-                        className={`w-full text-left p-3 border-b border-slate-100 hover:bg-slate-50 ${
-                          item.read ? "bg-white" : "bg-blue-50"
-                        }`}
-                      >
-                        <p className="text-sm font-semibold text-slate-800">{item.title}</p>
-                        <p className="text-xs text-slate-600 mt-1">{item.message}</p>
-                        <p className="text-[11px] text-slate-500 mt-1">
-                          {new Date(item.createdAt).toLocaleTimeString()}
-                        </p>
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase">
-              {avatarLetter}
-            </div>
+            
+            {/* display profile picture */}
+            <ProfileAvatar
+              imageUrl={userProfileImageUrl}
+              fallbackText={avatarFallbackLetter}
+              alt="Account profile image"
+              wrapperClassName="w-11 h-11"
+              imageClassName="w-11 h-11 rounded-full object-cover border"
+              fallbackClassName="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase"
+              fallbackIconClassName="w-5 h-5 text-green-700"
+            />
 
             {/* Clock Widget */}
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition min-w-[70px]">
@@ -200,7 +378,6 @@ const DashboardLayout = ({
                 <span className="text-white font-semibold text-xl font-mono min-w-[70px]">{formatTime(currentTime)}</span>
               </div>
             </div>
-
           </div>
         </div>
       </header>

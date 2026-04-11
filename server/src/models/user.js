@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema(
       enum: ["ADMIN", "VOLUNTEER", "NGO", "CITIZEN"],
       default: "CITIZEN",
     },
+    profileImageUrl: {
+      type: String,
+      default: null,
+    },
+    profileImagePublicId: {
+      type: String,
+      default: null,
+    },
     verifyOtp: {
       type: String,
       default: "",
