@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const helpRequestSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
     location: { type: String, required: true },
     // New fields
     contactNumber: { type: String, required: true },
@@ -60,6 +61,24 @@ const helpRequestSchema = new mongoose.Schema(
     adminNotes: { type: String },
     rejectionReason: { type: String },
     resolvedAt: { type: Date },
+    assignedVolunteerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
+    assignedAt: { type: Date },
+    volunteerAcceptances: [
+      {
+        volunteerId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "users",
+          required: true,
+        },
+        helpType: { type: String },
+        helpDescription: { type: String },
+        volunteerContactNumber: { type: String },
+        acceptedAt: { type: Date, default: Date.now },
+      },
+    ],
     publishedToSocial: { type: Boolean, default: false }
   },
 
@@ -67,8 +86,10 @@ const helpRequestSchema = new mongoose.Schema(
 );
 
 // Index for faster queries
+helpRequestSchema.index({ userId: 1 });
 helpRequestSchema.index({ status: 1 });
 helpRequestSchema.index({ "assignments.ngoId": 1 });
+helpRequestSchema.index({ "volunteerAcceptances.volunteerId": 1 });
 helpRequestSchema.index({ disasterType: 1 });
 helpRequestSchema.index({ urgency: 1 });
 

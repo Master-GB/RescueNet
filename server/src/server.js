@@ -1,12 +1,13 @@
+import "./config/env.js";
 import express from "express";
 import http from "http";
-import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
 
 import { connectDB } from "./config/db.js";
 import { registerShelterSocket } from "./sockets/shelter.socket.js";
+import { registerVolunteerSocket } from "./sockets/volunteer.socket.js";
 
 // Routes
 import adminHelpRoutes from "./routes/adminHelpRoutes.js";
@@ -31,9 +32,6 @@ import socketService from './services/socketService.js';
 import campaignRoutes from "./routes/campaignRoutes.js";
 import donationRoutes from "./routes/donationRoutes.js";
 
-
-dotenv.config({ path: [".env.local", ".env", "./src/.env"] });
-
 if (!process.env.JWT_SECRET) {
   if (process.env.NODE_ENV === "test") {
     process.env.JWT_SECRET = "test-secret";
@@ -55,12 +53,13 @@ const server = http.createServer(app);
 // ✅ Socket.IO attached to server
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: [ CLIENT_URL],
     credentials: true,
   },
 });
 
 registerShelterSocket(io);
+registerVolunteerSocket(io);
 socketService.initialize(io);
 
 // ✅ make io available in controllers
@@ -119,5 +118,15 @@ if (process.env.NODE_ENV !== "test") {
       process.exit(1);
     });
 }
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "An unexpected error occurred",
+    error: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
 
 export default app;

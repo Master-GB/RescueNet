@@ -10,6 +10,7 @@ import {
 import {
   submitDonation,
   getCampaignDonations,
+  getDonationById,
   verifyDonation,
 } from "../controllers/donationController.js";
 
@@ -31,6 +32,14 @@ router.get(
   protect,
   authorize("NGO"),
   getCampaignDonations
+);
+
+// NGO — view one donation by id if they own the parent campaign
+router.get(
+  "/:donationId",
+  protect,
+  authorize("NGO"),
+  getDonationById
 );
 
 // NGO — verify or reject a donation

@@ -97,6 +97,18 @@ describe("Auth API Integration", () => {
     }
   });
 
+  it("should protect profile image update endpoint", async () => {
+    const response = await agent
+      .patch("/api/auth/profile-image")
+      .field("removeProfileImage", "true");
+
+    expect([401, 500]).toContain(response.status);
+
+    if (response.status === 401) {
+      expect(response.body.success).toBe(false);
+    }
+  });
+
   it("should have health check endpoint", async () => {
     const response = await agent.get("/api/health");
 

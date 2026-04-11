@@ -55,6 +55,7 @@ Architecture Pattern:
 | `bankDetails.bankName`    | String           | ✗        | —          | Name of the bank                                            |
 | `bankDetails.branchName`  | String           | ✗        | —          | Branch name                                                 |
 | `acceptedItems`           | Array of Strings | ✗        | `[]`       | Physical items accepted (e.g., `["Clothes", "Dry Rations"]`)|
+| `campaignImageUrl`        | String           | ✗        | `null`     | Cloudinary URL of the optional campaign image               |
 | `createdAt`               | Date             | Auto     | —          | Timestamp of creation                                       |
 | `updatedAt`               | Date             | Auto     | —          | Timestamp of last update                                    |
 
@@ -92,13 +93,15 @@ Proof images are uploaded to Cloudinary via Multer middleware.
 - **Storage**: `multer-storage-cloudinary` with `CloudinaryStorage`
 - **Cloudinary Folder**: `rescuenet_donations`
 - **Allowed Formats**: `jpeg`, `png`, `jpg`
-- **Form Field Name**: `proofImage`
+- **Donation Form Field Name**: `proofImage`
+- **Campaign Form Field Name**: `campaignImage`
+- **Campaign Cloudinary Folder**: `rescuenet_campaigns`
 - **Environment Variables** (in `.env`):
   - `CLOUDINARY_CLOUD_NAME`
   - `CLOUDINARY_API_KEY`
   - `CLOUDINARY_API_SECRET`
 
-The upload middleware is applied only on the `POST /api/donations/submit` route, before the Joi body validation middleware.
+The upload middleware is applied on both donation and campaign mutating routes before Joi body validation middleware.
 
 ---
 
@@ -120,6 +123,12 @@ http://localhost:5000/api
 **Auth Required:** Yes
 **Roles:** `NGO`
 **Validation:** `createCampaignSchema`
+**Content-Type:** `application/json` or `multipart/form-data`
+
+For `multipart/form-data`, send nested fields as JSON strings (recommended):
+- `bankDetails`: JSON object string
+- `acceptedItems`: JSON array string
+- `campaignImage`: optional image file (`jpeg`, `jpg`, `png`)
 
 **Request Body:**
 
@@ -159,6 +168,7 @@ http://localhost:5000/api
       "branchName": "Colombo Main"
     },
     "acceptedItems": ["Clothes", "Dry Rations", "Water Bottles", "Blankets"],
+    "campaignImageUrl": "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/rescuenet_campaigns/campaign.jpg",
     "createdAt": "2026-02-27T10:00:00.000Z",
     "updatedAt": "2026-02-27T10:00:00.000Z"
   }
@@ -174,6 +184,7 @@ http://localhost:5000/api
 **Auth Required:** Yes
 **Roles:** `NGO` (owner only)
 **Validation:** `updateCampaignSchema`
+**Content-Type:** `application/json` or `multipart/form-data`
 
 **Ownership Check:** The campaign's `ngoId` must match `req.user._id`. Returns `403` otherwise.
 
@@ -212,6 +223,87 @@ http://localhost:5000/api
 | 404    | Campaign not found               |
 | 403    | NGO does not own this campaign   |
 | 500    | Server/database error            |
+
+---
+
+### Get My Campaigns (NGO Only)
+
+**Endpoint:** `GET /api/campaigns/my-campaigns`
+
+**Auth Required:** Yes
+**Roles:** `NGO`
+
+**Description:** Returns campaigns created by the authenticated NGO. Supports optional status filtering.
+
+**Query Params:**
+
+| Param   | Required | Values                              | Description                              |
+| ------- | -------- | ----------------------------------- | ---------------------------------------- |
+| `status`| ✗        | `Active`, `Completed`, `Cancelled` | Filter campaigns by status when provided |
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "campaigns": [
+    {
+      "_id": "665a1b2c3d4e5f6a7b8c9d0e",
+      "ngoId": "664f1a2b3c4d5e6f7a8b9c0d",
+      "title": "Southern Province Flood Relief",
+      "description": "Raising funds and supplies...",
+      "targetAmount": 500000,
+      "raisedAmount": 125000,
+      "status": "Active",
+      "bankDetails": { ... },
+      "acceptedItems": ["Clothes", "Dry Rations"],
+      "campaignImageUrl": "https://res.cloudinary.com/...",
+      "createdAt": "2026-02-27T10:00:00.000Z",
+      "updatedAt": "2026-02-27T12:30:00.000Z"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+
+| Status | Condition |
+| ------ | --------- |
+| 401    | Unauthenticated request |
+| 403    | Non-NGO role |
+| 500    | Server error |
+
+---
+
+### Cancel Campaign (Soft Delete)
+
+**Endpoint:** `PATCH /api/campaigns/cancel/:id`
+
+**Auth Required:** Yes
+**Roles:** `NGO` (owner only)
+
+**Description:** Performs soft delete by setting campaign status to `Cancelled`. Campaign data and donation history are preserved.
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Campaign cancelled successfully",
+  "campaign": {
+    "_id": "665a1b2c3d4e5f6a7b8c9d0e",
+    "status": "Cancelled"
+  }
+}
+```
+
+**Error Responses:**
+
+| Status | Condition |
+| ------ | --------- |
+| 404    | Campaign not found |
+| 403    | NGO does not own this campaign |
+| 500    | Server error |
 
 ---
 
@@ -464,6 +556,8 @@ All mutating endpoints use Joi validation via the `validateBody(schema)` middlew
 | `bankDetails.branchName`  | String, trimmed, required                |
 | `acceptedItems`           | Array of trimmed strings, optional       |
 
+> Note: `campaignImage` is handled by Multer as a file upload and stored in `campaignImageUrl`.
+
 ## 6.2 updateCampaignSchema
 
 Same fields as `createCampaignSchema` but all are optional. Additionally:
@@ -514,9 +608,15 @@ Ownership checks are performed in the controller by comparing `campaign.ngoId` w
 
 ```
 POST   /create       →  protect → authorize("NGO") → validateBody(createCampaignSchema) → createCampaign
-PUT    /update/:id   →  protect → authorize("NGO") → validateBody(updateCampaignSchema) → updateCampaign
+PUT    /update/:id   →  protect → authorize("NGO") → upload.single("campaignImage") → normalizeCampaignBody → validateBody(updateCampaignSchema) → updateCampaign
 GET    /active       →  getAllActiveCampaigns
 GET    /:id          →  getCampaignById
+```
+
+For create route, the chain is:
+
+```
+POST   /create       →  protect → authorize("NGO") → upload.single("campaignImage") → normalizeCampaignBody → validateBody(createCampaignSchema) → createCampaign
 ```
 
 ### Donation Routes
@@ -549,7 +649,8 @@ server/src/
 │   ├── campaignController.js      # Campaign CRUD handlers
 │   └── donationController.js      # Donation submit/review/verify handlers
 ├── middleware/
-│   └── uploadMiddleware.js        # Cloudinary + Multer config
+│   ├── uploadMiddleware.js         # Cloudinary + Multer config
+│   └── normalizeCampaignBody.js   # Parses multipart campaign fields before Joi validation
 ├── models/
 │   ├── Campaign.js                # Campaign Mongoose schema
 │   └── Donation.js                # Donation Mongoose schema

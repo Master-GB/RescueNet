@@ -9,6 +9,11 @@ const ENDPOINTS = {
   ROUTE: '/geo/route',
   GEOCODE: '/geo/geocode',
   REVERSE_GEOCODE: '/geo/reverse-geocode',
+  NGO_CAMPAIGNS: '/campaigns/my-campaigns',
+  CREATE_CAMPAIGN: '/campaigns/create',
+  UPDATE_CAMPAIGN: (id) => `/campaigns/update/${id}`,
+  CANCEL_CAMPAIGN: (id) => `/campaigns/cancel/${id}`,
+  CAMPAIGN_BY_ID: (id) => `/campaigns/${id}`,
 };
 
 // HTTP Methods

@@ -34,7 +34,7 @@ export const volunteerStatusSchema = Joi.object({
 export const ngoCreateSchema = Joi.object({
   registrationNumber: Joi.string().max(60).required(),
   contactPhone: Joi.string().max(20).required(),
-  serviceDistricts: Joi.array().items(Joi.string).default([]),
+  serviceDistricts: Joi.array().items(Joi.string()).default([]),
   services: Joi.array().items(Joi.string()).default([]),
   availabilityStatus: Joi.string().valid("AVAILABLE", "BUSY", "OFFLINE").optional(),
 });
@@ -42,7 +42,7 @@ export const ngoCreateSchema = Joi.object({
 export const ngoUpdateSchema = Joi.object({
   registrationNumber: Joi.string().max(60).optional(),
   contactPhone: Joi.string().max(20).optional(),
-   serviceDistricts: Joi.array().items(Joi.string).default([]),
+   serviceDistricts: Joi.array().items(Joi.string()).default([]),
   services: Joi.array().items(Joi.string()).optional(),
   availabilityStatus: Joi.string().valid("AVAILABLE", "BUSY", "OFFLINE").optional(),
 });

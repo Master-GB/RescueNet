@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
-import { getNgoProfile, updateNgoProfile, deleteNgoProfile } from "../../services/profileService";
+import { getNgoProfile, updateNgoProfile, deleteNgoProfile, updateAccountProfileImage } from "../../services/profileService";
+import { validateProfileImageFile, PROFILE_IMAGE_ACCEPT } from "../../utils/profileImageValidation";
+import ProfileAvatar from "../../components/common/ProfileAvatar";
 import {
   User, Mail, Phone, MapPin, Home, AlertTriangle, Edit2, Save, X,
   Shield, Calendar, Clock, CheckCircle, Trash2, ChevronRight, Loader2,
@@ -18,6 +20,12 @@ const NgoProfilePage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Photo upload state
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState("");
+  const photoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -112,6 +120,41 @@ const NgoProfilePage = () => {
       setShowDeleteModal(false);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    if (!photoUploading) photoInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validationError = validateProfileImageFile(file);
+    if (validationError) {
+      setPhotoError(validationError);
+      e.target.value = "";
+      return;
+    }
+
+    // Show preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoPreviewUrl(previewUrl);
+    setPhotoError("");
+    setPhotoUploading(true);
+
+    try {
+      await updateAccountProfileImage({ file });
+      await refreshSession();
+      setSuccess("Profile photo updated!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setPhotoError(err.response?.data?.message || "Failed to upload photo.");
+      setPhotoPreviewUrl("");
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = "";
     }
   };
 
@@ -212,15 +255,50 @@ const NgoProfilePage = () => {
           {/* Left Column - Account Info */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-              {/* Profile Header */}
+              {/* Profile Header with clickable avatar */}
               <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white">
                 <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <UserCircle className="w-10 h-10 text-white" />
+                  {/* Clickable Avatar */}
+                  <div
+                    className="relative w-20 h-20 cursor-pointer group"
+                    onClick={handleAvatarClick}
+                    title="Click to change photo"
+                  >
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept={PROFILE_IMAGE_ACCEPT}
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                    <div className="w-20 h-20 rounded-full overflow-hidden bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      {photoUploading ? (
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      ) : (
+                        <ProfileAvatar
+                          imageUrl={photoPreviewUrl || user?.profileImageUrl || ""}
+                          fallbackText="N"
+                          alt="NGO profile photo"
+                          wrapperClassName="w-20 h-20"
+                          imageClassName="w-20 h-20 object-cover"
+                          fallbackClassName="w-20 h-20 flex items-center justify-center"
+                          fallbackIconClassName="w-10 h-10 text-white"
+                        />
+                      )}
+                    </div>
+                    {/* Camera overlay on hover */}
+                    {!photoUploading && (
+                      <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold">{user.name}</h2>
                     <p className="text-teal-100">NGO</p>
+                    {photoError && (
+                      <p className="text-red-300 text-xs mt-1">{photoError}</p>
+                    )}
                   </div>
                 </div>
               </div>
