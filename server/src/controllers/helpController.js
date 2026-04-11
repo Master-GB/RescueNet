@@ -241,11 +241,25 @@ export async function updateHelpRequest(req, res) {
       return res.status(404).json({ message: "Help request not found" });
     }
 
-    // Authorization check: Ensure user owns the request or is an admin
+    // Authorization check: Ensure user owns the request or is an admin or is a volunteer accepting/managing the task
     const isOwner = helpRequest.userId && helpRequest.userId.toString() === req.user._id.toString();
     const isAdmin = req.user.role === "ADMIN";
+    const isVolunteer = req.user.role === "VOLUNTEER";
 
-    if (!isOwner && !isAdmin) {
+    // Allow volunteer to update IF they are accepted into the task OR if it is pending and they are accepting
+    let canVolunteerUpdate = false;
+    if (isVolunteer) {
+      if (helpRequest.status === "pending" && req.body.status === "assigned") {
+        canVolunteerUpdate = true;
+        // Auto-assign to this volunteer
+        helpRequest.assignedVolunteerId = req.user._id;
+        helpRequest.assignedAt = new Date();
+      } else if (helpRequest.assignedVolunteerId && helpRequest.assignedVolunteerId.toString() === req.user._id.toString()) {
+        canVolunteerUpdate = true;
+      }
+    }
+
+    if (!isOwner && !isAdmin && !canVolunteerUpdate) {
       return res.status(403).json({ 
         success: false,
         message: "Access denied: You don't have permission to update this request" 
@@ -260,6 +274,7 @@ export async function updateHelpRequest(req, res) {
     if (contactNumber) helpRequest.contactNumber = contactNumber;
     if (realLocation) helpRequest.realLocation = realLocation;
     if (urgency) helpRequest.urgency = urgency;
+    if (req.body.status) helpRequest.status = req.body.status;
 
     // Handle voice message update
     if (voiceMessage?.data) {
