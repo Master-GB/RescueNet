@@ -95,7 +95,10 @@ export function AuthProvider({ children }) {
   const handleUnauthorized = useCallback(() => {
     clearSession();
 
-    if (!location.pathname.startsWith("/auth")) {
+    const publicPaths = ["/", "/about", "/contact"];
+    const isPublicPath = publicPaths.includes(location.pathname) || location.pathname.startsWith("/auth");
+
+    if (!isPublicPath) {
       navigate("/auth/login", {
         replace: true,
         state: { from: location.pathname },
