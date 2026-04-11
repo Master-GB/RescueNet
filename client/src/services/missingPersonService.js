@@ -113,7 +113,8 @@ class MissingPersonService {
       },
       medicalConditions: personData.medicalConditions?.trim() || '',
       emergencyContact: personData.emergencyContact?.trim() || '',
-      priority: personData.priority || 'Medium'
+      priority: personData.priority || 'Medium',
+      photoUrl: personData.photoUrl || null
     };
 
     // Explicitly set geoLocation to null to prevent Mongoose from applying defaults

@@ -35,6 +35,16 @@ export const getNgoProfile = async () => {
   return response.data;
 };
 
+export const updateNgoProfile = async (payload) => {
+  const response = await apiClient.patch("/api/ngo/profile-update", payload);
+  return response.data;
+};
+
+export const deleteNgoProfile = async () => {
+  const response = await apiClient.delete("/api/ngo/profile-delete");
+  return response.data;
+};
+
 export const updateNgoStatus = async (payload) => {
   const response = await apiClient.patch("/api/ngo/profile/status-update", payload);
   return response.data;

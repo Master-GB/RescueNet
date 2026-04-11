@@ -10,6 +10,8 @@ import {
   User,
   Users,
   Zap,
+  LayoutDashboard,
+  UserCircle
 } from "lucide-react";
 import {
   CartesianGrid,
@@ -35,6 +37,7 @@ import { getApiErrorMessage } from "../../services/authService";
 import { updateNgoStatus } from "../../services/profileService";
 import { fetchNgoDashboardRawData } from "../../services/ngoDashboardService";
 import ngoSidebarItems from "./ngoSidebarItems";
+
 
 const STATUS_COLORS = {
   assigned: "#f59e0b",
@@ -484,6 +487,7 @@ const NgoDashboard = () => {
       avatarLetter="N"
       homePath="/ngo-dashboard"
       searchPlaceholder="Search tasks, campaigns, and donations..."
+      themeColor="teal"
       contentClassName="bg-auth-bg"
     >
       <section className="space-y-5 rounded-2xl bg-auth-bg text-auth-text">

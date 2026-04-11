@@ -1,0 +1,29 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 10
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 30
+      arrivalRate: 50
+      name: "Spike - Massive read load"
+    - duration: 30
+      arrivalRate: 5
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 45
+
+scenarios:
+  - name: "Missing Person API Spike - Read Traffic"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/missing-persons/statistics"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/missing-persons"
+          expect:
+            - statusCode: 200
