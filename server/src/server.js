@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 
 import { connectDB } from "./config/db.js";
 import { registerShelterSocket } from "./sockets/shelter.socket.js";
+import { registerVolunteerSocket } from "./sockets/volunteer.socket.js";
 
 // Routes
 import adminHelpRoutes from "./routes/adminHelpRoutes.js";
@@ -52,12 +53,13 @@ const server = http.createServer(app);
 // ✅ Socket.IO attached to server
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: [ CLIENT_URL],
     credentials: true,
   },
 });
 
 registerShelterSocket(io);
+registerVolunteerSocket(io);
 socketService.initialize(io);
 
 // ✅ make io available in controllers

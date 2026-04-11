@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { useVolunteerContext } from "../contexts/VolunteerContext";
 import AuthCookie from "../components/authentication/AuthCookie";
 import {
   LayoutDashboard,
@@ -40,6 +41,12 @@ const DashboardLayout = ({
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const {
+    notifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    clearNotifications,
+  } = useVolunteerContext();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);

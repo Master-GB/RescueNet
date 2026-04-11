@@ -6,8 +6,8 @@ import VolunteerProfileFormPage from "../pages/auth/VolunteerProfileFormPage";
 import VolunteerAlertsPage from "../pages/volunteer/VolunteerAlertsPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import VolunteerMapPage from "../pages/volunteer/VolunteerMapPage";
+import VolunteerTeamChatPage from "../pages/volunteer/VolunteerTeamChatPage";
 import VolunteerProfilePage from "../pages/volunteer/VolunteerProfilePage";
-import VolunteerRequestsPage from "../pages/volunteer/VolunteerRequestsPage";
 import VolunteerTasksPage from "../pages/volunteer/VolunteerTasksPage";
 import VolunteerDonationsPage from "../pages/volunteer/VolunteerDonationsPage";
 import CitizenHelpRequest from "../pages/citizen/CitizenHelpRequest";
@@ -72,13 +72,15 @@ export const renderVolunteerRoutes = () => (
 		/>
 
 		<Route
-			path="/volunteer/requests"
+			path="/volunteer/chat"
 			element={(
 				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
-					<VolunteerRequestsPage />
+					<VolunteerTeamChatPage />
 				</RoleRoute>
 			)}
 		/>
+
+		<Route path="/volunteer/requests" element={<Navigate to="/volunteer/tasks" replace />} />
 
 		<Route
 			path="/volunteer/profile"

@@ -66,6 +66,19 @@ const helpRequestSchema = new mongoose.Schema(
       ref: "users",
     },
     assignedAt: { type: Date },
+    volunteerAcceptances: [
+      {
+        volunteerId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "users",
+          required: true,
+        },
+        helpType: { type: String },
+        helpDescription: { type: String },
+        volunteerContactNumber: { type: String },
+        acceptedAt: { type: Date, default: Date.now },
+      },
+    ],
     publishedToSocial: { type: Boolean, default: false }
   },
 
@@ -76,6 +89,7 @@ const helpRequestSchema = new mongoose.Schema(
 helpRequestSchema.index({ userId: 1 });
 helpRequestSchema.index({ status: 1 });
 helpRequestSchema.index({ "assignments.ngoId": 1 });
+helpRequestSchema.index({ "volunteerAcceptances.volunteerId": 1 });
 helpRequestSchema.index({ disasterType: 1 });
 helpRequestSchema.index({ urgency: 1 });
 
