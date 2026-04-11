@@ -9,6 +9,7 @@ import { volunteerSidebarItems } from "./volunteerLayoutConfig";
 const TEAM_ROOM = "volunteer-team-global";
 const SOCKET_URL =
   process.env.REACT_APP_SOCKET_URL ||
+  process.env.REACT_APP_API_URL ||
   (window.location.hostname === "localhost" ? "http://localhost:5000" : window.location.origin);
 
 const formatTime = (value) => {
