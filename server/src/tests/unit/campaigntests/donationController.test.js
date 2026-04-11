@@ -31,7 +31,12 @@ await jest.unstable_mockModule("../../../models/Campaign.js", () => ({
   },
 }));
 
-const { submitDonation, getCampaignDonations, verifyDonation } = await import(
+const {
+  submitDonation,
+  getCampaignDonations,
+  getDonationById,
+  verifyDonation,
+} = await import(
   "../../../controllers/donationController.js"
 );
 
@@ -300,9 +305,9 @@ describe("Donation Controller - Unit Tests", () => {
     test("should return 200 with donations for owner NGO", async () => {
       campaignFindByIdMock.mockResolvedValue(activeCampaign);
       const donations = [pendingDonation, { ...pendingDonation, _id: "don2" }];
-      donationFindMock.mockReturnValue({
-        populate: jest.fn().mockResolvedValue(donations),
-      });
+      const populateMock = jest.fn().mockResolvedValue(donations);
+      const sortMock = jest.fn().mockReturnValue({ populate: populateMock });
+      donationFindMock.mockReturnValue({ sort: sortMock });
 
       const req = {
         user: { _id: ngoUserId },
@@ -313,6 +318,7 @@ describe("Donation Controller - Unit Tests", () => {
       await getCampaignDonations(req, res);
 
       expect(donationFindMock).toHaveBeenCalledWith({ campaignId });
+      expect(sortMock).toHaveBeenCalledWith({ createdAt: -1 });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -325,7 +331,9 @@ describe("Donation Controller - Unit Tests", () => {
     test("should return empty array when no donations exist", async () => {
       campaignFindByIdMock.mockResolvedValue(activeCampaign);
       donationFindMock.mockReturnValue({
-        populate: jest.fn().mockResolvedValue([]),
+        sort: jest.fn().mockReturnValue({
+          populate: jest.fn().mockResolvedValue([]),
+        }),
       });
 
       const req = { user: { _id: ngoUserId }, params: { campaignId } };
@@ -342,7 +350,9 @@ describe("Donation Controller - Unit Tests", () => {
     test("should populate donorId with name and email", async () => {
       campaignFindByIdMock.mockResolvedValue(activeCampaign);
       const populateMock = jest.fn().mockResolvedValue([]);
-      donationFindMock.mockReturnValue({ populate: populateMock });
+      donationFindMock.mockReturnValue({
+        sort: jest.fn().mockReturnValue({ populate: populateMock }),
+      });
 
       const req = { user: { _id: ngoUserId }, params: { campaignId } };
       const res = makeRes();
@@ -355,7 +365,9 @@ describe("Donation Controller - Unit Tests", () => {
     test("should return 500 on database error", async () => {
       campaignFindByIdMock.mockResolvedValue(activeCampaign);
       donationFindMock.mockReturnValue({
-        populate: jest.fn().mockRejectedValue(new Error("DB error")),
+        sort: jest.fn().mockReturnValue({
+          populate: jest.fn().mockRejectedValue(new Error("DB error")),
+        }),
       });
 
       const req = { user: { _id: ngoUserId }, params: { campaignId } };
@@ -368,6 +380,160 @@ describe("Donation Controller - Unit Tests", () => {
         expect.objectContaining({
           success: false,
           message: "Failed to fetch donations",
+        })
+      );
+    });
+
+    test("should filter campaign donations by a valid status", async () => {
+      campaignFindByIdMock.mockResolvedValue(activeCampaign);
+      donationFindMock.mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          populate: jest.fn().mockResolvedValue([pendingDonation]),
+        }),
+      });
+
+      const req = {
+        user: { _id: ngoUserId },
+        params: { campaignId },
+        query: { status: "Pending" },
+      };
+      const res = makeRes();
+
+      await getCampaignDonations(req, res);
+
+      expect(donationFindMock).toHaveBeenCalledWith({
+        campaignId,
+        status: "Pending",
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    test("should return 400 for invalid status filter", async () => {
+      campaignFindByIdMock.mockResolvedValue(activeCampaign);
+
+      const req = {
+        user: { _id: ngoUserId },
+        params: { campaignId },
+        query: { status: "Unknown" },
+      };
+      const res = makeRes();
+
+      await getCampaignDonations(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Invalid donation status filter",
+        })
+      );
+      expect(donationFindMock).not.toHaveBeenCalled();
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // getDonationById
+  // ═══════════════════════════════════════════
+  describe("getDonationById", () => {
+    test("should return 404 when donation does not exist", async () => {
+      donationFindByIdMock.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
+
+      const req = {
+        user: { _id: ngoUserId },
+        params: { donationId: "missing" },
+      };
+      const res = makeRes();
+
+      await getDonationById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Donation not found",
+        })
+      );
+    });
+
+    test("should return 404 when parent campaign is missing", async () => {
+      donationFindByIdMock.mockReturnValue({
+        populate: jest.fn().mockResolvedValue({ ...pendingDonation }),
+      });
+      campaignFindByIdMock.mockResolvedValue(null);
+
+      const req = {
+        user: { _id: ngoUserId },
+        params: { donationId },
+      };
+      const res = makeRes();
+
+      await getDonationById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Parent campaign not found",
+        })
+      );
+    });
+
+    test("should return 403 when NGO does not own parent campaign", async () => {
+      donationFindByIdMock.mockReturnValue({
+        populate: jest.fn().mockResolvedValue({ ...pendingDonation }),
+      });
+      campaignFindByIdMock.mockResolvedValue({
+        ...activeCampaign,
+        ngoId: { equals: (id) => id === otherUserId },
+      });
+
+      const req = {
+        user: { _id: ngoUserId },
+        params: { donationId },
+      };
+      const res = makeRes();
+
+      await getDonationById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "You can only view donations for your own campaigns",
+        })
+      );
+    });
+
+    test("should return donation details for campaign owner NGO", async () => {
+      const populatedDonation = {
+        ...pendingDonation,
+        donorId: {
+          _id: donorUserId,
+          name: "Citizen Donor",
+          email: "citizen@example.com",
+        },
+      };
+
+      donationFindByIdMock.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(populatedDonation),
+      });
+      campaignFindByIdMock.mockResolvedValue(activeCampaign);
+
+      const req = {
+        user: { _id: ngoUserId },
+        params: { donationId },
+      };
+      const res = makeRes();
+
+      await getDonationById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          donation: populatedDonation,
         })
       );
     });

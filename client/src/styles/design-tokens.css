@@ -1,0 +1,63 @@
+:root {
+  --surface: #151316;
+  --surface-container-low: #1b191d;
+  --surface-container: #201e23;
+  --surface-container-high: #26242a;
+  --surface-container-highest: #2c2930;
+  --surface-variant: #252228;
+  --surface-bright: #2f2c34;
+  --surface-tint: #56f7b7;
+
+  --on-surface: #e7e1e5;
+  --on-primary: #0b0b0b;
+  --on-secondary: #0b0b0b;
+
+  --primary: #56f7b7;
+  --primary-container: #2cda9d;
+  --secondary: #8ad3d3;
+  --secondary-container: #005f5f;
+  --tertiary: #2cfe4c;
+
+  /* Semantic colors */
+  --danger: #ef4444;
+  --warning: #eab308;
+  --success: #22c55e;
+
+  --outline-variant: #a29aa3;
+  --outline-ghost: rgba(162, 154, 163, 0.15);
+
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  --spacing-2: 0.5rem;
+  --spacing-4: 1.4rem;
+  --spacing-6: 2rem;
+  --spacing-8: 2.6rem;
+  --spacing-10: 3.2rem;
+
+  --ambient-shadow: 0px 24px 48px rgba(0, 0, 0, 0.4);
+
+  /* Auth light palette tokens (value-preserving) */
+  --auth-bg: #f8fafc;
+  --auth-surface: #ffffff;
+  --auth-surface-glass: rgba(255, 255, 255, 0.7);
+  --auth-surface-glass-border: rgba(255, 255, 255, 0.5);
+
+  --auth-border: #e2e8f0;
+  --auth-border-subtle: #f1f5f9;
+
+  --auth-text: #0f172a;
+  --auth-text-strong: #1e293b;
+  --auth-text-soft: #475569;
+  --auth-text-muted: #64748b;
+  --auth-placeholder: #94a3b8;
+
+  --auth-success-bg: #f0fdf4;
+  --auth-success-border: #bbf7d0;
+  --auth-warning-bg: #fefce8;
+  --auth-warning-border: #fef08a;
+  --auth-danger-bg: #fef2f2;
+  --auth-danger-border: #fecaca;
+
+  --auth-shell-panel-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}

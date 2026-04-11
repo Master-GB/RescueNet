@@ -245,30 +245,44 @@ export const disasterUpdates = async (req, res) => {
     const limit = Number(req.query.limit || 20);
     const q = String(req.query.q || "Sri Lanka");
 
-    const [reports, disasters] = await Promise.all([
-      fetchReliefWebReports({ query: q, limit }),
-      fetchReliefWebDisasters({ country: q, limit }),
-    ]);
+    let reports = [];
+    let disasters = [];
+
+    try {
+      [reports, disasters] = await Promise.all([
+        fetchReliefWebReports({ query: q, limit }),
+        fetchReliefWebDisasters({ country: q, limit }),
+      ]);
+    } catch (apiError) {
+      console.warn('ReliefWeb API error, returning empty data:', apiError.message);
+      // Return empty data instead of failing completely
+      reports = [];
+      disasters = [];
+    }
 
     const data = {
       reports: normalizeReliefWebForList(reports),
       disasters: normalizeReliefWebForList(disasters),
     };
 
-    cache.set(key, data);
-    return res.status(200).json({ success: true, data });
+    // Only cache if we got actual data
+    if (reports.length > 0 || disasters.length > 0) {
+      cache.set(key, data);
+    }
+    
+    return res.status(200).json({ 
+      success: true, 
+      data,
+      warning: reports.length === 0 && disasters.length === 0 ? 
+        "Unable to fetch latest updates. Service may be temporarily unavailable." : null
+    });
   } catch (error) {
+    console.error('Disaster updates controller error:', error);
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch ReliefWeb updates",
+      message: "Failed to fetch disaster updates",
       error: error.message,
-      apiUrl: error?.config?.url,
-    apiMethod: error?.config?.method,
-    apiData: error?.config?.data,
-    apiParams: error?.config?.params,
-    status: error?.response?.status,
-    apiError: error?.response?.data,
-    error: error.message,
+      data: { reports: [], disasters: [] } // Provide fallback data
     });
   }
 };

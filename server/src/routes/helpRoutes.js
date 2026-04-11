@@ -1,13 +1,17 @@
 import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
 import {
   createHelpRequest,
   getAllRequests,
   getHelpRequestById,
   updateHelpRequest,
   deleteHelpRequest,
-} from "../controllers/HelpController.js";
+} from "../controllers/helpController.js";
 
 const router = express.Router();
+
+// Protect all routes below
+router.use(protect);
 
 // Create new help request
 router.post("/add", createHelpRequest);

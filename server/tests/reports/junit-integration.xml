@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="3" failures="0" errors="0" time="12.837">
+  <testsuite name="Emergency Response Workflow Integration" errors="0" failures="0" skipped="0" timestamp="2026-04-11T06:36:33" time="12.762" tests="3">
+    <testcase classname="Emergency Response Workflow Integration should complete full emergency response workflow" name="Emergency Response Workflow Integration should complete full emergency response workflow" time="11.158">
+    </testcase>
+    <testcase classname="Emergency Response Workflow Integration should handle workflow with geolocation services" name="Emergency Response Workflow Integration should handle workflow with geolocation services" time="0.017">
+    </testcase>
+    <testcase classname="Emergency Response Workflow Integration should handle workflow errors gracefully" name="Emergency Response Workflow Integration should handle workflow errors gracefully" time="0.019">
+    </testcase>
+  </testsuite>
+</testsuites>

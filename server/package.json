@@ -9,9 +9,49 @@
     "dev": "nodemon src/server.js",
     "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit",
     "test:api": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/apiTest",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:lo": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest src/tests/unit/weatherTest",
-    "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest"
+    "test:help-loc": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.help-loc.config.js src/tests/unit/helpRequestTest src/tests/unit/locationControllerTest",
+
+    "perf:auth:basic": "artillery run  src/tests/performanceTest/authTest/basic-load.yml",
+    "perf:auth:stress": "artillery run src/tests/performanceTest/authTest/stress-test.yml",
+    "perf:auth:spike": "artillery run  src/tests/performanceTest/authTest/spike-test.yml",
+    "perf:auth:all": "npm run perf:auth:basic && npm run perf:auth:stress && npm run perf:auth:spike",
+    
+    "ready-admin" :"node src/tests/performanceTest/shelterTest/create-admin-shelter-user.js",
+    "perf:shelter:basic": "artillery run src/tests/performanceTest/shelterTest/basic-load.yml",
+    "perf:shelter:stress": "artillery run src/tests/performanceTest/shelterTest/stress-test.yml",
+    "perf:shelter:spike": "artillery run src/tests/performanceTest/shelterTest/spike-test.yml",
+    "perf:shelter:all": "npm run perf:shelter:basic && npm run perf:shelter:stress && npm run perf:shelter:spike",
+    
+    "perf:disaster:basic": "artillery run src/tests/performanceTest/disasterAnalyzeTest/basic-load.yml",
+    "perf:disaster:stress-optimized": "artillery run src/tests/performanceTest/disasterAnalyzeTest/stress-test-optimized.yml",
+    "perf:disaster:spike": "artillery run src/tests/performanceTest/disasterAnalyzeTest/spike-test.yml",
+    "perf:disaster:all": "npm run perf:disaster:basic && npm run perf:disaster:stress-optimized && npm run perf:disaster:spike",
+    
+    "perf:geo:basic": "artillery run src/tests/performanceTest/geoTest/basic-load.yml",
+    "perf:geo:stress": "artillery run src/tests/performanceTest/geoTest/stress-test.yml",
+    "perf:geo:spike": "artillery run src/tests/performanceTest/geoTest/spike-test.yml",
+    "perf:geo:all": "npm run perf:geo:basic && npm run perf:geo:stress && npm run perf:geo:spike",
+    
+    "ready-help": "node src/tests/performanceTest/helpTest/create-help-user.js",
+    "perf:help:basic": "artillery run src/tests/performanceTest/helpTest/basic-load.yml",
+    "perf:help:stress": "artillery run src/tests/performanceTest/helpTest/stress-test.yml",
+    "perf:help:spike": "artillery run src/tests/performanceTest/helpTest/spike-test.yml",
+    "perf:help:all": "npm run perf:help:basic && npm run perf:help:stress && npm run perf:help:spike",
+
+    "perf:task:basic": "artillery run src/tests/performanceTest/taskManagement/basic-load.yml",
+    "perf:task:stress": "artillery run src/tests/performanceTest/taskManagement/stress-test.yml",
+    "perf:task:spike": "artillery run src/tests/performanceTest/taskManagement/spike-test.yml",
+    "perf:task:all": "npm run perf:task:basic && npm run perf:task:stress && npm run perf:task:spike",
+    
+    "ready-missing": "node src/tests/performanceTest/missingPersonTest/create-missing-user.js",
+    "perf:missing:basic": "artillery run src/tests/performanceTest/missingPersonTest/basic-load.yml",
+    "perf:missing:stress": "artillery run src/tests/performanceTest/missingPersonTest/stress-test.yml",
+    "perf:missing:spike": "artillery run src/tests/performanceTest/missingPersonTest/spike-test.yml",
+    "perf:missing:all": "npm run perf:missing:basic && npm run perf:missing:stress && npm run perf:missing:spike"
+    
   },
   "keywords": [],
   "author": "",
@@ -42,9 +82,13 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "artillery": "^2.0.30",
+    "artillery-plugin-metrics-by-endpoint": "^1.24.0",
     "cross-env": "^10.1.0",
     "jest": "^30.2.0",
     "jest-junit": "^16.0.0",
+    "mongodb-memory-server": "^10.2.0",
+    "supertest": "^7.1.4",
     "nodemon": "^3.1.11"
   }
 }

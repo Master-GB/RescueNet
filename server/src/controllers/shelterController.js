@@ -130,7 +130,10 @@ export const listShelters = async (req, res) => {
     );
     const sort = req.query.sort || "-updatedAt";
 
-    const filter = buildShelterQuery(req.query);
+    const filter = {
+      ...buildShelterQuery(req.query),
+      verified: true
+    };
 
     const [items, total] = await Promise.all([
       Shelter.find(filter)
@@ -172,7 +175,10 @@ export const nearbyShelters = async (req, res) => {
         .json({ success: false, message: "lng and lat are required numbers" });
     }
 
-    const baseFilter = buildShelterQuery(req.query);
+    const baseFilter = {
+      ...buildShelterQuery(req.query),
+      verified: true
+    };
 
     const shelters = await Shelter.find({
       ...baseFilter,
@@ -259,6 +265,59 @@ export const deleteShelter = async (req, res) => {
       .json({
         success: false,
         message: "Delete shelter failed",
+        error: error.message,
+      });
+  }
+};
+
+// New flexible controller for listing shelters with verification filter
+export const listSheltersWithVerification = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit || "20", 10), 1),
+      100,
+    );
+    const sort = req.query.sort || "-updatedAt";
+    
+    // Get verification filter from query parameter
+    const verifiedParam = req.query.verified;
+    
+    // Build filter based on verification parameter
+    let filter = {
+      ...buildShelterQuery(req.query)
+    };
+    
+    // Handle verification filtering
+    if (verifiedParam === 'false') {
+      filter.verified = false; // Only unverified shelters
+    } else if (verifiedParam === 'true') {
+      filter.verified = true; // Only verified shelters
+    }
+    // If verified param is 'all' or not provided, don't add verified filter (return all shelters)
+
+    const [items, total] = await Promise.all([
+      Shelter.find(filter)
+        .sort(sort)
+        .skip((page - 1) * limit)
+        .limit(limit),
+      Shelter.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      page,
+      limit,
+      total,
+      shelters: items,
+      message: "Shelters retrieved successfully",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "List shelters failed",
         error: error.message,
       });
   }

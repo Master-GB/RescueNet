@@ -1,0 +1,53 @@
+.location-animation-container {
+  background: transparent !important;
+  border: none !important;
+}
+
+.location-pulse-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-pulse-ring {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 3px solid var(--primary);
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulseRing 2s ease-out infinite;
+}
+
+.location-pulse-ring.delay-1 {
+  animation-delay: 0.5s;
+}
+
+.location-pulse-ring.delay-2 {
+  animation-delay: 1s;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.custom-shelter-marker {
+  transition: all 0.2s ease;
+}
+
+.custom-shelter-marker:hover {
+  transform: scale(1.1);
+}

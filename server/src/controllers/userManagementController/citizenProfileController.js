@@ -1,5 +1,6 @@
 import CitizenProfile from "../../models/userProfileModel/CitizenProfile.js";
 import User from "../../models/user.js";
+import { destroyCloudinaryAssetByPublicId } from "../../services/cloudinaryAssetService.js";
 
 export const createCitizenProfile = async (req, res) => {
   try {
@@ -134,6 +135,17 @@ export const deleteCitizenProfile = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    let cleanupWarning = "";
+    if (deletedUser.profileImagePublicId) {
+      const cleanupResult = await destroyCloudinaryAssetByPublicId(deletedUser.profileImagePublicId);
+      if (!cleanupResult.success) {
+        cleanupWarning = "Citizen account deleted, but failed to remove profile image from Cloudinary.";
+        console.warn(
+          `[CloudinaryCleanup] Failed for citizen user ${deletedUser._id}: ${cleanupResult.reason}`,
+        );
+      }
+    }
+
     const deletedProfile = await CitizenProfile.findOneAndDelete({
       userId: req.user._id,
     });
@@ -152,9 +164,18 @@ export const deleteCitizenProfile = async (req, res) => {
       sameSite: isProd ? "none" : "lax",
     });
 
+    const responsePayload = {
+      success: true,
+      message: "Citizen profile deleted successfully",
+    };
+
+    if (cleanupWarning) {
+      responsePayload.warning = cleanupWarning;
+    }
+
     return res
       .status(200)
-      .json({ success: true, message: "Citizen profile deleted successfully" });
+      .json(responsePayload);
   } catch (error) {
     return res
       .status(500)

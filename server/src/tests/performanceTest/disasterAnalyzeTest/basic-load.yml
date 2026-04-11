@@ -1,0 +1,76 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 1
+      name: "Normal load"
+    - duration: 60
+      arrivalRate: 1
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 30
+  payload:
+    path: "disaster-test-data.csv"
+    fields:
+      - "disaster_type"
+      - "start_date"
+      - "end_date"
+      - "min_magnitude"
+      - "bbox_min_lng"
+      - "bbox_min_lat"
+      - "bbox_max_lng"
+      - "bbox_max_lat"
+
+scenarios:
+  - name: "Disaster Map - Earthquake"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/disasters/map?types=EARTHQUAKE&start={{ start_date }}&end={{ end_date }}&minmag={{ min_magnitude }}&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Disaster Map - Fire"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/disasters/map?types=FIRE&days=3&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Disaster Map - Flood"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/disasters/map?types=FLOOD&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Disaster Map - Multiple Types"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/disasters/map?types=FIRE,FLOOD&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Disaster Heatmap"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/disasters/heatmap?types=EARTHQUAKE&bbox={{ bbox_min_lng }},{{ bbox_min_lat }},{{ bbox_max_lng }},{{ bbox_max_lat }}"
+          expect:
+            - statusCode: [200, 429]
+
+  - name: "Disaster Updates"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/disasters/updates?limit=10"
+          expect:
+            - statusCode: [200, 429]

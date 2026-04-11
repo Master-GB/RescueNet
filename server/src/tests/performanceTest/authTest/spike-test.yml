@@ -1,0 +1,84 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 2
+      name: "Normal traffic"
+    - duration: 30
+      arrivalRate: 50
+      name: "SPIKE - Emergency situation"
+    - duration: 30
+      arrivalRate: 75
+      name: "PEAK SPIKE - Maximum emergency"
+    - duration: 60
+      arrivalRate: 20
+      name: "Sustained high load"
+    - duration: 60
+      arrivalRate: 2
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 45
+  payload:
+    path: "test-users.csv"
+    fields:
+      - "email"
+      - "password"
+
+scenarios:
+  - name: "Spike Test - Emergency Login"
+    weight: 80
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+
+  - name: "Spike Test - Profile Check"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Spike Test - Logout"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/auth/logout"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200

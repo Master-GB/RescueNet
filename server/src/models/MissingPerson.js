@@ -164,7 +164,7 @@ const missingPersonSchema = new mongoose.Schema(
       description: String,
       verified: {
         type: Boolean,
-        default: false
+        default: true
       },
       createdAt: {
         type: Date,
@@ -214,9 +214,11 @@ missingPersonSchema.virtual('daysMissing').get(function() {
 
 const MissingPerson = mongoose.model('MissingPerson', missingPersonSchema);
 
-// Force index creation on startup
-MissingPerson.createIndexes()
-  .then(() => console.log(''))
-  .catch(err => console.error('❌ Error creating indexes:', err));
+// Force index creation on startup (only in non-test environment)
+if (process.env.NODE_ENV !== "test") {
+  MissingPerson.createIndexes()
+    .then(() => console.log(''))
+    .catch(err => console.error('❌ Error creating indexes:', err));
+}
 
 export default MissingPerson;
