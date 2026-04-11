@@ -5,7 +5,7 @@ config:
       arrivalRate: 1
       name: "Warm up"
     - duration: 60
-      arrivalRate: 2
+      arrivalRate: 1
       name: "Normal load"
     - duration: 30
       arrivalRate: 1
@@ -13,7 +13,7 @@ config:
   defaults:
     headers:
       Content-Type: "application/json"
-  timeout: 15
+  timeout: 30
   payload:
     path: "shelter-test-users.csv"
     fields:
@@ -36,7 +36,7 @@ scenarios:
             - statusCode: 200
 
   - name: "Create Shelter"
-    weight: 25
+    weight: 20
     flow:
       - post:
           url: "/api/shelters/create"
@@ -44,24 +44,26 @@ scenarios:
             Authorization: "Bearer {{ authToken }}"
           json:
             name: "Test Shelter {{ $randomString() }}"
-            description: "Performance test shelter"
-            shelterType: "OTHER"
+            description: "Performance test shelter created during load testing"
+            shelterType: "TEMPORARY"
             address:
-              street: "123 Test St"
-              city: "Test City"
-              province: "Test Province"
-              postalCode: "12345"
+              street: "123 Performance Test Street"
+              city: "Colombo"
+              province: "Western"
+              postalCode: "00100"
             contact:
               phone: "+94770000000"
-              email: "test{{ $randomString() }}@example.com"
+              email: "test{{ $randomString() }}@rescuenet.lk"
             location:
               type: "Point"
               coordinates: [79.8612, 6.9876]
             capacity:
-              total: 100
+              total: 50
             supports:
-              disasterTypes: ["FLOOD", "FIRE"]
+              disasterTypes: ["FLOOD"]
               wheelchairAccess: true
+              medicalSupport: false
+              foodSupport: true
           expect:
             - statusCode: 201
 
@@ -76,10 +78,19 @@ scenarios:
             - statusCode: 200
 
   - name: "Get Shelter by ID"
-    weight: 25
+    weight: 15
     flow:
       - get:
-          url: "/api/shelters/get/{{ $randomString() }}"
+          url: "/api/shelters/get-list?page=1&limit=1"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          capture:
+            - json: "$.shelters[0]._id"
+              as: "shelterId"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/shelters/get/{{ shelterId }}"
           headers:
             Authorization: "Bearer {{ authToken }}"
           expect:
