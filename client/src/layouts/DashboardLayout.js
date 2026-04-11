@@ -18,6 +18,8 @@ import {
   SearchIcon,
   X,
 } from "lucide-react";
+import RNlogodarkthemed from "../assets/images/RN-darkthemed.png";
+import RNlogo from "../assets/images/RNlogo2.png";
 
 const defaultSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/citizen-dashboard" },
@@ -269,13 +271,22 @@ const DashboardLayout = ({
         <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Left */}
           <Link to={homePath} className="flex items-center gap-3 min-w-fit transition-opacity">
+          {/* added square logo */}
+            <img
+              src={RNlogo}
+              alt="RescueNet logo"
+              className="w-11 h-11 object-cover shadow-sm"
+            />
             <div className={`w-11 h-11 rounded-2xl ${themeColor === "teal" ? "bg-teal-600" : "bg-green-600"} text-white flex items-center justify-center font-bold text-lg shadow-sm`}>
               R
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-white">
-                RescueNet
-              </h1>
+              {/* text logo image */}
+              <img 
+                src={RNlogodarkthemed} 
+                alt="RescueNet" 
+                className="h-5 w-auto object-contain"
+              />
               <p className="text-xs text-gray-300">{portalTitle}</p>
             </div>
           </Link>

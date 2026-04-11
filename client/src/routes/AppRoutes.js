@@ -9,7 +9,6 @@ import {
   HandHelping,
   Megaphone,
   Heart,
-  Building2,
 } from "lucide-react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import GuestRoute from "../components/authentication/GuestRoute";
@@ -19,8 +18,10 @@ import { renderVolunteerRoutes } from "./AppRouteVolunteer";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminNgoManagementPage from "../pages/admin/AdminNgoManagementPage";
+import AdminProfilePage from "../pages/admin/AdminProfilePage";
 import AdminTaskDetailPage from "../pages/admin/AdminTaskDetailPage";
 import AdminTaskManagementPage from "../pages/admin/AdminTaskManagementPage";
+import adminSidebarItems from "../pages/admin/adminSidebarItems";
 import CitizenProfileFormPage from "../pages/auth/CitizenProfileFormPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import LoginPage from "../pages/auth/LoginPage";
@@ -50,18 +51,13 @@ import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import NgoProfilePage from "../pages/ngo/NgoProfilePage";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
+import LandingPage from "../pages/LandingPage";
+import AboutPage from "../pages/AboutPage";
+import ContactPage from "../pages/ContactPage";
 import ShelterManagement from "../pages/admin/ShelterManagement";
 import VerifyShelter from "../pages/admin/VerifyShelter";
 import ShelterManagementNGO from "../pages/ngo/ShelterManagementNGO";
 import AreaSituation from "../pages/admin/AreaSituation";
-
-const adminSidebarItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
-  { name: "Shelter Management", icon: Home, path: "/admin/shelter-management" },
-  { name: "Task Management", icon: ClipboardList, path: "/admin/tasks" },
-  { name: "Area Situations", icon: BellRing, path: "/admin/area-situations" },
-  { name: "NGO Management", icon: Building2, path: "/admin/ngos" },
-];
 
 const volunteerSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/volunteer-dashboard" },
@@ -86,7 +82,9 @@ const ngoSidebarItems = [
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<TrafficCopRedirect />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
 
       <Route
         path="/volunteer"
@@ -419,6 +417,14 @@ const AppRoutes = () => {
         element={
           <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
             <AdminTaskDetailPage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/admin/profile"
+        element={
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <AdminProfilePage />
           </RoleRoute>
         }
       />

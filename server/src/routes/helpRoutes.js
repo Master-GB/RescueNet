@@ -6,7 +6,7 @@ import {
   getHelpRequestById,
   updateHelpRequest,
   deleteHelpRequest,
-} from "../controllers/HelpController.js";
+} from "../controllers/helpController.js";
 
 const router = express.Router();
 

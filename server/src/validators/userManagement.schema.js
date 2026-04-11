@@ -50,3 +50,7 @@ export const ngoUpdateSchema = Joi.object({
 export const NgoStatusSchema = Joi.object({
   availabilityStatus: Joi.string().valid("AVAILABLE", "BUSY", "OFFLINE").required(),
 });
+
+export const adminUpdateSchema = Joi.object({
+  name: Joi.string().trim().max(60).required(),
+});
