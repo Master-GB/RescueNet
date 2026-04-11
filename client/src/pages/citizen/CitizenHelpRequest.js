@@ -21,6 +21,7 @@ import {
   Waves,
   Wind,
   X,
+  CheckCircle,
 } from "lucide-react";
 import { MapContainer, TileLayer, CircleMarker, useMap, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -64,6 +65,7 @@ const CitizenHelpRequest = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [requestId, setRequestId] = useState("");
 
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -402,6 +404,7 @@ const CitizenHelpRequest = ({
 
       setRequestId(data?.helpRequest?._id || data?._id || "");
       setSuccess(true);
+      setShowSuccessModal(true);
       
       if (!editingId) {
         resetForm();
@@ -438,6 +441,33 @@ const CitizenHelpRequest = ({
       avatarLetter={avatarLetter}
       homePath={homePath}
     >
+      {/* Success Modal Overlay */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">Request Submitted!</h3>
+            <p className="text-slate-600 mb-8 leading-relaxed">
+              Your help request has been <strong>submitted successfully</strong>. 
+              Please <strong>stay safe</strong> until help arrives.
+            </p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-emerald-200 active:scale-[0.98]"
+            >
+              Understand & Stay Safe
+            </button>
+            {requestId && (
+              <p className="mt-4 text-xs text-slate-400 font-mono">
+                ID: {requestId}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-none mx-0 space-y-6">
         {/* Header with Tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">

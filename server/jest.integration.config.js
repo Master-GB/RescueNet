@@ -2,6 +2,7 @@ export default {
   testEnvironment: "node",
   rootDir: ".",
   testMatch: ["**/tests/integration/**/*.test.js"],
+  maxWorkers: 1,
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1"
   },

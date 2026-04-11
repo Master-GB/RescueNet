@@ -268,8 +268,11 @@ describe("Disasters API Integration", () => {
 
       const response = await agent.get("/api/disasters/updates");
 
-      expect(response.status).toBe(500);
-      expect(response.body.success).toBe(false);
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.reports).toHaveLength(0);
+      expect(response.body.data.disasters).toHaveLength(0);
+      expect(response.body.warning).toContain("Service may be temporarily unavailable");
     });
   });
 

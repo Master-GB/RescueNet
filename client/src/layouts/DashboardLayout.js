@@ -271,13 +271,11 @@ const DashboardLayout = ({
         <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Left */}
           <Link to={homePath} className="flex items-center gap-3 min-w-fit transition-opacity">
-          {/* added square logo */}
             <img
               src={RNlogo}
               alt="RescueNet logo"
               className="w-11 h-11 object-cover shadow-sm"
             />
-            
             <div>
               {/* text logo image */}
               <img 
