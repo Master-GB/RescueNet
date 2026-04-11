@@ -99,26 +99,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/volunteer/profile-setup"
-        element={
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerProfileFormPage />
-          </RoleRoute>
-        }
-      />
-      <Route
         path="/ngo/profile-setup"
         element={
           <RoleRoute allowedRoles={["NGO"]}>
             <NgoProfileFormPage />
-          </RoleRoute>
-        }
-      />
-      <Route
-        path="/volunteer/pending-approval"
-        element={
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerPendingApprovalPage />
           </RoleRoute>
         }
       />
@@ -214,14 +198,6 @@ const AppRoutes = () => {
             </DashboardLayout>
           </RoleRoute>
         )}
-      />
-      <Route
-        path="/volunteer-dashboard"
-        element={
-          <RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
-            <VolunteerDashboard />
-          </RoleRoute>
-        }
       />
       <Route
         path="/ngo-dashboard"
@@ -370,6 +346,8 @@ const AppRoutes = () => {
           </RoleRoute>
         }
       />
+
+      {renderVolunteerRoutes()}
 
       <Route path="*" element={<TrafficCopRedirect />} />
     </Routes>
