@@ -40,7 +40,7 @@ const WeatherDetailsCard = () => {
       
       // Fetch weather data
       const weatherResponse = await fetch(
-        `http://localhost:5000/api/weather/current?lat=${latitude}&lon=${longitude}`
+        `api/weather/current?lat=${latitude}&lon=${longitude}`
       );
       
       if (!weatherResponse.ok) {
@@ -57,7 +57,7 @@ const WeatherDetailsCard = () => {
       // Fallback to Colombo weather
       try {
         const fallbackResponse = await fetch(
-          'http://localhost:5000/api/weather/current?city=Colombo'
+          'api/weather/current?city=Colombo'
         );
         const fallbackData = await fallbackResponse.json();
         setWeather(fallbackData);

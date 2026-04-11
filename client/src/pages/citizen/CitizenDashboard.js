@@ -550,13 +550,14 @@ const CitizenDashboard = () => {
         </section>
 
         {/* Emergency Quick Actions */}
-        <section>
+        <section className='mt-10'>
           <SectionHeader
             title="Emergency Actions"
             subtitle="Critical actions for emergency situations"
+
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
             <QuickActionCard
               title="Request Help"
               description="Request assistance for  emergency situations, or medical help needed."

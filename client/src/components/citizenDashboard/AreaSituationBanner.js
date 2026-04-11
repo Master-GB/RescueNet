@@ -97,7 +97,7 @@ const AreaSituationBanner = () => {
       console.log('Fetching area situation from API...');
       
       // Build URL with location parameters
-      let url = 'http://localhost:5000/api/area/situation';
+      let url = 'api/area/situation';
       const params = new URLSearchParams();
       
       if (userLocation) {
