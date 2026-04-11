@@ -3,6 +3,7 @@ import {
   createShelter,
   getShelterById,
   listShelters,
+  listSheltersWithVerification,
   nearbyShelters,
   updateShelter,
   deleteShelter,
@@ -16,6 +17,7 @@ import { shelterCreateSchema, shelterUpdateSchema } from "../validators/shelter.
 const shelterRouter = express.Router();
 
 shelterRouter.get("/get-list", listShelters);
+shelterRouter.get("/get-list-verified", listSheltersWithVerification);
 shelterRouter.get("/get-nearby", nearbyShelters);
 shelterRouter.get("/get/:id", getShelterById);
 

@@ -10,6 +10,17 @@ await jest.unstable_mockModule("jsonwebtoken", () => ({
   },
 }));
 
+const cloudinaryConfigMock = jest.fn();
+const cloudinaryDestroyMock = jest.fn();
+await jest.unstable_mockModule("cloudinary", () => ({
+  v2: {
+    config: cloudinaryConfigMock,
+    uploader: {
+      destroy: cloudinaryDestroyMock,
+    },
+  },
+}));
+
 const findOneMock = jest.fn();
 const createMock = jest.fn();
 const findByIdMock = jest.fn();
@@ -64,6 +75,7 @@ const {
   verifyResetOtp,
   resetPassword,
   me,
+  updateProfileImage,
 } = await import("../../../controllers/authController.js"); 
 
 function mockRes() {
@@ -80,6 +92,10 @@ describe("Auth Controller Unit Tests", () => {
     process.env.JWT_SECRET = "test_secret";
     process.env.JWT_EXPIRES_IN = "7d";
     process.env.NODE_ENV = "development";
+    process.env.CLOUDINARY_CLOUD_NAME = "test_cloud";
+    process.env.CLOUDINARY_API_KEY = "test_key";
+    process.env.CLOUDINARY_API_SECRET = "test_secret";
+    cloudinaryDestroyMock.mockResolvedValue({ result: "ok" });
   });
 
   // -------------------------
@@ -175,6 +191,56 @@ describe("Auth Controller Unit Tests", () => {
       );
     });
 
+    test("should persist profileImageUrl when profile image is uploaded", async () => {
+      findOneMock.mockResolvedValue(null);
+      hashPasswordMock.mockResolvedValue("hashed_pw");
+
+      const createdUser = {
+        _id: "u1",
+        name: "B",
+        email: "a@b.com",
+        role: "CITIZEN",
+        profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+        toString() {
+          return "u1";
+        },
+      };
+      createMock.mockResolvedValue(createdUser);
+
+      jwtSignMock.mockReturnValue("token123");
+
+      const req = {
+        body: {
+          name: "B",
+          email: "a@b.com",
+          password: "Pass123!",
+          role: "CITIZEN",
+        },
+        file: {
+          path: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+          filename: "rescuenet_profiles/test_profile",
+        },
+      };
+      const res = mockRes();
+
+      await registerUser(req, res);
+
+      expect(createMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+          profileImagePublicId: "rescuenet_profiles/test_profile",
+        })
+      );
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user: expect.objectContaining({
+            profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+          }),
+        })
+      );
+    });
+
     test("should return 500 if DB throws error", async () => {
       findOneMock.mockRejectedValue(new Error("DB error"));
 
@@ -194,7 +260,7 @@ describe("Auth Controller Unit Tests", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Registeration failed",
+          message: "Registration failed. Please try again.",
         })
       );
     });
@@ -326,6 +392,125 @@ describe("Auth Controller Unit Tests", () => {
         success: true,
         message: "Logout successful",
       });
+    });
+  });
+
+  // -------------------------
+  // updateProfileImage
+  // -------------------------
+  describe("updateProfileImage", () => {
+    test("should return 400 when no file and no remove flag are provided", async () => {
+      const req = {
+        user: { _id: "u1" },
+        body: {},
+      };
+      const res = mockRes();
+
+      await updateProfileImage(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Provide a profile image file or set removeProfileImage=true.",
+        })
+      );
+    });
+
+    test("should return 404 when user is not found", async () => {
+      findByIdMock.mockResolvedValue(null);
+
+      const req = {
+        user: { _id: "u1" },
+        body: {},
+        file: {
+          path: "https://res.cloudinary.com/demo/image/upload/v1/new-profile.jpg",
+          filename: "rescuenet_profiles/new-profile",
+        },
+      };
+      const res = mockRes();
+
+      await updateProfileImage(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "User not found.",
+        })
+      );
+    });
+
+    test("should update profile image and clean up previous Cloudinary asset", async () => {
+      const saveMock = jest.fn();
+      const dbUser = {
+        _id: "u1",
+        profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/old-profile.jpg",
+        profileImagePublicId: "rescuenet_profiles/old-profile",
+        save: saveMock,
+      };
+      findByIdMock.mockResolvedValue(dbUser);
+
+      const req = {
+        user: { _id: "u1" },
+        body: {},
+        file: {
+          path: "https://res.cloudinary.com/demo/image/upload/v1/new-profile.jpg",
+          filename: "rescuenet_profiles/new-profile",
+        },
+      };
+      const res = mockRes();
+
+      await updateProfileImage(req, res);
+
+      expect(dbUser.profileImageUrl).toBe("https://res.cloudinary.com/demo/image/upload/v1/new-profile.jpg");
+      expect(dbUser.profileImagePublicId).toBe("rescuenet_profiles/new-profile");
+      expect(saveMock).toHaveBeenCalled();
+      expect(cloudinaryDestroyMock).toHaveBeenCalledWith(
+        "rescuenet_profiles/old-profile",
+        expect.objectContaining({ invalidate: true, resource_type: "image" })
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Profile image updated successfully.",
+        })
+      );
+    });
+
+    test("should remove profile image and clear stored cloudinary metadata", async () => {
+      const saveMock = jest.fn();
+      const dbUser = {
+        _id: "u1",
+        profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/old-profile.jpg",
+        profileImagePublicId: "rescuenet_profiles/old-profile",
+        save: saveMock,
+      };
+      findByIdMock.mockResolvedValue(dbUser);
+
+      const req = {
+        user: { _id: "u1" },
+        body: { removeProfileImage: "true" },
+      };
+      const res = mockRes();
+
+      await updateProfileImage(req, res);
+
+      expect(dbUser.profileImageUrl).toBeNull();
+      expect(dbUser.profileImagePublicId).toBeNull();
+      expect(saveMock).toHaveBeenCalled();
+      expect(cloudinaryDestroyMock).toHaveBeenCalledWith(
+        "rescuenet_profiles/old-profile",
+        expect.objectContaining({ invalidate: true, resource_type: "image" })
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Profile image removed successfully.",
+        })
+      );
     });
   });
 

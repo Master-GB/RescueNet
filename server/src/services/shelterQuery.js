@@ -1,4 +1,5 @@
 export function buildShelterQuery(q) {
+  console.log('buildShelterQuery - input query:', q);
   const filter = {};
 
   // text search (Mongo text index)
@@ -36,6 +37,9 @@ for (const key of specialKeys) {
   if (q[key] === "true") filter[`specialSupport.${key}`] = true;
   if (q[key] === "false") filter[`specialSupport.${key}`] = false;
 }
+
+// createdBy filter
+if (q.createdBy) filter.createdBy = q.createdBy;
 
   return filter;
 }

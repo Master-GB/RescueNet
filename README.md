@@ -175,8 +175,8 @@ Designed to assist communities during disasters.
 |---------|--------------|
 | **Backend** | Node.js, Express.js, MongoDB, Mongoose, Socket.IO, NodeCache, Axios, Cookie Parser |
 | **Backend External APIs** | USGS Earthquake API, NASA FIRMS API, GDACS RSS, ReliefWeb API, OSRM Routing API, NodeMailer, OpenWeather / Open-Meteo,  Hugging Face Inference API, Google Translate API, Notify.lk SMS Gateway, OpenStreetMap Nominatim, Cloudinary |
-| **Frontend** |  |
-| **Frontend External APIs** |  |
+| **Frontend** | React 19, React Router DOM v7, Tailwind CSS (Vigilant Sanctuary System), GSAP & Framer Motion (Animations), Leaflet & React Leaflet (Maps), Recharts (Data Visualization), Socket.IO Client, Axios, Lucide React |
+| **Frontend External APIs** | Leaflet (OpenStreetMap), Cloudinary (Image Delivery) |
 
 ---
 
@@ -305,6 +305,99 @@ Create `.env` file inside `server/`
 ## 4️⃣ Start Server
 
     npm run dev
+
+------------------------------------------------------------------------
+
+# 🎨 Frontend Overview
+
+**RescueNet Frontend** is a modern, high-performance web application built with React 19 and styled using the custom **"Vigilant Sanctuary"** design system. It provides a specialized, role-based interface for Citizens, NGOs, Volunteers, and Admins to coordinate disaster response efforts effectively.
+
+## 💎 Design Philosophy: "The Vigilant Sanctuary"
+
+The platform's UI follows a specialized design system optimized for clarity and focus under high-stress conditions:
+- **Atmospheric Clarity**: Deep obsidian tones (`#151316`) combined with high-frequency signal colors (Mint Signal `#56f7b7`) for maximum legibility.
+- **The "No-Line" Rule**: Content is separated by tonal shifts and background hierarchy rather than 1px borders, reducing visual clutter.
+- **Glassmorphism**: Layered "glass" panels with backdrop blur provide depth and focus for critical navigation and map controls.
+- **Editorial Typography**: Uses **Raleway** for an authoritative yet approachable feel, with a scale designed for readability in motion.
+
+------------------------------------------------------------------------
+
+# 📱 Frontend Features by Role
+
+## 👤 Citizen Portal
+- **Real-time SOS Reporting**: Quickly request help with GPS location sharing and automated urgency scoring.
+- **Disaster Map**: Interactive map showing real-time earthquakes, fires, and flood alerts from global APIs.
+- **Shelter Discovery**: Find nearby shelters with proximity filtering and real-time occupancy status.
+- **Missing Persons**: Report missing persons and submit sightings to aid community recovery.
+- **Donation Hub**: Discover and pledge to relief campaigns organized by NGOs.
+- **Emergency Guides**: On-demand access to first-aid guides and critical emergency contacts.
+
+## 🏢 NGO Portal
+- **Campaign Management**: Create and track relief campaigns with inventory and donation monitoring.
+- **Task Execution**: Receive and manage official task assignments from platform administrators.
+- **Donation Review**: Validate and process community donation pledges.
+- **Shelter Coordination**: Manage shelter capacity and amenities in real-time.
+
+## 🤝 Volunteer Portal
+- **Field Dashboard**: Real-time view of assigned tasks and localized relief requests.
+- **GPS-Enabled Mapping**: Field-ready navigation and situational awareness.
+- **Pulse Notifications**: Instant alerts for team coordination and urgent priority changes.
+- **Resource Tracking**: Manage relief requests and donations directly from the field.
+
+## ⚙️ Admin Portal
+- **Platform Orchestration**: High-level dashboard for monitoring system health and disaster trends.
+- **NGO Lifecycle**: Verify into and manage NGO credentials and performance.
+- **Task Dispatching**: AI-assisted triaging and assignment of SOS requests to NGOs.
+- **Global Governance**: Manage platform-wide shelter standards and situational data.
+
+------------------------------------------------------------------------
+
+# 📂 Frontend Folder Structure
+
+```
+client
+├── public/                 # Static assets and site index
+├── src/
+│   ├── assets/             # Images, brand icons, and theme assets
+│   ├── components/         # Atomic and reusable UI components
+│   ├── constants/          # App-wide configurations and API endpoints
+│   ├── contexts/           # Global state (Auth, Notification, Socket)
+│   ├── hooks/              # Custom React logic and state helpers
+│   ├── layouts/            # Role-specific dashboard structures
+│   ├── pages/              # Domain-specific views (Admin, NGO, etc.)
+│   ├── routes/             # App routing and Role-Based Access Control
+│   ├── services/           # Backend API integration (Axios instance)
+│   ├── styles/             # Design tokens and Global CSS
+│   └── utils/              # Formatting and helper utilities
+├── postcss.config.js       # Styling post-processing
+├── tailwind.config.js      # Vigilant Sanctuary theme configuration
+└── package.json            # Frontend dependency manifest
+```
+
+------------------------------------------------------------------------
+
+# ⚙️ Getting Started (Frontend)
+
+## 1️⃣ Navigate to Client
+```bash
+cd client
+```
+
+## 2️⃣ Install Dependencies
+```bash
+npm install
+```
+
+## 3️⃣ Environment Configuration
+Create a `.env` file in the `client/` directory:
+```env
+REACT_APP_API_BASE_URL=http://localhost:5000
+```
+
+## 4️⃣ Start Application
+```bash
+npm start
+```
 
 ------------------------------------------------------------------------
 

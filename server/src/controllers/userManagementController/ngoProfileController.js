@@ -1,5 +1,6 @@
 import NgoProfile from "../../models/userProfileModel/NgoProfile.js";
 import User from "../../models/user.js";
+import { destroyCloudinaryAssetByPublicId } from "../../services/cloudinaryAssetService.js";
 
 export const createNgoProfile = async (req, res) => {
   try {
@@ -159,6 +160,17 @@ export const deleteNgoProfile = async (req, res) => {
         return res .status(404) .json({ success: false, message: "User not found" });
     };
 
+    let cleanupWarning = "";
+    if (userDelete.profileImagePublicId) {
+      const cleanupResult = await destroyCloudinaryAssetByPublicId(userDelete.profileImagePublicId);
+      if (!cleanupResult.success) {
+        cleanupWarning = "NGO account deleted, but failed to remove profile image from Cloudinary.";
+        console.warn(
+          `[CloudinaryCleanup] Failed for NGO user ${userDelete._id}: ${cleanupResult.reason}`,
+        );
+      }
+    }
+
     const profileDelete = await NgoProfile.findOneAndDelete({ userId: req.user._id });
 
     if (!profileDelete) {
@@ -173,9 +185,18 @@ export const deleteNgoProfile = async (req, res) => {
       sameSite: isProd ? "none" : "lax",
     });
 
+    const responsePayload = {
+      success: true,
+      message: "Profile deleted successfully",
+    };
+
+    if (cleanupWarning) {
+      responsePayload.warning = cleanupWarning;
+    }
+
     return res
       .status(200)
-      .json({ success: true, message: "Profile deleted successfully" });
+      .json(responsePayload);
   } catch (error) {
     return res
       .status(500)

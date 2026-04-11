@@ -1,59 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="8" failures="2" errors="0" time="144.206">
-  <testsuite name="Real-time Communication Integration" errors="0" failures="2" skipped="0" timestamp="2026-04-02T17:04:04" time="144.091" tests="8">
-    <testcase classname="Real-time Communication Integration should establish socket connection" name="Real-time Communication Integration should establish socket connection" time="0.053">
+<testsuites name="jest tests" tests="3" failures="0" errors="0" time="12.837">
+  <testsuite name="Emergency Response Workflow Integration" errors="0" failures="0" skipped="0" timestamp="2026-04-11T06:36:33" time="12.762" tests="3">
+    <testcase classname="Emergency Response Workflow Integration should complete full emergency response workflow" name="Emergency Response Workflow Integration should complete full emergency response workflow" time="11.158">
     </testcase>
-    <testcase classname="Real-time Communication Integration should handle location sharing start event" name="Real-time Communication Integration should handle location sharing start event" time="0.032">
+    <testcase classname="Emergency Response Workflow Integration should handle workflow with geolocation services" name="Emergency Response Workflow Integration should handle workflow with geolocation services" time="0.017">
     </testcase>
-    <testcase classname="Real-time Communication Integration should handle location update events" name="Real-time Communication Integration should handle location update events" time="0.066">
-    </testcase>
-    <testcase classname="Real-time Communication Integration should handle emergency alert broadcasting" name="Real-time Communication Integration should handle emergency alert broadcasting" time="60.021">
-      <failure>TypeError: expect(Flash flood warning in Colombo area).toContain(/flash flood/i) // indexOf
-
-Matcher error: expected value must be a string if received value is a string
-
-Expected has type:  regexp
-Expected has value: /flash flood/i
-Received has type:  string
-Received has value: &quot;Flash flood warning in Colombo area&quot;
-    at Socket.toContain (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\src\tests\integration\socket\real-time-communication.test.js:220:30)
-    at Socket.Emitter.emit (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\@socket.io\component-emitter\lib\cjs\index.js:143:20)
-    at Socket.emitEvent (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\socket.io-client\build\esm-debug\socket.js:552:20)
-    at Socket.onevent (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\socket.io-client\build\esm-debug\socket.js:539:18)
-    at Socket.onpacket (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\socket.io-client\build\esm-debug\socket.js:507:22)
-    at Manager.Emitter.emit (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\@socket.io\component-emitter\lib\cjs\index.js:143:20)
-    at D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\socket.io-client\build\esm-debug\manager.js:217:18
-    at processTicksAndRejections (node:internal/process/task_queues:89:21)</failure>
-      <failure>Error: thrown: &quot;Exceeded timeout of 60000 ms for a test while waiting for `done()` to be called.
-Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
-    at it (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\src\tests\integration\socket\real-time-communication.test.js:191:3)
-    at _dispatchDescribe (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-circus\build\jestAdapterInit.js:604:26)
-    at describe (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-circus\build\jestAdapterInit.js:572:44)
-    at describe (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\src\tests\integration\socket\real-time-communication.test.js:7:1)
-    at SourceTextModule.evaluate (node:internal/vm/module:227:23)
-    at Runtime.linkAndEvaluateModule (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-runtime\build\index.js:686:20)
-    at jestAdapter (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-circus\build\runner.js:93:5)
-    at runTestInternal (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-runner\build\index.js:275:16)
-    at runTest (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-runner\build\index.js:343:7)</failure>
-    </testcase>
-    <testcase classname="Real-time Communication Integration should handle multiple concurrent connections" name="Real-time Communication Integration should handle multiple concurrent connections" time="0.037">
-    </testcase>
-    <testcase classname="Real-time Communication Integration should handle disconnection gracefully" name="Real-time Communication Integration should handle disconnection gracefully" time="0.138">
-    </testcase>
-    <testcase classname="Real-time Communication Integration should handle invalid socket events gracefully" name="Real-time Communication Integration should handle invalid socket events gracefully" time="0.131">
-    </testcase>
-    <testcase classname="Real-time Communication Integration should handle emergency location sharing workflow" name="Real-time Communication Integration should handle emergency location sharing workflow" time="60.007">
-      <failure>Error: thrown: &quot;Exceeded timeout of 60000 ms for a test while waiting for `done()` to be called.
-Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
-    at it (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\src\tests\integration\socket\real-time-communication.test.js:303:3)
-    at _dispatchDescribe (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-circus\build\jestAdapterInit.js:604:26)
-    at describe (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-circus\build\jestAdapterInit.js:572:44)
-    at describe (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\src\tests\integration\socket\real-time-communication.test.js:7:1)
-    at SourceTextModule.evaluate (node:internal/vm/module:227:23)
-    at Runtime.linkAndEvaluateModule (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-runtime\build\index.js:686:20)
-    at jestAdapter (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-circus\build\runner.js:93:5)
-    at runTestInternal (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-runner\build\index.js:275:16)
-    at runTest (D:\SLIIT\Y3-S2\Application Frameworks - SE3040\Assignment\RescueNet\server\node_modules\jest-runner\build\index.js:343:7)</failure>
+    <testcase classname="Emergency Response Workflow Integration should handle workflow errors gracefully" name="Emergency Response Workflow Integration should handle workflow errors gracefully" time="0.019">
     </testcase>
   </testsuite>
 </testsuites>

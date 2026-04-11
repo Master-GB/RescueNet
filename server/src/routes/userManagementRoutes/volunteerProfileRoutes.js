@@ -6,6 +6,7 @@ import { volunteerCreateSchema, volunteerUpdateSchema, volunteerStatusSchema} fr
 import {
   createVolunteerProfile,
   getVolunteerProfile,
+  getTeamPresence,
   updateVolunteerProfile,
   updateAvailabilityStatus,
   deleteVolunteerProfile
@@ -15,6 +16,7 @@ const volunteerProfileRouter = Router();
 
 volunteerProfileRouter.post("/profile-create", protect, authorize("VOLUNTEER"), validateBody(volunteerCreateSchema), createVolunteerProfile);
 volunteerProfileRouter.get("/profile-get", protect, authorize("VOLUNTEER"), getVolunteerProfile);
+volunteerProfileRouter.get("/team-presence", protect, authorize("VOLUNTEER"), getTeamPresence);
 volunteerProfileRouter.patch("/profile-update", protect, authorize("VOLUNTEER"), validateBody(volunteerUpdateSchema), updateVolunteerProfile);
 volunteerProfileRouter.patch("/profile/status-update", protect, authorize("VOLUNTEER"), validateBody(volunteerStatusSchema), updateAvailabilityStatus);
 volunteerProfileRouter.delete("/profile-delete", protect, authorize("VOLUNTEER"), deleteVolunteerProfile);

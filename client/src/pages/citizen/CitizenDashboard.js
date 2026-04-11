@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from "../../layouts/DashboardLayout";
 import AreaSituationBanner from "../../components/citizenDashboard/AreaSituationBanner";
@@ -7,19 +7,12 @@ import ShelterCard from "../../components/citizenDashboard/ShelterCard";
 import SectionHeader from "../../components/citizenDashboard/SectionHeader";
 import CurrentLocationCard from "../../components/citizenDashboard/CurrentLocationCard";
 import WeatherDetailsCard from "../../components/citizenDashboard/WeatherDetailsCard";
-import RecentNotifications from "../../components/citizenDashboard/RecentNotifications";
 import ShelterMap from "../../components/citizenDashboard/ShelterMap";
 import locationService from '../../services/locationService.js';
-import { AlertTriangle, Shield, Phone, Radio, Heart, Zap, MapPin, Users, Mail, Accessibility, Baby, Wifi, AlertCircle, X } from "lucide-react";
+import { DISASTER_TYPES } from '../../constants/disasterConstants';
+import { AlertTriangle, Shield, Phone, Radio, Heart, Zap, MapPin, Users, Mail, Accessibility, Baby, Wifi, AlertCircle, X, ExternalLink, Loader2, Newspaper, Filter, ChevronDown, Check } from "lucide-react";
 
 // Constants for shelter types and features
-const DISASTER_TYPES = [
-  { value: 'OTHER', label: 'Other', icon: '🏠' },
-  { value: 'FLOOD', label: 'Flood', icon: '🧊' },
-  { value: 'LANDSLIDE', label: 'Landslide', icon: '⛰️' },
-  { value: 'TSUNAMI', label: 'Tsunami', icon: '🌊' },
-];
-
 const SUPPORT_FEATURES = [
   { key: 'wheelchairAccess', label: 'Wheelchair Access', icon: Accessibility },
   { key: 'medical', label: 'Medical Support', icon: Shield },
@@ -46,6 +39,11 @@ const CitizenDashboard = () => {
   const [allShelters, setAllShelters] = useState([]);
   const [selectedShelter, setSelectedShelter] = useState(null);
   const [showEmergencyPopup, setShowEmergencyPopup] = useState(false);
+  const [reliefWebUpdates, setReliefWebUpdates] = useState(null);
+  const [updatesLoading, setUpdatesLoading] = useState(false);
+  const [updatesError, setUpdatesError] = useState(null);
+  const [updatesFilter, setUpdatesFilter] = useState('all');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Debug savedShelters changes
   useEffect(() => {
@@ -107,6 +105,32 @@ const CitizenDashboard = () => {
     fetchData();
   }, []);
 
+  // Fetch RelifWeb API updates
+  useEffect(() => {
+    const fetchRelifWebUpdates = async () => {
+      try {
+        setUpdatesLoading(true);
+        setUpdatesError(null);
+        const response = await fetch('/api/disasters/updates?q=Sri%20Lanka&limit=20');
+        const data = await response.json();
+        if (data.success) {
+          setReliefWebUpdates(data.data);
+        } else {
+          setUpdatesError('Failed to fetch updates');
+        }
+      } catch (error) {
+        console.error('❌ Dashboard: Failed to fetch RelifWeb updates:', error);
+        setUpdatesError(error.message);
+      } finally {
+        setUpdatesLoading(false);
+      }
+    };
+
+    fetchRelifWebUpdates();
+    const interval = setInterval(fetchRelifWebUpdates, 60000); // Refresh every 60 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSosClick = () => {
     setIsSosActive(!isSosActive);
     if (!isSosActive) {
@@ -129,6 +153,85 @@ const CitizenDashboard = () => {
     console.log('View shelter details:', shelter);
     console.log('Shelter data structure:', shelter);
     setSelectedShelter(shelter); // Open modal
+  };
+
+  // Filter logic for ReliefWeb updates
+  const filteredUpdates = useMemo(() => {
+    if (!reliefWebUpdates) return { reports: [], disasters: [] };
+    
+    const reports = reliefWebUpdates.reports || [];
+    const disasters = reliefWebUpdates.disasters || [];
+    
+    const toItem = (x, kind) => ({
+      id: `${kind}-${x.id}`,
+      kind,
+      title: x.title,
+      url: x.url,
+      date: x.date,
+      countries: x.countries || [],
+      disasterTypes: x.disasterTypes || [],
+    });
+
+    let allItems = [...reports.map((r) => toItem(r, 'report')), ...disasters.map((d) => toItem(d, 'disaster'))]
+      .filter((x) => x.title)
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+
+    // Apply disaster type filter
+    if (updatesFilter !== 'all') {
+      const filteredItems = allItems.filter((item) => {
+        // Always filter by title since disasterTypes will be empty (no category field in ReliefWeb v2)
+        const titleLower = item.title.toLowerCase();
+        const filterLower = updatesFilter.toLowerCase();
+        
+        const disasterVariations = {
+          'earthquake': ['earthquake', 'quake', 'seismic', 'tremor'],
+          'fire': ['fire', 'wildfire', 'burn', 'flame', 'blaze'],
+          'flood': ['flood', 'flooding', 'water', 'inundation'],
+          'tsunami': ['tsunami', 'tidal wave', 'sea wave'],
+          'cyclone': ['cyclone', 'storm', 'hurricane', 'typhoon'],
+          'landslide': ['landslide', 'mudslide', 'rockslide'],
+          'volcano': ['volcano', 'volcanic', 'eruption', 'lava'],
+          'drought': ['drought', 'dry', 'arid'],
+          'wildfire': ['wildfire', 'fire', 'burn', 'flame', 'blaze'],
+        };
+        
+        const variations = disasterVariations[filterLower] || [filterLower];
+        const titleMatch = variations.some(variation => titleLower.includes(variation));
+        
+        return titleMatch;
+      });
+      
+      allItems = filteredItems;
+    }
+
+    // Separate back into reports and disasters
+    const filteredReports = allItems.filter(item => item.kind === 'report');
+    const filteredDisasters = allItems.filter(item => item.kind === 'disaster');
+    
+    return {
+      reports: filteredReports.slice(0, 5),
+      disasters: filteredDisasters.slice(0, 5)
+    };
+  }, [reliefWebUpdates, updatesFilter]);
+
+  const selectedFilter = useMemo(() => {
+    if (updatesFilter === 'all') return { label: 'All Updates', icon: Filter, color: 'gray' };
+    const disasterType = DISASTER_TYPES.find(t => t.key.toLowerCase() === updatesFilter.toLowerCase());
+    return disasterType ? { 
+      label: disasterType.label, 
+      icon: Filter, 
+      color: disasterType.color 
+    } : { label: 'All Updates', icon: Filter, color: 'gray' };
+  }, [updatesFilter]);
+
+  const handleFilterSelect = (value) => {
+    setUpdatesFilter(value);
+    setIsDropdownOpen(false);
+  };
+
+  const clearFilter = () => {
+    setUpdatesFilter('all');
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -499,7 +602,6 @@ const CitizenDashboard = () => {
             <SectionHeader
               title="Saved Shelters"
               subtitle="Your saved shelters for quick access"
-              actionText="See all"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -522,11 +624,259 @@ const CitizenDashboard = () => {
 
           <div>
             <SectionHeader
-              title="Recent Notifications"
-              subtitle="Latest emergency alerts and updates"
+              title="Disaster Updates"
+              subtitle="Latest disaster reports and alerts from RelifWeb"
             />
 
-            <RecentNotifications />
+            <div className="rounded-3xl border border-gray-200 bg-white/70 backdrop-blur-md shadow-sm overflow-hidden">
+              {/* Header with Enhanced Filter */}
+              <div className="px-6 py-4 border-b border-gray-200/70">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                      <Newspaper className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-lg font-extrabold text-gray-900">Live Updates</div>
+                      <div className="text-xs text-gray-500 font-semibold">ReliefWeb real-time feed</div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {updatesLoading ? (
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading...
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full font-semibold">
+                        {filteredUpdates.reports.length + filteredUpdates.disasters.length} items
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Enhanced Filter Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white border-2 border-gray-200 rounded-2xl hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-xl bg-${selectedFilter.color}-100 flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                        <selectedFilter.icon className={`w-4 h-4 text-${selectedFilter.color}-600`} />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-sm font-semibold text-gray-900">{selectedFilter.label}</div>
+                        <div className="text-xs text-gray-500">Filter by disaster type</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {updatesFilter !== 'all' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearFilter();
+                          }}
+                          className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          <X className="w-4 h-4 text-gray-500" />
+                        </button>
+                      )}
+                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+                      <div className="max-h-64 overflow-y-auto">
+                        <div className="p-2">
+                          <button
+                            onClick={() => handleFilterSelect('all')}
+                            className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-colors ${
+                              updatesFilter === 'all' 
+                                ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                                : 'hover:bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
+                                <Filter className="w-4 h-4 text-gray-600" />
+                              </div>
+                              <span className="font-semibold">All Updates</span>
+                            </div>
+                            {updatesFilter === 'all' && <Check className="w-4 h-4 text-blue-600" />}
+                          </button>
+                          
+                          <div className="border-t border-gray-100 my-2"></div>
+                          
+                          {DISASTER_TYPES.map(type => {
+                            const isActive = updatesFilter === type.key.toLowerCase();
+                            
+                            return (
+                              <button
+                                key={type.key}
+                                onClick={() => handleFilterSelect(type.key.toLowerCase())}
+                                className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-colors ${
+                                  isActive 
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                                    : 'hover:bg-gray-50 text-gray-700'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-8 h-8 rounded-xl bg-${type.color}-100 flex items-center justify-center`}>
+                                    <span className="text-sm font-bold text-${type.color}-700">{type.label[0]}</span>
+                                  </div>
+                                  <div className="text-left">
+                                    <span className="font-semibold">{type.label}</span>
+                                  </div>
+                                </div>
+                                {isActive && <Check className="w-4 h-4 text-blue-600" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 space-y-3 max-h-[500px] overflow-y-auto">
+                {updatesLoading ? (
+                  <div className="flex items-center justify-center py-8 text-gray-500">
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    <span>Loading disaster updates...</span>
+                  </div>
+                ) : updatesError ? (
+                  <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{updatesError}</span>
+                  </div>
+                ) : filteredUpdates ? (
+                  <>
+                    {filteredUpdates.reports && filteredUpdates.reports.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <Newspaper className="w-4 h-4 text-blue-600" />
+                          </div>
+                          Reports
+                          <span className="ml-2 px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+                            {filteredUpdates.reports.length}
+                          </span>
+                        </h4>
+                        <div className="space-y-3">
+                          {filteredUpdates.reports.map((report, idx) => (
+                            <a
+                              key={`report-${idx}`}
+                              href={report.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group relative block p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                            >
+                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <div className="flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
+                                  <ExternalLink className="w-3 h-3 text-blue-600" />
+                                  <span className="text-xs text-blue-600 font-medium">View</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                  <Newspaper className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2 group-hover:text-blue-700 transition-colors">
+                                    {report.title}
+                                  </h5>
+                                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                      <span>Report</span>
+                                    </div>
+                                    <span>·</span>
+                                    <span>{report.date}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {filteredUpdates.disasters && filteredUpdates.disasters.length > 0 && (
+                      <div className={filteredUpdates.reports && filteredUpdates.reports.length > 0 ? 'border-t border-gray-200 pt-6' : ''}>
+                        <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <div className="p-2 bg-amber-100 rounded-lg">
+                            <AlertTriangle className="w-4 h-4 text-amber-600" />
+                          </div>
+                          Disaster Alerts
+                          <span className="ml-2 px-2 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-full">
+                            {filteredUpdates.disasters.length}
+                          </span>
+                        </h4>
+                        <div className="space-y-3">
+                          {filteredUpdates.disasters.map((disaster, idx) => (
+                            <a
+                              key={`disaster-${idx}`}
+                              href={disaster.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group relative block p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl hover:from-amber-100 hover:to-orange-100 hover:border-amber-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                            >
+                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <div className="flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
+                                  <ExternalLink className="w-3 h-3 text-amber-600" />
+                                  <span className="text-xs text-amber-600 font-medium">View</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+                                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2 group-hover:text-amber-700 transition-colors">
+                                    {disaster.title}
+                                  </h5>
+                                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                      <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                                      <span>Alert</span>
+                                    </div>
+                                    <span>·</span>
+                                    <span>{disaster.date}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {(!filteredUpdates.reports || filteredUpdates.reports.length === 0) && 
+                     (!filteredUpdates.disasters || filteredUpdates.disasters.length === 0) && (
+                      <div className="flex items-center justify-center py-8 text-gray-500">
+                        <p>
+                          {updatesFilter === 'all' ? 'No updates available.' : `No ${selectedFilter.label} updates found.`}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center py-8 text-gray-500">
+                    <p>No updates loaded</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </section>
 

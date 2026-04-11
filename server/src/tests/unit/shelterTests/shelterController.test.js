@@ -253,8 +253,8 @@ describe("Shelter Controller - Unit Tests", () => {
       await listShelters(req, res);
 
       expect(buildShelterQueryMock).toHaveBeenCalledWith(req.query);
-      expect(findMock).toHaveBeenCalledWith({ status: "OPEN" });
-      expect(countDocumentsMock).toHaveBeenCalledWith({ status: "OPEN" });
+      expect(findMock).toHaveBeenCalledWith({ status: "OPEN", verified: true });
+      expect(countDocumentsMock).toHaveBeenCalledWith({ status: "OPEN", verified: true });
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(

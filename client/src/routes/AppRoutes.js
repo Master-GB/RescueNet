@@ -1,13 +1,27 @@
-// client/src/routes/AppRoutes.js
 import React from "react";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  MapPinned,
+  BellRing,
+  Home,
+  UserCircle,
+  HandHelping,
+  Megaphone,
+  Heart,
+} from "lucide-react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import GuestRoute from "../components/authentication/GuestRoute";
 import OtpVerificationRoute from "../components/authentication/OtpVerificationRoute";
 import RoleRoute from "../components/authentication/RoleRoute";
+import { renderVolunteerRoutes } from "./AppRouteVolunteer";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminNgoManagementPage from "../pages/admin/AdminNgoManagementPage";
+import AdminProfilePage from "../pages/admin/AdminProfilePage";
 import AdminTaskDetailPage from "../pages/admin/AdminTaskDetailPage";
 import AdminTaskManagementPage from "../pages/admin/AdminTaskManagementPage";
+import adminSidebarItems from "../pages/admin/adminSidebarItems";
 import CitizenProfileFormPage from "../pages/auth/CitizenProfileFormPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import LoginPage from "../pages/auth/LoginPage";
@@ -32,12 +46,36 @@ import NgoCreateCampaignPage from "../pages/ngo/NgoCreateCampaignPage";
 import NgoEditCampaignPage from "../pages/ngo/NgoEditCampaignPage";
 import NgoCampaignDonationsPage from "../pages/ngo/NgoCampaignDonationsPage";
 import NgoDonationReviewPage from "../pages/ngo/NgoDonationReviewPage";
+import NgoTaskManagementPage from "../pages/ngo/NgoTaskManagementPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
 import LandingPage from "../pages/LandingPage";
 import AboutPage from "../pages/AboutPage";
 import ContactPage from "../pages/ContactPage";
+import ShelterManagement from "../pages/admin/ShelterManagement";
+import VerifyShelter from "../pages/admin/VerifyShelter";
+import ShelterManagementNGO from "../pages/ngo/ShelterManagementNGO";
+import AreaSituation from "../pages/admin/AreaSituation";
+
+const volunteerSidebarItems = [
+  { name: "Dashboard", icon: LayoutDashboard, path: "/volunteer-dashboard" },
+  { name: "My Tasks", icon: ClipboardList, path: "/volunteer/tasks" },
+  { name: "Field Map", icon: MapPinned, path: "/volunteer/map" },
+  { name: "Team Alerts", icon: BellRing, path: "/volunteer/alerts" },
+  { name: "Relief Requests", icon: HandHelping, path: "/volunteer/requests" },
+  { name: "Donations", icon: Heart, path: "/volunteer/donations" },
+  { name: "Request Help", icon: HandHelping, path: "/volunteer/help-request" },
+  { name: "Shelters", icon: Home, path: "/volunteer/shelters" },
+  { name: "Profile", icon: UserCircle, path: "/volunteer/profile" },
+];
+
+const ngoSidebarItems = [
+  { name: "Dashboard", icon: LayoutDashboard, path: "/ngo-dashboard" },
+  { name: "Task Management", icon: ClipboardList, path: "/ngo/tasks" },
+  { name: "Donation Campaigns", icon: Megaphone, path: "/ngo/campaigns" },
+  { name: "Shelters", icon: Home, path: "/ngo/shelters" },
+];
 
 const AppRoutes = () => {
   return (
@@ -46,256 +84,343 @@ const AppRoutes = () => {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
 
-      <Route path="/volunteer" element={<Navigate to="/volunteer-dashboard" replace />} />
+      <Route
+        path="/volunteer"
+        element={<Navigate to="/volunteer-dashboard" replace />}
+      />
 
       <Route
         path="/auth/login"
-        element={(
+        element={
           <GuestRoute>
             <LoginPage />
           </GuestRoute>
-        )}
+        }
       />
       <Route
         path="/auth/register"
-        element={(
+        element={
           <GuestRoute>
             <RegisterPage />
           </GuestRoute>
-        )}
+        }
       />
       <Route
         path="/auth/forgot-password"
-        element={(
+        element={
           <GuestRoute>
             <ForgotPasswordPage />
           </GuestRoute>
-        )}
+        }
       />
       <Route
         path="/auth/verify-account"
-        element={(
+        element={
           <OtpVerificationRoute>
             <OtpVerificationPage />
           </OtpVerificationRoute>
-        )}
+        }
       />
 
       <Route
         path="/citizen/profile-setup"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]}>
             <CitizenProfileFormPage />
           </RoleRoute>
-        )}
-      />
-      <Route
-        path="/volunteer/profile-setup"
-        element={(
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerProfileFormPage />
-          </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/ngo/profile-setup"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]}>
             <NgoProfileFormPage />
           </RoleRoute>
-        )}
-      />
-      <Route
-        path="/volunteer/pending-approval"
-        element={(
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerPendingApprovalPage />
-          </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/ngo/pending-approval"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]}>
             <NgoPendingApprovalPage />
           </RoleRoute>
-        )}
+        }
       />
 
       <Route
         path="/citizen-dashboard"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <CitizenDashboard />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/citizen/first-aid-guide"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <DashboardLayout>
               <FirstAidGuidePage />
-            </DashboardLayout>   
+            </DashboardLayout>
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/citizen/profile"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <DashboardLayout>
               <CitizenProfilePage />
             </DashboardLayout>
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/citizen/emergency-contact"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <DashboardLayout>
               <EmergencyContactPage />
             </DashboardLayout>
           </RoleRoute>
-        )}
+        }
       />
-       <Route
+      <Route
         path="/citizen/missing-persons"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <MissingPersonPage />
           </RoleRoute>
-        )}
+        }
       />
-       <Route
+      <Route
         path="/citizen/disaster"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <DisasterPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/citizen/shelters"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <DashboardLayout>
               <ShelterPage />
             </DashboardLayout>
-            
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/donations"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <DashboardLayout>
               <CitizenDonationsPage />
             </DashboardLayout>
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/donations/:id"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <DashboardLayout>
               <DonationDetailsPage />
             </DashboardLayout>
           </RoleRoute>
-        )}
-      />
-      <Route
-        path="/volunteer-dashboard"
-        element={(
-          <RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
-            <VolunteerDashboard />
-          </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/ngo-dashboard"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoDashboard />
           </RoleRoute>
-        )}
+        }
+      />
+      <Route
+        path="/ngo/tasks"
+        element={
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoTaskManagementPage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/ngo/shelters"
+        element={
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={ngoSidebarItems}
+              portalTitle="NGO Portal"
+              avatarLetter="N"
+              homePath="/ngo-dashboard"
+              searchPlaceholder="Search tasks, campaigns, and donations..."
+              contentClassName="bg-auth-bg"
+            >
+              <ShelterManagementNGO />
+            </DashboardLayout>
+          </RoleRoute>
+        }
       />
       <Route
         path="/ngo/campaigns"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoCampaignManagementPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/ngo/campaigns/create"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoCreateCampaignPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/ngo/campaigns/:campaignId/edit"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoEditCampaignPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/ngo/campaigns/:campaignId/donations"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoCampaignDonationsPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/ngo/campaigns/:campaignId/donations/:donationId"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoDonationReviewPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/admin-dashboard"
-        element={(
+        element={
           <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
             <AdminDashboard />
           </RoleRoute>
-        )}
+        }
+      />
+
+      <Route
+        path="/admin/shelter-management"
+        element={
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={adminSidebarItems}
+              portalTitle="Admin Portal"
+              avatarLetter="A"
+              homePath="/admin-dashboard"
+              searchPlaceholder="Search users, approvals, and platform controls..."
+            >
+              <ShelterManagement />
+            </DashboardLayout>
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/volunteer/shelters"
+        element={
+          <RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={volunteerSidebarItems}
+              portalTitle="Volunteer Portal"
+              avatarLetter="V"
+              homePath="/volunteer-dashboard"
+              searchPlaceholder="Search tasks, shelters, volunteer teams..."
+            >
+              <ShelterManagementNGO />
+            </DashboardLayout>
+          </RoleRoute>
+        }
+      />
+
+      <Route
+        path="/admin/verify-shelters"
+        element={
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={adminSidebarItems}
+              portalTitle="Admin Portal"
+              avatarLetter="A"
+              homePath="/admin-dashboard"
+              searchPlaceholder="Search users, approvals, and platform controls..."
+            >
+              <VerifyShelter />
+            </DashboardLayout>
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/admin/area-situations"
+        element={
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={adminSidebarItems}
+              portalTitle="Admin Portal"
+              avatarLetter="A"
+              homePath="/admin-dashboard"
+              searchPlaceholder="Search users, approvals, and platform controls..."
+            >
+              <AreaSituation />
+            </DashboardLayout>
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/admin/ngos"
+        element={
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <AdminNgoManagementPage />
+          </RoleRoute>
+        }
       />
       <Route
         path="/admin/tasks"
-        element={(
+        element={
           <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
             <AdminTaskManagementPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/admin/tasks/:taskId"
-        element={(
+        element={
           <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
             <AdminTaskDetailPage />
           </RoleRoute>
-        )}
+        }
+      />
+      <Route
+        path="/admin/profile"
+        element={
+          <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
+            <AdminProfilePage />
+          </RoleRoute>
+        }
       />
 
       <Route
         path="/citizen/help-request"
-        element={(
+        element={
           <RoleRoute allowedRoles={["CITIZEN"]} requireFullyOnboarded>
             <CitizenHelpRequest />
           </RoleRoute>
-        )}
+        }
       />
+
+      {renderVolunteerRoutes()}
 
       <Route path="*" element={<TrafficCopRedirect />} />
     </Routes>
