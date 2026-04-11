@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutDashboard, ClipboardList, MapPinned, BellRing, UserCircle, HandHelping, Siren } from "lucide-react";
+import { LayoutDashboard, ClipboardList, MapPinned, BellRing,Home, UserCircle, HandHelping, Siren } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import VolunteerGreeting from "../../components/volunteerDashboard/VolunteerGreeting";
 import VolunteerSectionHeader from "../../components/volunteerDashboard/VolunteerSectionHeader";
@@ -17,6 +17,7 @@ const volunteerSidebarItems = [
   { name: "Team Alerts", icon: BellRing, path: "/volunteer/alerts" },
   { name: "Relief Requests", icon: HandHelping, path: "/volunteer/requests" },
   { name: "Profile", icon: UserCircle, path: "/volunteer/profile" },
+  { name: "Shelters", icon: Home, path: "/volunteer/shelters" },
 ];
 
 const VolunteerDashboard = () => {
