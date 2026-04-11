@@ -1,0 +1,67 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 30
+      arrivalRate: 1
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 2
+      name: "Normal load"
+    - duration: 30
+      arrivalRate: 1
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 15
+  payload:
+    path: "ngo-test-users.csv"
+    fields:
+      - "token"
+
+scenarios:
+  - name: "List My Assigned Tasks"
+    weight: 50
+    flow:
+      - get:
+          url: "/api/ngo/help-requests"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Get Task Detail (may be 200 or 404)"
+    weight: 30
+    flow:
+      - think: 1
+      - get:
+          url: "/api/ngo/help-requests/000000000000000000000001"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 404]
+
+  - name: "NGO Task lifecycle (accept → in-progress → complete)"
+    weight: 20
+    flow:
+      - think: 1
+      - patch:
+          url: "/api/ngo/help-requests/000000000000000000000001/accept"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 400, 404]
+      - think: 1
+      - patch:
+          url: "/api/ngo/help-requests/000000000000000000000001/in-progress"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 400, 404]
+      - think: 1
+      - patch:
+          url: "/api/ngo/help-requests/000000000000000000000001/complete"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 400, 404]

@@ -1,0 +1,53 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 60
+      arrivalRate: 2
+      name: "Normal traffic"
+    - duration: 30
+      arrivalRate: 50
+      name: "SPIKE - sudden surge"
+    - duration: 30
+      arrivalRate: 100
+      name: "PEAK SPIKE - emergency surge"
+    - duration: 60
+      arrivalRate: 20
+      name: "Sustained high"
+    - duration: 60
+      arrivalRate: 2
+      name: "Recovery"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 45
+  payload:
+    path: "ngo-test-users.csv"
+    fields:
+      - "token"
+
+scenarios:
+  - name: "Spike - list tasks"
+    weight: 80
+    flow:
+      - get:
+          url: "/api/ngo/help-requests"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Spike - Accept/Complete"
+    weight: 20
+    flow:
+      - patch:
+          url: "/api/ngo/help-requests/000000000000000000000001/accept"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 400, 404]
+      - patch:
+          url: "/api/ngo/help-requests/000000000000000000000001/complete"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 400, 404]
