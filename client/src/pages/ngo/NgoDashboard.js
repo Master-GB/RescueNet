@@ -38,7 +38,7 @@ import { updateNgoStatus } from "../../services/profileService";
 import { fetchNgoDashboardRawData } from "../../services/ngoDashboardService";
 import ngoSidebarItems from "./ngoSidebarItems";
 
-// Replaced ngoSidebarItems array since it's now handled in AppRoutes.js
+
 const STATUS_COLORS = {
   assigned: "#f59e0b",
   accepted: "#2cda9d",
