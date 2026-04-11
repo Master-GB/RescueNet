@@ -39,14 +39,23 @@ scenarios:
   - name: "Spike - Accept/Complete"
     weight: 20
     flow:
+      - get:
+          url: "/api/ngo/help-requests"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0]._id"
+              as: "requestId"
+          expect:
+            - statusCode: 200
       - patch:
-          url: "/api/ngo/help-requests/000000000000000000000001/accept"
+          url: "/api/ngo/help-requests/{{ requestId }}/accept"
           headers:
             Authorization: "Bearer {{ token }}"
           expect:
             - statusCode: [200, 400, 404]
       - patch:
-          url: "/api/ngo/help-requests/000000000000000000000001/complete"
+          url: "/api/ngo/help-requests/{{ requestId }}/complete"
           headers:
             Authorization: "Bearer {{ token }}"
           expect:

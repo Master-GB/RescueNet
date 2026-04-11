@@ -33,16 +33,25 @@ scenarios:
   - name: "Sustained - Task lifecycle ops"
     weight: 40
     flow:
+      - get:
+          url: "/api/ngo/help-requests"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0]._id"
+              as: "requestId"
+          expect:
+            - statusCode: 200
       - think: 1
       - patch:
-          url: "/api/ngo/help-requests/000000000000000000000001/accept"
+          url: "/api/ngo/help-requests/{{ requestId }}/accept"
           headers:
             Authorization: "Bearer {{ token }}"
           expect:
             - statusCode: [200, 400, 404]
       - think: 1
       - patch:
-          url: "/api/ngo/help-requests/000000000000000000000001/in-progress"
+          url: "/api/ngo/help-requests/{{ requestId }}/in-progress"
           headers:
             Authorization: "Bearer {{ token }}"
           expect:
