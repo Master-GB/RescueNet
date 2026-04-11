@@ -7,6 +7,9 @@ import {
   Home,
   UserCircle,
   HandHelping,
+  Megaphone,
+  Heart,
+  Building2,
 } from "lucide-react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import GuestRoute from "../components/authentication/GuestRoute";
@@ -56,6 +59,7 @@ const adminSidebarItems = [
   { name: "Shelter Management", icon: Home, path: "/admin/shelter-management" },
   { name: "Task Management", icon: ClipboardList, path: "/admin/tasks" },
   { name: "Area Situations", icon: BellRing, path: "/admin/area-situations" },
+  { name: "NGO Management", icon: Building2, path: "/admin/ngos" },
 ];
 
 const volunteerSidebarItems = [
@@ -64,8 +68,17 @@ const volunteerSidebarItems = [
   { name: "Field Map", icon: MapPinned, path: "/volunteer/map" },
   { name: "Team Alerts", icon: BellRing, path: "/volunteer/alerts" },
   { name: "Relief Requests", icon: HandHelping, path: "/volunteer/requests" },
+  { name: "Donations", icon: Heart, path: "/volunteer/donations" },
+  { name: "Request Help", icon: HandHelping, path: "/volunteer/help-request" },
+  { name: "Shelters", icon: Home, path: "/volunteer/shelters" },
   { name: "Profile", icon: UserCircle, path: "/volunteer/profile" },
-  { name: "Shelters", icon: Home, path: "/admin/shelter-management" },
+];
+
+const ngoSidebarItems = [
+  { name: "Dashboard", icon: LayoutDashboard, path: "/ngo-dashboard" },
+  { name: "Task Management", icon: ClipboardList, path: "/ngo/tasks" },
+  { name: "Donation Campaigns", icon: Megaphone, path: "/ngo/campaigns" },
+  { name: "Shelters", icon: Home, path: "/ngo/shelters" },
 ];
 
 const AppRoutes = () => {
@@ -230,11 +243,28 @@ const AppRoutes = () => {
       />
       <Route
         path="/ngo/tasks"
-        element={(
+        element={
           <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
             <NgoTaskManagementPage />
           </RoleRoute>
-        )}
+        }
+      />
+      <Route
+        path="/ngo/shelters"
+        element={
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={ngoSidebarItems}
+              portalTitle="NGO Portal"
+              avatarLetter="N"
+              homePath="/ngo-dashboard"
+              searchPlaceholder="Search tasks, campaigns, and donations..."
+              contentClassName="bg-auth-bg"
+            >
+              <ShelterManagementNGO />
+            </DashboardLayout>
+          </RoleRoute>
+        }
       />
       <Route
         path="/ngo/campaigns"
@@ -352,11 +382,11 @@ const AppRoutes = () => {
       />
       <Route
         path="/admin/ngos"
-        element={(
+        element={
           <RoleRoute allowedRoles={["ADMIN"]} requireFullyOnboarded>
             <AdminNgoManagementPage />
           </RoleRoute>
-        )}
+        }
       />
       <Route
         path="/admin/tasks"

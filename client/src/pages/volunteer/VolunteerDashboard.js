@@ -10,15 +10,6 @@ import VolunteerActionCenter from "../../components/volunteerDashboard/Volunteer
 import VolunteerTaskBoard from "../../components/volunteerDashboard/VolunteerTaskBoard";
 import VolunteerActivityFeed from "../../components/volunteerDashboard/VolunteerActivityFeed";
 
-const volunteerSidebarItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/volunteer-dashboard" },
-  { name: "My Tasks", icon: ClipboardList, path: "/volunteer/tasks" },
-  { name: "Field Map", icon: MapPinned, path: "/volunteer/map" },
-  { name: "Team Alerts", icon: BellRing, path: "/volunteer/alerts" },
-  { name: "Relief Requests", icon: HandHelping, path: "/volunteer/requests" },
-  { name: "Profile", icon: UserCircle, path: "/volunteer/profile" },
-  { name: "Shelters", icon: Home, path: "/volunteer/shelters" },
-];
 import { volunteerSidebarItems } from "./volunteerLayoutConfig";
 
 const VolunteerDashboard = () => {
