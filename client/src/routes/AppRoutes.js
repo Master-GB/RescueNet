@@ -5,6 +5,7 @@ import GuestRoute from "../components/authentication/GuestRoute";
 import OtpVerificationRoute from "../components/authentication/OtpVerificationRoute";
 import RoleRoute from "../components/authentication/RoleRoute";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
+import LandingPage from "../pages/LandingPage";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminTaskDetailPage from "../pages/admin/AdminTaskDetailPage";
 import AdminTaskManagementPage from "../pages/admin/AdminTaskManagementPage";
@@ -35,7 +36,6 @@ import NgoDonationReviewPage from "../pages/ngo/NgoDonationReviewPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
-import LandingPage from "../pages/LandingPage";
 import AboutPage from "../pages/AboutPage";
 import ContactPage from "../pages/ContactPage";
 
