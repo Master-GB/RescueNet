@@ -3,7 +3,7 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || "",
+  baseURL: process.env.REACT_APP_API_URL || "",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
