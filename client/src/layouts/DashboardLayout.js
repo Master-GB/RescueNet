@@ -35,6 +35,7 @@ const DashboardLayout = ({
   avatarLetter = "C",
   homePath = "/citizen-dashboard",
   searchPlaceholder = "Search shelters, alerts, requests...",
+  contentClassName = "",
 }) => {
   const location = useLocation();
   const { logout } = useAuth();
@@ -181,7 +182,7 @@ const DashboardLayout = ({
 
       {/* Main content */}
       <main className="pt-20 lg:pl-72 min-h-screen">
-        <div className="p-4 md:p-6 lg:p-8">{children || <Outlet />}</div>
+        <div className={`p-4 md:p-6 lg:p-8 ${contentClassName}`}>{children || <Outlet />}</div>
       </main>
 
       {/* Logout Confirmation Modal */}

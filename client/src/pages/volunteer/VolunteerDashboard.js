@@ -19,6 +19,7 @@ const volunteerSidebarItems = [
   { name: "Profile", icon: UserCircle, path: "/volunteer/profile" },
   { name: "Shelters", icon: Home, path: "/volunteer/shelters" },
 ];
+import { volunteerSidebarItems } from "./volunteerLayoutConfig";
 
 const VolunteerDashboard = () => {
   return (
