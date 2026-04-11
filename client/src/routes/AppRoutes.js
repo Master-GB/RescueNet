@@ -50,6 +50,9 @@ import NgoTaskManagementPage from "../pages/ngo/NgoTaskManagementPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
+import LandingPage from "../pages/LandingPage";
+import AboutPage from "../pages/AboutPage";
+import ContactPage from "../pages/ContactPage";
 import ShelterManagement from "../pages/admin/ShelterManagement";
 import VerifyShelter from "../pages/admin/VerifyShelter";
 import ShelterManagementNGO from "../pages/ngo/ShelterManagementNGO";
@@ -77,7 +80,9 @@ const ngoSidebarItems = [
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<TrafficCopRedirect />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
 
       <Route
         path="/volunteer"
