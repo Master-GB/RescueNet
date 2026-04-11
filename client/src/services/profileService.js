@@ -39,3 +39,27 @@ export const updateNgoStatus = async (payload) => {
   const response = await apiClient.patch("/api/ngo/profile/status-update", payload);
   return response.data;
 };
+
+export const updateAccountProfileImage = async ({ file = null, remove = false } = {}) => {
+  if (!(file instanceof File) && !remove) {
+    throw new Error("Provide a profile image file or set remove=true.");
+  }
+
+  const formData = new FormData();
+
+  if (file instanceof File) {
+    formData.append("profileImage", file);
+  }
+
+  if (remove) {
+    formData.append("removeProfileImage", "true");
+  }
+
+  const response = await apiClient.patch("/api/auth/profile-image", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data;
+};

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { useVolunteerContext } from "../contexts/VolunteerContext";
 import AuthCookie from "../components/authentication/AuthCookie";
+import ProfileAvatar from "../components/common/ProfileAvatar";
 import {
   LayoutDashboard,
   House,
@@ -40,7 +41,7 @@ const DashboardLayout = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const {
     notifications,
     markNotificationRead,
@@ -58,6 +59,18 @@ const DashboardLayout = ({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchInputRef = useRef(null);
   const searchTimeoutRef = useRef(null);
+
+  const userProfileImageUrl = useMemo(() => user?.profileImageUrl || "", [user?.profileImageUrl]);
+
+  const avatarFallbackLetter = useMemo(() => {
+    const explicitLetter = typeof avatarLetter === "string" ? avatarLetter.trim() : "";
+    if (explicitLetter) {
+      return explicitLetter.slice(0, 1).toUpperCase();
+    }
+
+    const derivedLetter = typeof user?.name === "string" ? user.name.trim().slice(0, 1) : "";
+    return derivedLetter ? derivedLetter.toUpperCase() : "U";
+  }, [avatarLetter, user?.name]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -339,9 +352,17 @@ const DashboardLayout = ({
 
           {/* Right */}
           <div className="flex items-center gap-6">
-            <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase">
-              {avatarLetter}
-            </div>
+            
+            {/* display profile picture */}
+            <ProfileAvatar
+              imageUrl={userProfileImageUrl}
+              fallbackText={avatarFallbackLetter}
+              alt="Account profile image"
+              wrapperClassName="w-11 h-11"
+              imageClassName="w-11 h-11 rounded-full object-cover border"
+              fallbackClassName="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase"
+              fallbackIconClassName="w-5 h-5 text-green-700"
+            />
 
             {/* Clock Widget */}
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition min-w-[70px]">
