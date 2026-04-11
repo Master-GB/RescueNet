@@ -13,7 +13,15 @@ export const getApiErrorMessage = (
 };
 
 export const registerUser = async (payload) => {
-  const response = await apiClient.post("/api/auth/register", payload);
+  const config = payload instanceof FormData
+    ? {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    : undefined;
+
+  const response = await apiClient.post("/api/auth/register", payload, config);
   return response.data;
 };
 

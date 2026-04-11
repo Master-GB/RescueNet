@@ -26,7 +26,10 @@ export const registerUser = async (req, res) => {
   }
 
   try {
-    const exists = await User.findOne({ email });
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const exists = await User.findOne({ email: normalizedEmail });
     if (exists)
       return res.status(409).json({
         success: false,
@@ -34,12 +37,18 @@ export const registerUser = async (req, res) => {
         isUserExists: true,
       });
 
-    const user = await User.create({
-      name,
-      email,
+    const userPayload = {
+      name: normalizedName,
+      email: normalizedEmail,
       passwordHash: await hashPassword(password),
       role: role || "CITIZEN",
-    });
+    };
+
+    if (req.file?.path) {
+      userPayload.profileImageUrl = req.file.path;
+    }
+
+    const user = await User.create(userPayload);
 
     const token = signToken(user);
     setAuthCookie(res, token);
@@ -52,12 +61,13 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profileImageUrl: user.profileImageUrl || null,
       },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Registeration failed",
+      message: "Registration failed. Please try again.",
       error: error.message,
     });
   }

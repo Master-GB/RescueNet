@@ -175,6 +175,54 @@ describe("Auth Controller Unit Tests", () => {
       );
     });
 
+    test("should persist profileImageUrl when profile image is uploaded", async () => {
+      findOneMock.mockResolvedValue(null);
+      hashPasswordMock.mockResolvedValue("hashed_pw");
+
+      const createdUser = {
+        _id: "u1",
+        name: "B",
+        email: "a@b.com",
+        role: "CITIZEN",
+        profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+        toString() {
+          return "u1";
+        },
+      };
+      createMock.mockResolvedValue(createdUser);
+
+      jwtSignMock.mockReturnValue("token123");
+
+      const req = {
+        body: {
+          name: "B",
+          email: "a@b.com",
+          password: "Pass123!",
+          role: "CITIZEN",
+        },
+        file: {
+          path: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+        },
+      };
+      const res = mockRes();
+
+      await registerUser(req, res);
+
+      expect(createMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+        })
+      );
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user: expect.objectContaining({
+            profileImageUrl: "https://res.cloudinary.com/demo/image/upload/v1/profile.jpg",
+          }),
+        })
+      );
+    });
+
     test("should return 500 if DB throws error", async () => {
       findOneMock.mockRejectedValue(new Error("DB error"));
 
@@ -194,7 +242,7 @@ describe("Auth Controller Unit Tests", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Registeration failed",
+          message: "Registration failed. Please try again.",
         })
       );
     });

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import AuthCookie from "../components/authentication/AuthCookie";
+import ProfileAvatar from "../components/common/ProfileAvatar";
 import {
   LayoutDashboard,
   House,
@@ -38,10 +39,22 @@ const DashboardLayout = ({
   contentClassName = "",
 }) => {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const userProfileImageUrl = useMemo(() => user?.profileImageUrl || "", [user?.profileImageUrl]);
+
+  const avatarFallbackLetter = useMemo(() => {
+    const explicitLetter = typeof avatarLetter === "string" ? avatarLetter.trim() : "";
+    if (explicitLetter) {
+      return explicitLetter.slice(0, 1).toUpperCase();
+    }
+
+    const derivedLetter = typeof user?.name === "string" ? user.name.trim().slice(0, 1) : "";
+    return derivedLetter ? derivedLetter.toUpperCase() : "U";
+  }, [avatarLetter, user?.name]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -123,9 +136,15 @@ const DashboardLayout = ({
               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
             </button>
 
-            <div className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase">
-              {avatarLetter}
-            </div>
+            <ProfileAvatar
+              imageUrl={userProfileImageUrl}
+              fallbackText={avatarFallbackLetter}
+              alt="Account profile image"
+              wrapperClassName="w-11 h-11"
+              imageClassName="w-11 h-11 rounded-full object-cover border border-green-200"
+              fallbackClassName="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase"
+              fallbackIconClassName="w-5 h-5 text-green-700"
+            />
 
             {/* Clock Widget */}
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition min-w-[70px]">

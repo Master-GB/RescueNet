@@ -2,11 +2,12 @@ import { Router } from "express";
 import { loginUser, registerUser, logoutUser, resetPassword, verifyResetOtp, sendResetOtp, verifyUserAccount, sendOTP, me } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { validateBody } from "../middleware/validate.js";
+import { handleProfileImageUpload } from "../middleware/uploadMiddleware.js";
 import { registerSchema, loginSchema, sendOTPSchema, verifyAccountSchema, sendResetOTPSchema, verifyResetOTPSchema, resetPasswordSchema,} from "../validators/auth.schema.js";
 
 const authRouter = Router();
 
-authRouter.post("/register",validateBody(registerSchema), registerUser);
+authRouter.post("/register", handleProfileImageUpload, validateBody(registerSchema), registerUser);
 authRouter.post("/login", validateBody(loginSchema), loginUser);
 authRouter.post("/logout", logoutUser);
 authRouter.post('/send-otp', validateBody(sendOTPSchema), protect,sendOTP);
