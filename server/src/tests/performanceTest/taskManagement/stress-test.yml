@@ -1,0 +1,58 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 180
+      arrivalRate: 10
+      name: "Sustained stress"
+    - duration: 60
+      arrivalRate: 5
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  timeout: 30
+  payload:
+    path: "ngo-test-users.csv"
+    fields:
+      - "token"
+
+scenarios:
+  - name: "Sustained - List tasks"
+    weight: 60
+    flow:
+      - get:
+          url: "/api/ngo/help-requests"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Sustained - Task lifecycle ops"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/ngo/help-requests"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            - json: "$.data[0]._id"
+              as: "requestId"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - patch:
+          url: "/api/ngo/help-requests/{{ requestId }}/accept"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 400, 404]
+      - think: 1
+      - patch:
+          url: "/api/ngo/help-requests/{{ requestId }}/in-progress"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: [200, 400, 404]

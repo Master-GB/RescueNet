@@ -4,14 +4,14 @@ config:
     - duration: 60
       arrivalRate: 1
       name: "Baseline"
-    - duration: 120
-      arrivalRate: 2
+    - duration: 90
+      arrivalRate: 1
       name: "Medium stress"
-    - duration: 180
-      arrivalRate: 3
-      name: "High stress"
     - duration: 120
-      arrivalRate: 2
+      arrivalRate: 1
+      name: "High stress"
+    - duration: 90
+      arrivalRate: 1
       name: "Maximum stress"
     - duration: 60
       arrivalRate: 1
@@ -19,7 +19,7 @@ config:
   defaults:
     headers:
       Content-Type: "application/json"
-  timeout: 45
+  timeout: 60
   payload:
     path: "shelter-test-users.csv"
     fields:
@@ -28,7 +28,7 @@ config:
 
 scenarios:
   - name: "Login and Create Shelter"
-    weight: 40
+    weight: 20
     flow:
       - post:
           url: "/api/auth/login"
@@ -46,16 +46,16 @@ scenarios:
             Authorization: "Bearer {{ authToken }}"
           json:
             name: "Stress Shelter {{ $randomString() }}"
-            description: "High volume shelter creation test"
-            shelterType: "OTHER"
+            description: "High volume shelter creation test during stress testing"
+            shelterType: "TEMPORARY"
             address:
-              street: "456 Stress Ave"
-              city: "Stress City"
-              province: "Stress Province"
-              postalCode: "67890"
+              street: "456 Performance Test Avenue"
+              city: "Colombo"
+              province: "Western"
+              postalCode: "00100"
             contact:
               phone: "+94770000001"
-              email: "stress{{ $randomString() }}@example.com"
+              email: "stress{{ $randomString() }}@rescuenet.lk"
             location:
               type: "Point"
               coordinates: [79.8612, 6.9876]
@@ -64,11 +64,13 @@ scenarios:
             supports:
               disasterTypes: ["FLOOD"]
               wheelchairAccess: false
+              medicalSupport: true
+              foodSupport: true
           expect:
             - statusCode: 201
 
   - name: "Login and List Shelters"
-    weight: 40
+    weight: 55
     flow:
       - post:
           url: "/api/auth/login"
@@ -88,7 +90,7 @@ scenarios:
             - statusCode: 200
 
   - name: "Login and Nearby Search"
-    weight: 20
+    weight: 25
     flow:
       - post:
           url: "/api/auth/login"

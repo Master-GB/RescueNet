@@ -65,6 +65,17 @@ export const listMyCampaigns = async ({ status } = {}) => {
   }
 };
 
+export const listActiveCampaigns = async () => {
+  try {
+    const response = await apiClient.get("/api/campaigns/active");
+    return response.data;
+  } catch (err) {
+    const message = extractApiErrorMessage(err);
+    console.error("listActiveCampaigns failed:", message, err);
+    throw new Error(message);
+  }
+};
+
 export const createCampaign = async (payload) => {
   try {
     const response = await apiClient.post(
