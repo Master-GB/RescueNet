@@ -7,12 +7,14 @@ import {
   House,
   TriangleAlert,
   HandHelping,
+  HandCoins,
   Search,
   Phone,
   UserCircle,
   Bell,
   LogOut,
   SearchIcon,
+  X,
 } from "lucide-react";
 
 const defaultSidebarItems = [
@@ -22,6 +24,7 @@ const defaultSidebarItems = [
   { name: "Help Request", icon: HandHelping, path: "/citizen/help-request" },
   { name: "Missing Persons", icon: Search, path: "/citizen/missing-persons" },
   { name: "Emergency Contact", icon: Phone, path: "/citizen/emergency-contact" },
+  { name: "Donations", icon: HandCoins, path: "/donations" },
   { name: "Profile", icon: UserCircle, path: "/citizen/profile" },
 ];
 
@@ -32,11 +35,13 @@ const DashboardLayout = ({
   avatarLetter = "C",
   homePath = "/citizen-dashboard",
   searchPlaceholder = "Search shelters, alerts, requests...",
+  contentClassName = "",
 }) => {
   const location = useLocation();
   const { logout } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -68,7 +73,18 @@ const DashboardLayout = ({
     }
   };
 
- 
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
+    handleLogout();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-200">
@@ -115,7 +131,6 @@ const DashboardLayout = ({
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition min-w-[70px]">
               <div className="flex flex-col">
                 <span className="text-white font-semibold text-xl font-mono min-w-[70px]">{formatTime(currentTime)}</span>
-              
               </div>
             </div>
 
@@ -130,7 +145,9 @@ const DashboardLayout = ({
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive =
+              location.pathname === item.path ||
+              location.pathname.startsWith(`${item.path}/`);
 
             return (
               <Link
@@ -152,7 +169,7 @@ const DashboardLayout = ({
         {/* Logout Button - Fixed at bottom */}
         <div className="px-4 py-6 border-t border-gray-800">
           <button
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900 hover:bg-red-800 text-white hover:text-white font-medium transition group"
             disabled={isLoggingOut}
           >
@@ -165,8 +182,61 @@ const DashboardLayout = ({
 
       {/* Main content */}
       <main className="pt-20 lg:pl-72 min-h-screen">
-        <div className="p-4 md:p-6 lg:p-8">{children || <Outlet />}</div>
+        <div className={`p-4 md:p-6 lg:p-8 ${contentClassName}`}>{children || <Outlet />}</div>
       </main>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full mx-4 shadow-2xl transform">
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-red-600 to-red-700 p-6 text-white rounded-t-2xl">
+              <button
+                onClick={cancelLogout}
+                className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                  <LogOut className="w-8 h-8 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-white">Confirm Logout</h2>
+                  <p className="text-white/90 text-sm">Are you sure you want to sign out?</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">
+                  You will be logged out of your account and will need to sign in again to access your dashboard.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={confirmLogout}
+                  className="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <LogOut className="w-5 h-5 inline mr-2" />
+                  Yes, Sign Out
+                </button>
+
+                <button
+                  onClick={cancelLogout}
+                  className="w-full py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global auth cookie consent component */}
       <AuthCookie />
