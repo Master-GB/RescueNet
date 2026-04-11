@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
 import User from "../models/user.js";
 import { hashPassword, comparePassword } from "../services/passwordService.js";
 import { setAuthCookie } from "../utils/setAuthCookie.js";
@@ -8,12 +9,52 @@ import CitizenProfile from "../models/userProfileModel/CitizenProfile.js";
 import VolunteerProfile from "../models/userProfileModel/VolunteerProfile.js";
 import NgoProfile from "../models/userProfileModel/NgoProfile.js";
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const signToken = (user) =>
   jwt.sign(
     { sub: user._id.toString(), name: user.name, role: user.role, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
   );
+
+const parseBooleanFlag = (value) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "1" || normalized === "yes" || normalized === "on";
+  }
+
+  return false;
+};
+
+const destroyCloudinaryAsset = async (publicId) => {
+  if (!publicId) {
+    return { success: true };
+  }
+
+  const destroyResult = await cloudinary.uploader.destroy(publicId, {
+    invalidate: true,
+    resource_type: "image",
+  });
+
+  if (!destroyResult) {
+    return { success: false, reason: "unknown" };
+  }
+
+  if (destroyResult.result === "ok" || destroyResult.result === "not found") {
+    return { success: true };
+  }
+
+  return { success: false, reason: destroyResult.result };
+};
 
 
 export const registerUser = async (req, res) => {
@@ -46,6 +87,7 @@ export const registerUser = async (req, res) => {
 
     if (req.file?.path) {
       userPayload.profileImageUrl = req.file.path;
+      userPayload.profileImagePublicId = req.file.filename || null;
     }
 
     const user = await User.create(userPayload);
@@ -68,6 +110,102 @@ export const registerUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Registration failed. Please try again.",
+      error: error.message,
+    });
+  }
+};
+
+export const updateProfileImage = async (req, res) => {
+  const removeProfileImage = parseBooleanFlag(req.body?.removeProfileImage);
+  const hasNewProfileImage = Boolean(req.file?.path);
+  const newProfileImagePublicId = req.file?.filename || null;
+
+  if (!removeProfileImage && !hasNewProfileImage) {
+    return res.status(400).json({
+      success: false,
+      message: "Provide a profile image file or set removeProfileImage=true.",
+    });
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    const previousProfileImagePublicId = user.profileImagePublicId || null;
+
+    if (removeProfileImage && !hasNewProfileImage) {
+      user.profileImageUrl = null;
+      user.profileImagePublicId = null;
+      await user.save();
+
+      let warning = "";
+      if (previousProfileImagePublicId) {
+        try {
+          const cleanup = await destroyCloudinaryAsset(previousProfileImagePublicId);
+          if (!cleanup.success) {
+            warning = "Profile image removed from account, but previous Cloudinary asset cleanup did not complete.";
+          }
+        } catch (cleanupError) {
+          warning = "Profile image removed from account, but previous Cloudinary asset cleanup failed.";
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: warning || "Profile image removed successfully.",
+        warning: warning || undefined,
+        user: {
+          id: user._id,
+          profileImageUrl: null,
+          profileImagePublicId: null,
+        },
+      });
+    }
+
+    user.profileImageUrl = req.file.path;
+    user.profileImagePublicId = newProfileImagePublicId;
+    await user.save();
+
+    let warning = "";
+    if (previousProfileImagePublicId && previousProfileImagePublicId !== newProfileImagePublicId) {
+      try {
+        const cleanup = await destroyCloudinaryAsset(previousProfileImagePublicId);
+        if (!cleanup.success) {
+          warning = "Profile image updated, but previous Cloudinary asset cleanup did not complete.";
+        }
+      } catch (cleanupError) {
+        warning = "Profile image updated, but previous Cloudinary asset cleanup failed.";
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: warning || "Profile image updated successfully.",
+      warning: warning || undefined,
+      user: {
+        id: user._id,
+        profileImageUrl: user.profileImageUrl || null,
+        profileImagePublicId: user.profileImagePublicId || null,
+      },
+    });
+  } catch (error) {
+    if (newProfileImagePublicId) {
+      try {
+        await destroyCloudinaryAsset(newProfileImagePublicId);
+      } catch {
+        // Intentionally suppress cleanup failures during error handling.
+      }
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update profile image.",
       error: error.message,
     });
   }

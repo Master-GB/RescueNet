@@ -6,10 +6,9 @@ import AuthShell from "../../components/authentication/AuthShell";
 import Button from "../../components/ui/Button";
 import useAuth from "../../hooks/useAuth";
 import { getApiErrorMessage } from "../../services/authService";
+import { PROFILE_IMAGE_ACCEPT, PROFILE_IMAGE_HELP_TEXT, validateProfileImageFile } from "../../utils/profileImageValidation";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_PROFILE_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
-const MAX_PROFILE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const roleOptions = [
   "CITIZEN",
@@ -99,16 +98,10 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!ALLOWED_PROFILE_IMAGE_TYPES.includes(nextFile.type)) {
+    const validationError = validateProfileImageFile(nextFile);
+    if (validationError) {
       resetProfileImage();
-      setProfileImageError("Invalid image format. Upload a JPG or PNG image.");
-      event.target.value = "";
-      return;
-    }
-
-    if (nextFile.size > MAX_PROFILE_IMAGE_SIZE_BYTES) {
-      resetProfileImage();
-      setProfileImageError("Profile image must be 5MB or smaller.");
+      setProfileImageError(validationError);
       event.target.value = "";
       return;
     }
@@ -253,11 +246,11 @@ export default function RegisterPage() {
           </span>
           <input
             type="file"
-            accept="image/jpeg,image/jpg,image/png"
+            accept={PROFILE_IMAGE_ACCEPT}
             onChange={handleProfileImageChange}
             className="focus-ghost w-full rounded-lg bg-auth-bg border border-auth-border px-4 py-3 text-sm text-auth-text outline-none transition focus:bg-auth-surface focus:border-primary-container"
           />
-          <p className="mt-2 text-xs text-auth-text-muted">JPG or PNG, up to 5MB.</p>
+          <p className="mt-2 text-xs text-auth-text-muted">{PROFILE_IMAGE_HELP_TEXT}</p>
 
           {profileImageError ? (
             <p className="mt-2 text-xs text-red-500">{profileImageError}</p>
