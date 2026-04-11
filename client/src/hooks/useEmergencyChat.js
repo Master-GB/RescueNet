@@ -82,7 +82,7 @@ export const useEmergencyChat = (serviceType) => {
     const handleConnectError = (err) => {
       console.error('🔴 Socket connection error:', err.message);
       setOnlineStatus(false);
-      setSocketError('Could not connect to emergency services. Please ensure the backend server is running on localhost:5000.');
+      setSocketError('Could not connect to emergency services. Please check backend URL and CORS configuration.');
     };
 
     socket.on('connect', handleConnect);
