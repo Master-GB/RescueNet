@@ -277,9 +277,7 @@ const DashboardLayout = ({
               alt="RescueNet logo"
               className="w-11 h-11 object-cover shadow-sm"
             />
-            <div className={`w-11 h-11 rounded-2xl ${themeColor === "teal" ? "bg-teal-600" : "bg-green-600"} text-white flex items-center justify-center font-bold text-lg shadow-sm`}>
-              R
-            </div>
+            
             <div>
               {/* text logo image */}
               <img 
