@@ -22,6 +22,7 @@ import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRo
 import volunteerProfileRoutes from "./routes/userManagementRoutes/volunteerProfileRoutes.js";
 import ngoProfileRoutes from "./routes/userManagementRoutes/ngoProfileRoutes.js";
 import adminUserRoutes from "./routes/userManagementRoutes/adminUserRoutes.js";
+import adminProfileRoutes from "./routes/userManagementRoutes/adminProfileRoutes.js";
 import shelterRouter from "./routes/shelterRoutes.js";
 import geoRoutes from "./routes/geoRoutes.js";
 import disastersRoutes from "./routes/disastersRoutes.js";
@@ -85,6 +86,7 @@ app.use("/api/citizen", citizenProfileRoutes);
 app.use("/api/volunteer", volunteerProfileRoutes);
 app.use("/api/ngo", ngoProfileRoutes);
 app.use("/api/adminUser", adminUserRoutes);
+app.use("/api/admin", adminProfileRoutes);
 
 app.use("/api/shelters", shelterRouter);
 app.use("/api/geo", geoRoutes);
