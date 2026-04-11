@@ -58,7 +58,7 @@ const {
   getHelpRequestById,
   updateHelpRequest,
   deleteHelpRequest,
-} = require("../../../controllers/helpController.js");
+} = await import("../../../controllers/helpController.js");
 
 describe("Help Request Controller - Unit Tests", () => {
   const originalEnv = process.env;
@@ -239,11 +239,18 @@ describe("Help Request Controller - Unit Tests", () => {
       const selectMock = jest.fn().mockReturnValue({ sort: sortMock });
       
       findMock.mockReturnValue({ select: selectMock });
+      
+      countDocumentsMock.mockResolvedValue(1);
 
       await getAllRequests(req, res);
 
       expect(findMock).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith({ data: mockResult });
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        data: mockResult,
+        pagination: expect.objectContaining({
+          total: 1
+        })
+      }));
     });
   });
 
