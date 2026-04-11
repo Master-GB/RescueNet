@@ -63,6 +63,13 @@ export async function getWeatherData({ city, lat, lon, units: argUnits, provider
       let longitude = lon;
       let locationInfo = {};
 
+      if (latitude !== undefined && latitude !== null && latitude !== "") {
+        latitude = Number(latitude);
+      }
+      if (longitude !== undefined && longitude !== null && longitude !== "") {
+        longitude = Number(longitude);
+      }
+
       // Geocode city name if coords not provided
       if ((latitude === undefined || longitude === undefined) && city) {
         const geo = await axios.get(
@@ -85,9 +92,10 @@ export async function getWeatherData({ city, lat, lon, units: argUnits, provider
         throw new Error("Latitude/longitude required for Open-Meteo when city geocoding fails.");
       }
 
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
       const wx = await axios.get(url);
       const cur = wx.data?.current || {};
+      const daily = wx.data?.daily || {};
       const tempC = cur.temperature_2m;
       const windMs = cur.wind_speed_10m; // actually km/h sometimes; open-meteo doc says wind_speed_10m unit is km/h, but to be safe we'll treat as m/s? We'll convert conservatively.
       const code = cur.weather_code;
@@ -95,6 +103,20 @@ export async function getWeatherData({ city, lat, lon, units: argUnits, provider
 
       const temp = toUnits(tempC, units);
       const wind = windToUnits(typeof windMs === "number" ? windMs / 3.6 : 0, units); // if km/h -> m/s back to unit converter
+
+      const forecast = (daily?.time || []).slice(0, 7).map((date, index) => {
+        const dayCode = daily?.weather_code?.[index];
+        const maxC = daily?.temperature_2m_max?.[index];
+        const minC = daily?.temperature_2m_min?.[index];
+
+        return {
+          date,
+          condition: codeMap[dayCode] || "Unknown",
+          code: dayCode,
+          maxTemp: typeof maxC === "number" ? toUnits(maxC, units) : null,
+          minTemp: typeof minC === "number" ? toUnits(minC, units) : null,
+        };
+      });
 
       return {
         provider: "open-meteo",
@@ -106,6 +128,7 @@ export async function getWeatherData({ city, lat, lon, units: argUnits, provider
           condition,
           code,
         },
+        forecast,
         raw: wx.data,
       };
     }
@@ -134,6 +157,7 @@ export async function getWeatherData({ city, lat, lon, units: argUnits, provider
         windSpeed: wind,
         condition: main,
       },
+      forecast: [],
       raw: ow.data,
     };
   } catch (err) {
