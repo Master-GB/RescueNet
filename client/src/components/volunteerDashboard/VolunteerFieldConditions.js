@@ -1,13 +1,60 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CloudRain, Wind, Waves, TrafficCone, Clock3 } from "lucide-react";
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  Clock3,
+  Sun,
+  TrafficCone,
+  Waves,
+  Wind,
+} from "lucide-react";
 import {
   fetchAreaSituation,
   fetchCurrentWeather,
   getCurrentCoordinates,
 } from "./volunteerDashboardApi";
 
+const ForecastConditionIcon = ({ condition }) => {
+  const normalized = String(condition || "").toLowerCase();
+
+  if (normalized.includes("thunder")) {
+    return <CloudLightning className="w-8 h-8 text-amber-500 animate-pulse" />;
+  }
+
+  if (normalized.includes("snow") || normalized.includes("hail")) {
+    return <CloudSnow className="w-8 h-8 text-sky-500 animate-pulse" />;
+  }
+
+  if (normalized.includes("drizzle")) {
+    return <CloudDrizzle className="w-8 h-8 text-blue-500 animate-bounce" style={{ animationDuration: "1.8s" }} />;
+  }
+
+  if (normalized.includes("rain") || normalized.includes("shower")) {
+    return <CloudRain className="w-8 h-8 text-blue-600 animate-bounce" style={{ animationDuration: "1.8s" }} />;
+  }
+
+  if (normalized.includes("fog")) {
+    return <CloudFog className="w-8 h-8 text-slate-500 animate-pulse" />;
+  }
+
+  if (normalized.includes("clear") || normalized.includes("sunny")) {
+    return <Sun className="w-8 h-8 text-amber-500 animate-spin" style={{ animationDuration: "8s" }} />;
+  }
+
+  if (normalized.includes("cloud") || normalized.includes("overcast")) {
+    return <Cloud className="w-8 h-8 text-slate-500 animate-pulse" />;
+  }
+
+  return <Cloud className="w-8 h-8 text-slate-500" />;
+};
+
 const VolunteerFieldConditions = () => {
   const [weather, setWeather] = useState(null);
+  const [forecast, setForecast] = useState([]);
   const [situation, setSituation] = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
 
@@ -21,6 +68,7 @@ const VolunteerFieldConditions = () => {
         ]);
 
         setWeather(weatherData?.current || null);
+        setForecast(Array.isArray(weatherData?.forecast) ? weatherData.forecast : []);
         setSituation(situationData?.situations?.[0] || null);
         setUpdatedAt(new Date());
       } catch (error) {
@@ -68,6 +116,23 @@ const VolunteerFieldConditions = () => {
     ];
   }, [situation, weather]);
 
+  const forecastItems = useMemo(() => {
+    return (forecast || []).slice(0, 6).map((day) => {
+      const date = new Date(day.date);
+      const dayLabel = Number.isNaN(date.getTime())
+        ? "Day"
+        : date.toLocaleDateString(undefined, { weekday: "short" });
+
+      return {
+        key: `${day.date}-${day.code}`,
+        dayLabel,
+        condition: day.condition || "Unknown",
+        maxTemp: day.maxTemp,
+        minTemp: day.minTemp,
+      };
+    });
+  }, [forecast]);
+
   return (
     <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
@@ -94,6 +159,26 @@ const VolunteerFieldConditions = () => {
           );
         })}
       </div>
+
+      {forecastItems.length > 0 && (
+        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-700 mb-3">Upcoming Days</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {forecastItems.map((item) => (
+              <div key={item.key} className="rounded-lg border border-slate-200 bg-white p-3">
+                <p className="text-xs font-semibold text-slate-500">{item.dayLabel}</p>
+                <div className="mt-2 flex items-center justify-center">
+                  <ForecastConditionIcon condition={item.condition} />
+                </div>
+                <p className="text-sm font-bold text-slate-800 mt-1">{item.condition}</p>
+                <p className="text-xs text-slate-600 mt-1">
+                  {item.maxTemp != null ? Math.round(item.maxTemp) : "-"}° / {item.minTemp != null ? Math.round(item.minTemp) : "-"}°
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

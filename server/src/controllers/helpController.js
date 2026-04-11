@@ -233,6 +233,9 @@ export async function updateHelpRequest(req, res) {
       urgency,
       voiceMessage,
       images,
+      volunteerHelpType,
+      volunteerHelpDescription,
+      volunteerContactNumber,
     } = req.body;
 
     const helpRequest = await HelpRequest.findById(id);
@@ -246,15 +249,59 @@ export async function updateHelpRequest(req, res) {
     const isAdmin = req.user.role === "ADMIN";
     const isVolunteer = req.user.role === "VOLUNTEER";
 
+    // Multi-volunteer acceptance: many volunteers can accept the same open task.
+    if (isVolunteer && req.body.status === "assigned") {
+      if (["resolved", "rejected"].includes(helpRequest.status)) {
+        return res.status(409).json({
+          success: false,
+          message: "Task is closed and cannot be accepted",
+        });
+      }
+
+      const alreadyAccepted = (helpRequest.volunteerAcceptances || []).some(
+        (entry) => entry.volunteerId?.toString() === req.user._id.toString()
+      );
+
+      if (!alreadyAccepted) {
+        if (helpRequest.status === "pending") {
+          helpRequest.status = "assigned";
+        }
+
+        // Keep backward compatibility for older code paths.
+        if (!helpRequest.assignedVolunteerId) {
+          helpRequest.assignedVolunteerId = req.user._id;
+          helpRequest.assignedAt = new Date();
+        }
+
+        helpRequest.volunteerAcceptances = [
+          ...(helpRequest.volunteerAcceptances || []),
+          {
+            volunteerId: req.user._id,
+            helpType: volunteerHelpType || "general",
+            helpDescription: volunteerHelpDescription || "",
+            volunteerContactNumber: volunteerContactNumber || "",
+            acceptedAt: new Date(),
+          },
+        ];
+
+        await helpRequest.save();
+      }
+
+      return res.json({ message: "Help request accepted", helpRequest });
+    }
+
     // Allow volunteer to update IF they are accepted into the task OR if it is pending and they are accepting
     let canVolunteerUpdate = false;
     if (isVolunteer) {
-      if (helpRequest.status === "pending" && req.body.status === "assigned") {
-        canVolunteerUpdate = true;
-        // Auto-assign to this volunteer
-        helpRequest.assignedVolunteerId = req.user._id;
-        helpRequest.assignedAt = new Date();
-      } else if (helpRequest.assignedVolunteerId && helpRequest.assignedVolunteerId.toString() === req.user._id.toString()) {
+      const acceptedByVolunteer = (helpRequest.volunteerAcceptances || []).some(
+        (entry) => entry.volunteerId?.toString() === req.user._id.toString()
+      );
+
+      if (
+        acceptedByVolunteer ||
+        helpRequest.assignedVolunteerId &&
+        helpRequest.assignedVolunteerId.toString() === req.user._id.toString()
+      ) {
         canVolunteerUpdate = true;
       }
     }
@@ -264,6 +311,37 @@ export async function updateHelpRequest(req, res) {
         success: false,
         message: "Access denied: You don't have permission to update this request" 
       });
+    }
+
+    // Volunteers can update only status for tasks they accepted but do not own.
+    if (isVolunteer && !isOwner && !isAdmin) {
+      const restrictedFields = [
+        "name",
+        "location",
+        "disasterType",
+        "message",
+        "contactNumber",
+        "realLocation",
+        "urgency",
+        "voiceMessage",
+        "images",
+        "userId",
+      ];
+
+      const hasRestrictedUpdate = restrictedFields.some((field) => req.body[field] !== undefined);
+      if (hasRestrictedUpdate) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied: Volunteers can only update task status for accepted tasks",
+        });
+      }
+
+      if (req.body.status && !["assigned", "in-progress", "resolved"].includes(req.body.status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status update for volunteer",
+        });
+      }
     }
 
     // Update fields if provided
@@ -316,7 +394,7 @@ export async function deleteHelpRequest(req, res) {
       return res.status(404).json({ message: "Help request not found" });
     }
 
-    // Authorization check: Ensure user owns the request or is an admin
+    // Authorization check: only owner or admin can delete a request
     const isOwner = helpRequest.userId && helpRequest.userId.toString() === req.user._id.toString();
     const isAdmin = req.user.role === "ADMIN";
 

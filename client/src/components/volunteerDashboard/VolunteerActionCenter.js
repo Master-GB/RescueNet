@@ -89,7 +89,7 @@ const VolunteerActionCenter = () => {
     }
 
     if (actionId === "supplies") {
-      navigate("/volunteer/requests");
+      navigate("/volunteer/tasks");
     }
   };
 

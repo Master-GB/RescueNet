@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { useVolunteerContext } from "../contexts/VolunteerContext";
 import AuthCookie from "../components/authentication/AuthCookie";
 import ProfileAvatar from "../components/common/ProfileAvatar";
 import {
@@ -40,9 +41,16 @@ const DashboardLayout = ({
 }) => {
   const location = useLocation();
   const { logout, user } = useAuth();
+  const {
+    notifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    clearNotifications,
+  } = useVolunteerContext();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const userProfileImageUrl = useMemo(() => user?.profileImageUrl || "", [user?.profileImageUrl]);
 
@@ -99,6 +107,10 @@ const DashboardLayout = ({
     setShowLogoutConfirm(false);
   };
 
+  const isVolunteerPortal = portalTitle === "Volunteer Portal";
+  const unreadCount = (notifications || []).filter((item) => !item.read).length;
+  const notificationItems = (notifications || []).slice(0, 8);
+
   return (
     <div className="min-h-screen bg-gray-200">
       {/* Top Navbar */}
@@ -131,10 +143,65 @@ const DashboardLayout = ({
 
           {/* Right */}
           <div className="flex items-center gap-6">
-            <button className="relative w-11 h-11 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setShowNotifications((prev) => !prev)}
+              className="relative w-11 h-11 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition flex items-center justify-center"
+            >
               <Bell className="w-5 h-5 text-white" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+              {isVolunteerPortal && unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </button>
+
+            {showNotifications && isVolunteerPortal && (
+              <div className="absolute top-16 right-28 w-[360px] max-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl z-[1300]">
+                <div className="p-3 border-b border-slate-200 flex items-center justify-between">
+                  <h4 className="font-bold text-slate-800">Notifications</h4>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={markAllNotificationsRead}
+                      className="text-xs font-semibold text-blue-700 hover:text-blue-800"
+                    >
+                      Mark all read
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearNotifications}
+                      className="text-xs font-semibold text-slate-600 hover:text-slate-800"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="max-h-[360px] overflow-y-auto">
+                  {notificationItems.length === 0 ? (
+                    <p className="p-4 text-sm text-slate-500">No notifications yet.</p>
+                  ) : (
+                    notificationItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => markNotificationRead(item.id)}
+                        className={`w-full text-left p-3 border-b border-slate-100 hover:bg-slate-50 ${
+                          item.read ? "bg-white" : "bg-blue-50"
+                        }`}
+                      >
+                        <p className="text-sm font-semibold text-slate-800">{item.title}</p>
+                        <p className="text-xs text-slate-600 mt-1">{item.message}</p>
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          {new Date(item.createdAt).toLocaleTimeString()}
+                        </p>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
 
             <ProfileAvatar
               imageUrl={userProfileImageUrl}
@@ -145,7 +212,6 @@ const DashboardLayout = ({
               fallbackClassName="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase"
               fallbackIconClassName="w-5 h-5 text-green-700"
             />
-
             {/* Clock Widget */}
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-900 hover:bg-gray-800 transition min-w-[70px]">
               <div className="flex flex-col">
