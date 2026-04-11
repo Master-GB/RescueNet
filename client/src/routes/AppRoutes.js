@@ -82,7 +82,14 @@ const ngoSidebarItems = [
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/"
+        element={
+          <GuestRoute>
+            <LandingPage />
+          </GuestRoute>
+        }
+      />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
 
