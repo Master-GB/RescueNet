@@ -44,8 +44,7 @@
     "perf:task:basic": "artillery run src/tests/performanceTest/taskManagement/basic-load.yml",
     "perf:task:stress": "artillery run src/tests/performanceTest/taskManagement/stress-test.yml",
     "perf:task:spike": "artillery run src/tests/performanceTest/taskManagement/spike-test.yml",
-    "perf:task:all": "npm run perf:task:basic && npm run perf:task:stress && npm run perf:task:spike"
-    "perf:help:all": "npm run perf:help:basic && npm run perf:help:stress && npm run perf:help:spike",
+    "perf:task:all": "npm run perf:task:basic && npm run perf:task:stress && npm run perf:task:spike",
     
     "ready-missing": "node src/tests/performanceTest/missingPersonTest/create-missing-user.js",
     "perf:missing:basic": "artillery run src/tests/performanceTest/missingPersonTest/basic-load.yml",
