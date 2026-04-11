@@ -13,6 +13,7 @@ const createMock = jest.fn();
 const findMock = jest.fn();
 const findByIdMock = jest.fn();
 const findByIdAndDeleteMock = jest.fn();
+const countDocumentsMock = jest.fn();
 
 // Mock for WeatherService
 const getWeatherMock = jest.fn();
@@ -29,6 +30,7 @@ await jest.unstable_mockModule("../../../models/HelpRequest.js", () => ({
     find: findMock,
     findById: findByIdMock,
     findByIdAndDelete: findByIdAndDeleteMock,
+    countDocuments: countDocumentsMock,
   },
 }));
 
@@ -82,6 +84,7 @@ describe("Help Request Controller - Unit Tests", () => {
           disasterType: "flood",
           message: "help",
         },
+        user: { _id: "u1", role: "CITIZEN" }
       };
       const res = makeRes();
 
@@ -108,6 +111,7 @@ describe("Help Request Controller - Unit Tests", () => {
           disasterType: "other",
           message: "help",
         },
+        user: { _id: "u1", role: "CITIZEN" }
       };
       const res = makeRes();
 
@@ -131,6 +135,7 @@ describe("Help Request Controller - Unit Tests", () => {
           disasterType: "other",
           message: "help",
         },
+        user: { _id: "u1", role: "CITIZEN" }
       };
       const res = makeRes();
 
@@ -152,6 +157,7 @@ describe("Help Request Controller - Unit Tests", () => {
           voiceMessage: { data: "YmFzZTY0ZGF0YQ==", mimeType: "audio/wav" },
           images: [{ data: "aW1hZ2VkYXRh", mimeType: "image/png" }]
         },
+        user: { _id: "u1", role: "CITIZEN" }
       };
       const res = makeRes();
 
@@ -178,6 +184,7 @@ describe("Help Request Controller - Unit Tests", () => {
           voiceMessage: { data: "YmFzZTY0ZGF0YQ==", mimeType: "audio/wav" },
           images: [{ data: "aW1hZ2VkYXRh", mimeType: "image/png" }]
         },
+        user: { _id: "u1", role: "CITIZEN" }
       };
       const res = makeRes();
 
@@ -203,7 +210,7 @@ describe("Help Request Controller - Unit Tests", () => {
     });
 
     test("should return 500 if DB save fails", async () => {
-      const req = { body: {} };
+      const req = { body: {}, user: { _id: "u1", role: "CITIZEN" } };
       const res = makeRes();
       getWeatherMock.mockResolvedValue("Clear");
       createMock.mockRejectedValue(new Error("DB error"));
@@ -217,7 +224,10 @@ describe("Help Request Controller - Unit Tests", () => {
 
   describe("getAllRequests", () => {
     test("should return all requests", async () => {
-      const req = {};
+      const req = {
+        query: { page: "1", limit: "20" },
+        user: { _id: "u1", role: "ADMIN" }
+      };
       const res = makeRes();
       const mockResult = [{ name: "R1" }];
       
@@ -264,11 +274,13 @@ describe("Help Request Controller - Unit Tests", () => {
     test("should update existing request", async () => {
       const req = {
         params: { id: "h1" },
-        body: { name: "Updated Name" }
+        body: { name: "Updated Name" },
+        user: { _id: "u1", role: "CITIZEN" }
       };
       const res = makeRes();
       const mockRequest = { 
         name: "Old Name", 
+        userId: "u1",
         save: jest.fn().mockResolvedValue(true) 
       };
       findByIdMock.mockResolvedValue(mockRequest);
@@ -281,7 +293,7 @@ describe("Help Request Controller - Unit Tests", () => {
     });
 
     test("should return 404 if request not found for update", async () => {
-       const req = { params: { id: "h1" }, body: {} };
+       const req = { params: { id: "h1" }, body: {}, user: { _id: "u1", role: "CITIZEN" } };
        const res = makeRes();
        findByIdMock.mockResolvedValue(null);
        await updateHelpRequest(req, res);
@@ -291,20 +303,23 @@ describe("Help Request Controller - Unit Tests", () => {
 
   describe("deleteHelpRequest", () => {
     test("should delete request", async () => {
-      const req = { params: { id: "h1" } };
+      const req = { params: { id: "h1" }, user: { _id: "u1", role: "CITIZEN" } };
       const res = makeRes();
-      findByIdAndDeleteMock.mockResolvedValue({ _id: "h1" });
+      const mockRequest = { userId: "u1", _id: "h1" };
+      findByIdMock.mockResolvedValue(mockRequest);
+      findByIdAndDeleteMock.mockResolvedValue(mockRequest);
 
       await deleteHelpRequest(req, res);
 
+      expect(findByIdMock).toHaveBeenCalledWith("h1");
       expect(findByIdAndDeleteMock).toHaveBeenCalledWith("h1");
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: "Help request deleted successfully" }));
     });
 
     test("should return 404 if request not found for deletion", async () => {
-      const req = { params: { id: "h1" } };
+      const req = { params: { id: "h1" }, user: { _id: "u1", role: "CITIZEN" } };
       const res = makeRes();
-      findByIdAndDeleteMock.mockResolvedValue(null);
+      findByIdMock.mockResolvedValue(null);
 
       await deleteHelpRequest(req, res);
 
