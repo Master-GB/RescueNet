@@ -49,6 +49,7 @@ import NgoDonationReviewPage from "../pages/ngo/NgoDonationReviewPage";
 import NgoTaskManagementPage from "../pages/ngo/NgoTaskManagementPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
+import NgoProfilePage from "../pages/ngo/NgoProfilePage";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
 import LandingPage from "../pages/LandingPage";
 import AboutPage from "../pages/AboutPage";
@@ -75,6 +76,7 @@ const ngoSidebarItems = [
   { name: "Task Management", icon: ClipboardList, path: "/ngo/tasks" },
   { name: "Donation Campaigns", icon: Megaphone, path: "/ngo/campaigns" },
   { name: "Shelters", icon: Home, path: "/ngo/shelters" },
+  { name: "Profile", icon: UserCircle, path: "/ngo/profile" },
 ];
 
 const AppRoutes = () => {
@@ -303,6 +305,22 @@ const AppRoutes = () => {
             <NgoDonationReviewPage />
           </RoleRoute>
         }
+      />
+      <Route
+        path="/ngo/profile"
+        element={(
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <DashboardLayout
+              sidebarItems={ngoSidebarItems}
+              portalTitle="NGO Portal"
+              avatarLetter="N"
+              homePath="/ngo-dashboard"
+              themeColor="teal"
+            >
+              <NgoProfilePage />
+            </DashboardLayout>
+          </RoleRoute>
+        )}
       />
       <Route
         path="/admin-dashboard"

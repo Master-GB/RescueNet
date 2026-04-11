@@ -39,6 +39,7 @@ const DashboardLayout = ({
   avatarLetter = "C",
   homePath = "/citizen-dashboard",
   searchPlaceholder = "Search shelters, alerts, requests...",
+  themeColor = "green",
   contentClassName = "",
 }) => {
   const location = useLocation();
@@ -276,6 +277,9 @@ const DashboardLayout = ({
               alt="RescueNet logo"
               className="w-11 h-11 object-cover shadow-sm"
             />
+            <div className={`w-11 h-11 rounded-2xl ${themeColor === "teal" ? "bg-teal-600" : "bg-green-600"} text-white flex items-center justify-center font-bold text-lg shadow-sm`}>
+              R
+            </div>
             <div>
               {/* text logo image */}
               <img 
@@ -296,7 +300,7 @@ const DashboardLayout = ({
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder={searchPlaceholder}
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                className={`w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 ${themeColor === "teal" ? "focus:ring-teal-500 focus:border-teal-500" : "focus:ring-green-500 focus:border-green-500"} text-sm`}
               />
               
               {/* Search Results Dropdown */}
@@ -360,7 +364,6 @@ const DashboardLayout = ({
 
           {/* Right */}
           <div className="flex items-center gap-6">
-            
             {/* display profile picture */}
             <ProfileAvatar
               imageUrl={userProfileImageUrl}
@@ -368,8 +371,8 @@ const DashboardLayout = ({
               alt="Account profile image"
               wrapperClassName="w-11 h-11"
               imageClassName="w-11 h-11 rounded-full object-cover border"
-              fallbackClassName="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase"
-              fallbackIconClassName="w-5 h-5 text-green-700"
+              fallbackClassName={`w-11 h-11 rounded-full ${themeColor === "teal" ? "bg-teal-100 text-teal-700 border-teal-200" : "bg-green-100 text-green-700 border-green-200"} flex items-center justify-center font-bold border uppercase`}
+              fallbackIconClassName={`w-5 h-5 ${themeColor === "teal" ? "text-teal-700" : "text-green-700"}`}
             />
 
             {/* Clock Widget */}
@@ -399,8 +402,8 @@ const DashboardLayout = ({
                 to={item.path}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition font-medium ${
                   isActive
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "text-white hover:bg-green-600 hover:text-white"
+                    ? `${themeColor === "teal" ? "bg-teal-600" : "bg-green-600"} text-white shadow-sm`
+                    : `text-white ${themeColor === "teal" ? "hover:bg-teal-600" : "hover:bg-green-600"} hover:text-white`
                 }`}
               >
                 <Icon className="w-5 h-5" />
