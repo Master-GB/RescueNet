@@ -13,7 +13,15 @@ export const getApiErrorMessage = (
 };
 
 export const registerUser = async (payload) => {
-  const response = await apiClient.post("/api/auth/register", payload);
+  const config = payload instanceof FormData
+    ? {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    : undefined;
+
+  const response = await apiClient.post("/api/auth/register", payload, config);
   return response.data;
 };
 
@@ -28,7 +36,15 @@ export const logoutUser = async () => {
 };
 
 export const fetchMe = async () => {
-  const response = await apiClient.get("/api/auth/me");
+  const response = await apiClient.get("/api/auth/me", {
+    params: {
+      _ts: Date.now(),
+    },
+    headers: {
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
+  });
   return response.data;
 };
 

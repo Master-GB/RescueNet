@@ -2,6 +2,7 @@ import User from "../../models/user.js";
 import VolunteerProfile from "../../models/userProfileModel/VolunteerProfile.js";
 import NgoProfile from "../../models/userProfileModel/NgoProfile.js";
 import CitizenProfile from "../../models/userProfileModel/CitizenProfile.js";
+import { destroyCloudinaryAssetByPublicId } from "../../services/cloudinaryAssetService.js";
 
 
 export const verifyVolunteer = async (req, res) => {
@@ -98,12 +99,31 @@ export const deleteUserAccount = async (req, res) => {
         break;
     }
 
+    let cleanupWarning = "";
+    if (user.profileImagePublicId) {
+      const cleanupResult = await destroyCloudinaryAssetByPublicId(user.profileImagePublicId);
+      if (!cleanupResult.success) {
+        cleanupWarning = "User account deleted, but failed to remove profile image from Cloudinary.";
+        console.warn(
+          `[CloudinaryCleanup] Failed for deleted user ${user._id}: ${cleanupResult.reason}`,
+        );
+      }
+    }
+
     // Delete user account
     await User.findByIdAndDelete(userId);
 
-    return res.status(200).json({
+    const responsePayload = {
       success: true,
       message: "User account and profile deleted successfully",
+    };
+
+    if (cleanupWarning) {
+      responsePayload.warning = cleanupWarning;
+    }
+
+    return res.status(200).json({
+      ...responsePayload,
     });
 
   } catch (error) {

@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 
 import { connectDB } from "./config/db.js";
 import { registerShelterSocket } from "./sockets/shelter.socket.js";
+import { registerVolunteerSocket } from "./sockets/volunteer.socket.js";
 
 // Routes
 import adminHelpRoutes from "./routes/adminHelpRoutes.js";
@@ -21,6 +22,7 @@ import citizenProfileRoutes from "./routes/userManagementRoutes/citizenProfileRo
 import volunteerProfileRoutes from "./routes/userManagementRoutes/volunteerProfileRoutes.js";
 import ngoProfileRoutes from "./routes/userManagementRoutes/ngoProfileRoutes.js";
 import adminUserRoutes from "./routes/userManagementRoutes/adminUserRoutes.js";
+import adminProfileRoutes from "./routes/userManagementRoutes/adminProfileRoutes.js";
 import shelterRouter from "./routes/shelterRoutes.js";
 import geoRoutes from "./routes/geoRoutes.js";
 import disastersRoutes from "./routes/disastersRoutes.js";
@@ -52,12 +54,13 @@ const server = http.createServer(app);
 // ✅ Socket.IO attached to server
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: [ CLIENT_URL],
     credentials: true,
   },
 });
 
 registerShelterSocket(io);
+registerVolunteerSocket(io);
 socketService.initialize(io);
 
 // ✅ make io available in controllers
@@ -83,6 +86,7 @@ app.use("/api/citizen", citizenProfileRoutes);
 app.use("/api/volunteer", volunteerProfileRoutes);
 app.use("/api/ngo", ngoProfileRoutes);
 app.use("/api/adminUser", adminUserRoutes);
+app.use("/api/admin", adminProfileRoutes);
 
 app.use("/api/shelters", shelterRouter);
 app.use("/api/geo", geoRoutes);
@@ -116,5 +120,15 @@ if (process.env.NODE_ENV !== "test") {
       process.exit(1);
     });
 }
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "An unexpected error occurred",
+    error: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
 
 export default app;
