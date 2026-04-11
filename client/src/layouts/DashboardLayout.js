@@ -208,7 +208,7 @@ const DashboardLayout = ({
               fallbackText={avatarFallbackLetter}
               alt="Account profile image"
               wrapperClassName="w-11 h-11"
-              imageClassName="w-11 h-11 rounded-full object-cover border border-green-200"
+              imageClassName="w-11 h-11 rounded-full object-cover border"
               fallbackClassName="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold border border-green-200 uppercase"
               fallbackIconClassName="w-5 h-5 text-green-700"
             />
