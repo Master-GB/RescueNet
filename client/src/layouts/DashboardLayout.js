@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import RNlogodarkthemed from "../assets/images/RN-darkthemed.png";
+import RNlogo from "../assets/images/RNlogo2.png";
 
 const defaultSidebarItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/citizen-dashboard" },
@@ -270,9 +271,11 @@ const DashboardLayout = ({
         <div className="h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Left */}
           <Link to={homePath} className="flex items-center gap-3 min-w-fit transition-opacity">
-            <div className={`w-11 h-11 rounded-2xl ${themeColor === "teal" ? "bg-teal-600" : "bg-green-600"} text-white flex items-center justify-center font-bold text-lg shadow-sm`}>
-              R
-            </div>
+            <img
+              src={RNlogo}
+              alt="RescueNet logo"
+              className="w-11 h-11 object-cover shadow-sm"
+            />
             <div>
               {/* text logo image */}
               <img 
