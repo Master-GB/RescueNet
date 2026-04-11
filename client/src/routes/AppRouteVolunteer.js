@@ -6,6 +6,7 @@ import VolunteerProfileFormPage from "../pages/auth/VolunteerProfileFormPage";
 import VolunteerAlertsPage from "../pages/volunteer/VolunteerAlertsPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import VolunteerMapPage from "../pages/volunteer/VolunteerMapPage";
+import VolunteerTeamChatPage from "../pages/volunteer/VolunteerTeamChatPage";
 import VolunteerProfilePage from "../pages/volunteer/VolunteerProfilePage";
 import VolunteerRequestsPage from "../pages/volunteer/VolunteerRequestsPage";
 import VolunteerTasksPage from "../pages/volunteer/VolunteerTasksPage";
@@ -67,6 +68,15 @@ export const renderVolunteerRoutes = () => (
 			element={(
 				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
 					<VolunteerAlertsPage />
+				</RoleRoute>
+			)}
+		/>
+
+		<Route
+			path="/volunteer/chat"
+			element={(
+				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
+					<VolunteerTeamChatPage />
 				</RoleRoute>
 			)}
 		/>
