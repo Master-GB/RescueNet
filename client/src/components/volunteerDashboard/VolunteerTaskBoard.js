@@ -456,10 +456,10 @@ const VolunteerTaskBoard = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate("/volunteer/requests")}
+                  onClick={() => navigate("/volunteer/tasks")}
                   className="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold transition"
                 >
-                  Open Requests
+                  Open Tasks
                 </button>
                 <button
                   type="button"
