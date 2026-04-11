@@ -16,6 +16,7 @@ import OtpVerificationRoute from "../components/authentication/OtpVerificationRo
 import RoleRoute from "../components/authentication/RoleRoute";
 import { renderVolunteerRoutes } from "./AppRouteVolunteer";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
+import LandingPage from "../pages/LandingPage";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminNgoManagementPage from "../pages/admin/AdminNgoManagementPage";
 import AdminProfilePage from "../pages/admin/AdminProfilePage";
@@ -51,7 +52,6 @@ import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import DashboardLayout from "../layouts/DashboardLayout";
 import NgoProfilePage from "../pages/ngo/NgoProfilePage";
 import FirstAidGuidePage from "../pages/citizen/FirstAidGuidePage";
-import LandingPage from "../pages/LandingPage";
 import AboutPage from "../pages/AboutPage";
 import ContactPage from "../pages/ContactPage";
 import ShelterManagement from "../pages/admin/ShelterManagement";
@@ -82,7 +82,14 @@ const ngoSidebarItems = [
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/"
+        element={
+          <GuestRoute>
+            <LandingPage />
+          </GuestRoute>
+        }
+      />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
 
