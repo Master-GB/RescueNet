@@ -6,6 +6,8 @@ import AuthLoadingScreen from "./AuthLoadingScreen";
 export default function TrafficCopRedirect() {
   const { isInitializing, user, profile, resolvePostAuthRoute } = useAuth();
 
+  console.log("[TrafficCopRedirect] Rendered. isInitializing:", isInitializing);
+
   if (isInitializing) {
     return <AuthLoadingScreen label="Preparing your route..." />;
   }

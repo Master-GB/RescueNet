@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useAuth from "../../hooks/useAuth";
+import useEmergencyChat from "../../hooks/useEmergencyChat";
 import {
   Phone, Ambulance, Shield, MapPin, AlertTriangle,
   Search, PhoneCall, Loader2, MessageCircle,
@@ -13,6 +14,43 @@ const EmergencyContactPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [callingContact, setCallingContact] = useState(null);
   const [activeTab, setActiveTab] = useState("contacts");
+
+  // Communication Tab State
+  const [selectedServiceType, setSelectedServiceType] = useState("police");
+  const [messageText, setMessageText] = useState("");
+  const messagesEndRef = useRef(null);
+
+  const {
+    messages,
+    loading: chatLoading,
+    error: chatError,
+    isOpponentTyping,
+    onlineStatus,
+    sendMessage,
+    sendTyping
+  } = useEmergencyChat(selectedServiceType);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (activeTab === "communication") {
+      scrollToBottom();
+    }
+  }, [messages, activeTab]);
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!messageText.trim()) return;
+    sendMessage(messageText);
+    setMessageText("");
+  };
+
+  const handleTyping = (e) => {
+    setMessageText(e.target.value);
+    sendTyping();
+  };
 
   // Sri Lanka Official Emergency Contacts Database
   const sriLankaEmergencyContacts = {
@@ -449,9 +487,6 @@ const EmergencyContactPage = () => {
                 >
                   <MessageCircle className="w-5 h-5" />
                   <span>Communication</span>
-                  <div className="px-2 py-1 bg-orange-500 text-white text-xs rounded-full">
-                    Coming Soon
-                  </div>
                 </button>
               </div>
               
@@ -627,121 +662,146 @@ const EmergencyContactPage = () => {
       {/* Bidirectional Communication Tab */}
       {activeTab === "communication" && (
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl p-10 border border-white/30">
-            {/* Coming Soon Header */}
-            <div className="text-center mb-12">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                <MessageCircle className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Bidirectional Communication
-              </h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Stay connected with emergency services through real-time messaging and updates. 
-                This feature is coming soon with backend integration.
-              </p>
-              <div className="mt-6 px-4 py-2 bg-orange-100 text-orange-700 rounded-full inline-flex items-center space-x-2 font-medium">
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                <span>Coming Soon</span>
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-white/30 grid grid-cols-1 md:grid-cols-4 gap-6 min-h-[600px]">
+            {/* Service Selector Sidebar */}
+            <div className="col-span-1 border-r border-gray-200 pr-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <Shield className="w-6 h-6 mr-2 text-blue-600" /> Services
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { id: 'police', name: 'Police Dispatch', icon: Shield, color: 'blue' },
+                  { id: 'ambulance', name: 'Ambulance Service', icon: Ambulance, color: 'red' },
+                  { id: 'fire', name: 'Fire Department', icon: Fire, color: 'orange' },
+                  { id: 'disaster', name: 'Disaster Auth', icon: AlertTriangle, color: 'purple' }
+                ].map(service => (
+                  <button
+                    key={service.id}
+                    onClick={() => setSelectedServiceType(service.id)}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${
+                      selectedServiceType === service.id
+                        ? "bg-" + service.color + "-50 border-2 border-" + service.color + "-500 shadow-md"
+                        : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <service.icon className={`w-5 h-5 ${selectedServiceType === service.id ? "text-" + service.color + "-600" : "text-gray-500"}`} />
+                      <span className={`font-semibold ${selectedServiceType === service.id ? 'text-gray-900' : 'text-gray-600'}`}>
+                        {service.name}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Feature Preview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 border border-blue-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-4">
-                  <MessageCircle className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Real-time Messaging</h3>
-                <p className="text-gray-600 text-sm">
-                  Send and receive messages with emergency services coordinators.
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl p-6 border border-green-200">
-                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-4">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Voice Communication</h3>
-                <p className="text-gray-600 text-sm">
-                  Direct voice calls with emergency response teams.
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl p-6 border border-purple-200">
-                <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-4">
-                  <AlertTriangle className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Emergency Alerts</h3>
-                <p className="text-gray-600 text-sm">
-                  Receive real-time emergency alerts and safety notifications.
-                </p>
-              </div>
-            </div>
-
-            {/* Mock Chat Interface */}
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Communication Preview</h3>
-                <div className="px-3 py-1 bg-gray-200 text-gray-600 rounded-full text-sm">
-                  Demo Mode
-                </div>
-              </div>
-              
-              {/* Mock Messages */}
-              <div className="space-y-4 mb-6">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-white" />
+            {/* Chat Interface */}
+            <div className="col-span-1 md:col-span-3 flex flex-col h-[600px]">
+              {/* Chat Header */}
+              <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-t-2xl border-b border-gray-200">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-blue-600" />
                   </div>
-                  <div className="flex-1">
-                    <div className="bg-white rounded-2xl rounded-tl-none p-4 shadow-sm">
-                      <p className="text-gray-800">Emergency services are available 24/7. How can we assist you today?</p>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 capitalize">{selectedServiceType} Emergency Line</h3>
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2.5 h-2.5 rounded-full ${onlineStatus ? 'bg-green-500 animate-pulse' : chatError ? 'bg-red-500' : 'bg-yellow-500 animate-pulse'}`}></div>
+                      <span className="text-xs font-semibold text-gray-500">
+                        {onlineStatus ? 'Coordinator Online' : chatError ? 'Connection Failed' : 'Connecting...'}
+                      </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Emergency Dispatcher</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 justify-end">
-                  <div className="flex-1 max-w-xs">
-                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl rounded-tr-none p-4 shadow-lg">
-                      <p>I need to report an emergency situation.</p>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1 text-right">You</p>
-                  </div>
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <Users className="w-4 h-4 text-gray-600" />
                   </div>
                 </div>
               </div>
 
-              {/* Input Area */}
-              <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                <div className="flex items-center space-x-3">
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50 space-y-4">
+                {chatError ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                      <AlertTriangle className="w-8 h-8 text-red-500" />
+                    </div>
+                    <p className="text-lg font-semibold text-red-700 mb-2">Connection Failed</p>
+                    <p className="text-sm text-gray-500 max-w-xs">{chatError}</p>
+                    <p className="text-xs text-gray-400 mt-3">Make sure the backend server is running on <code className="bg-gray-100 px-1 rounded">localhost:5000</code>, then restart this page.</p>
+                  </div>
+                ) : chatLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                    <MessageCircle className="w-16 h-16 mb-4 opacity-50" />
+                    <p className="text-lg font-medium">No messages yet.</p>
+                    <p className="text-sm">Start the conversation by sending a message.</p>
+                  </div>
+                ) : (
+                  messages.map((msg, index) => {
+                    const isCitizen = msg.sender === 'citizen' || msg.senderRole === 'Citizen';
+                    return (
+                      <div key={index} className={`flex items-start space-x-3 ${isCitizen ? 'justify-end' : ''}`}>
+                        {!isCitizen && (
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
+                            <Shield className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                        <div className={`flex flex-col ${isCitizen ? 'items-end' : 'items-start'} max-w-[75%]`}>
+                          <div className={`p-4 rounded-2xl shadow-sm ${
+                            isCitizen 
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-tr-none' 
+                              : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
+                          }`}>
+                            <p className="whitespace-pre-wrap">{msg.content || msg.text}</p>
+                          </div>
+                          <span className="text-xs text-gray-400 mt-1 lowercase">
+                            {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        {isCitizen && (
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shadow-sm">
+                            <Users className="w-4 h-4 text-green-600" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+                
+                {isOpponentTyping && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-4 bg-white rounded-b-2xl border-t border-gray-200">
+                <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
                   <input
                     type="text"
-                    placeholder="Type your message here..."
-                    className="flex-1 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:border-blue-500"
-                    disabled
+                    value={messageText}
+                    onChange={handleTyping}
+                    placeholder={`Message ${selectedServiceType} dispatch...`}
+                    className="flex-1 px-5 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all font-medium text-gray-700"
+                    disabled={!onlineStatus}
                   />
-                  <button className="px-4 py-3 bg-gray-200 text-gray-500 rounded-xl font-medium" disabled>
+                  <button 
+                    type="submit" 
+                    disabled={!messageText.trim() || !onlineStatus}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold uppercase tracking-wide hover:from-green-600 hover:to-emerald-700 transition-all disabled:opacity-50 shadow-md hover:shadow-lg disabled:hover:shadow-none"
+                  >
                     Send
                   </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Integration Notice */}
-            <div className="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-200">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="w-6 h-6 text-blue-600 mt-1" />
-                <div>
-                  <h4 className="text-lg font-semibold text-blue-900 mb-2">Backend Integration</h4>
-                  <p className="text-blue-700">
-                    This communication hub will be integrated with our emergency services backend to provide real-time messaging, 
-                    voice calls, and emergency alerts. Stay tuned for updates!
-                  </p>
-                </div>
+                </form>
               </div>
             </div>
           </div>
