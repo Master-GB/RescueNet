@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import GuestRoute from "../components/authentication/GuestRoute";
 import OtpVerificationRoute from "../components/authentication/OtpVerificationRoute";
 import RoleRoute from "../components/authentication/RoleRoute";
+import { renderVolunteerRoutes } from "./AppRouteVolunteer";
 import TrafficCopRedirect from "../components/authentication/TrafficCopRedirect";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import CitizenProfileFormPage from "../pages/auth/CitizenProfileFormPage";
@@ -37,7 +38,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<TrafficCopRedirect />} />
 
-      <Route path="/volunteer" element={<Navigate to="/volunteer-dashboard" replace />} />
+      {renderVolunteerRoutes()}
 
       <Route
         path="/auth/login"
@@ -77,30 +78,6 @@ const AppRoutes = () => {
         element={(
           <RoleRoute allowedRoles={["CITIZEN"]}>
             <CitizenProfileFormPage />
-          </RoleRoute>
-        )}
-      />
-      <Route
-        path="/volunteer/profile-setup"
-        element={(
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerProfileFormPage />
-          </RoleRoute>
-        )}
-      />
-      <Route
-        path="/ngo/profile-setup"
-        element={(
-          <RoleRoute allowedRoles={["NGO"]}>
-            <NgoProfileFormPage />
-          </RoleRoute>
-        )}
-      />
-      <Route
-        path="/volunteer/pending-approval"
-        element={(
-          <RoleRoute allowedRoles={["VOLUNTEER"]}>
-            <VolunteerPendingApprovalPage />
           </RoleRoute>
         )}
       />
@@ -179,10 +156,10 @@ const AppRoutes = () => {
         )}
       />
       <Route
-        path="/volunteer-dashboard"
+        path="/ngo-dashboard"
         element={(
-          <RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
-            <VolunteerDashboard />
+          <RoleRoute allowedRoles={["NGO"]} requireFullyOnboarded>
+            <NgoDashboard />
           </RoleRoute>
         )}
       />

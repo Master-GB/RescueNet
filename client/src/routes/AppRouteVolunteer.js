@@ -9,6 +9,7 @@ import VolunteerMapPage from "../pages/volunteer/VolunteerMapPage";
 import VolunteerProfilePage from "../pages/volunteer/VolunteerProfilePage";
 import VolunteerRequestsPage from "../pages/volunteer/VolunteerRequestsPage";
 import VolunteerTasksPage from "../pages/volunteer/VolunteerTasksPage";
+import VolunteerDonationsPage from "../pages/volunteer/VolunteerDonationsPage";
 
 export const renderVolunteerRoutes = () => (
 	<>
@@ -82,6 +83,15 @@ export const renderVolunteerRoutes = () => (
 			element={(
 				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
 					<VolunteerProfilePage />
+				</RoleRoute>
+			)}
+		/>
+
+		<Route
+			path="/volunteer/donations"
+			element={(
+				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
+					<VolunteerDonationsPage />
 				</RoleRoute>
 			)}
 		/>
