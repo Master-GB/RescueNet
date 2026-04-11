@@ -1,0 +1,7 @@
+{
+  "name": "rescuenet-root",
+  "private": true,
+  "scripts": {
+    "start": "cd server && npm start"
+  }
+}
