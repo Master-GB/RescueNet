@@ -47,6 +47,32 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const EXTRA_CLIENT_URLS = (process.env.CLIENT_URLS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173", CLIENT_URL, ...EXTRA_CLIENT_URLS];
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+
+  try {
+    return new URL(origin).hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+};
+
+const corsOriginHandler = (origin, callback) => {
+  if (isAllowedOrigin(origin)) {
+    callback(null, true);
+    return;
+  }
+
+  callback(new Error("CORS origin not allowed"));
+};
 
 app.use(cookieParser());
 app.use(express.json({ limit: "25mb" }));
@@ -56,8 +82,7 @@ const server = http.createServer(app);
 // ✅ Socket.IO attached to server
 const io = new Server(server, {
   cors: {
-    origin: [ CLIENT_URL],
-    origin: ["http://localhost:3000", "http://localhost:5173", CLIENT_URL],
+    origin: corsOriginHandler,
     credentials: true,
   },
 });
@@ -77,7 +102,7 @@ app.use("/api/shelters", (req, res, next) => {
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173", CLIENT_URL],
+    origin: corsOriginHandler,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
