@@ -2,6 +2,6 @@
   "name": "rescuenet-root",
   "private": true,
   "scripts": {
-    "start": "cd server && npm install && npm start"
+    "start": "node init && cd server && npm install && npm start"
   }
 }
