@@ -1,5 +1,9 @@
 # 🌍 RescueNet -- Disaster Response & Emergency Coordination Platform
 
+## Live Demo
+
+[https://rescue-net-8jet.vercel.app/](https://rescue-net-8jet.vercel.app/)
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg" width="80"/>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
