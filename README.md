@@ -408,10 +408,102 @@ npm start
 
 ------------------------------------------------------------------------
 
-# 🧪 Backend Testing
+# 🧪 Testing
 
--   Jest unit testing
--   Controller & service mocking
+### ✅ Testing Overview
+The backend system is tested using multiple testing strategies to ensure reliability, performance, and correctness:
+
+- Unit Testing
+- Integration Testing
+- API Testing
+- Performance Testing
+
+---
+
+## 🔹 Unit Testing
+Unit tests focus on testing individual components such as controllers and services in isolation.
+
+---
+
+### 🔧 Tools Used
+- Jest
+  
+
+### ⚙️ Features
+- Controller & service mocking
+- Isolated function testing
+- Fast execution
+
+### 📂 Documentation
+- See detailed documentation: **Unit Testing Guide**
+- [Test files located in:](server/src/tests/unit/README.md)
+---
+
+## 🔗 Integration Testing
+Integration testing verifies that different modules of the application work together correctly.
+
+---
+
+This includes:
+- Controller → Service → Database flow
+- Middleware execution
+- API request/response lifecycle
+
+### 🔧 Tools Used
+- Jest
+- Supertest
+
+### ⚙️ Features
+- API endpoint functionality
+- Database interactions
+- Authentication & authorization flows
+- Error handling between layers
+
+### 📂 Documentation
+- See detailed documentation: **Intergation Testing Guide**
+- [Test files located in:](server/src/tests/integration/README.md)
+
+---
+
+# 🚀 Performance Testing
+Performance testing evaluates the system’s responsiveness, scalability, and stability under different load conditions.
+
+---
+
+### 🔧 Tools Used
+- k6 / Artillery / Apache JMeter *(use the one implemented in your project)*
+
+
+### ⚙️ Testing Types
+- Load Testing → Simulate normal user traffic
+- Stress Testing → Push system beyond limits
+- Spike Testing → Sudden traffic increase
+
+
+### 📊 What We Measure
+- Response Time
+- Throughput (requests per second)
+- Error Rate
+- Concurrent Users Handling
+
+
+### 📂 Documentation
+- See detailed documentation: **Performance Testing Guide**
+- [Test files located in:](server/src/tests/performanceTest/README.md)
+
+---
+
+# 🌐 API Testing
+API testing ensures that all backend endpoints function correctly, securely, and return expected responses.
+
+---
+
+### 🔧 Tools Used
+- Postman
+---
+
+### 📂 Postman Collections
+
 -   Postman collections available for:
     -   Authentication → See json documentation: - [Authentication Postman Collection](server/src/docs/auth/auth_Postman_Collection.json)
     -   UserMangemnet → See json documentation: - [UserManagement Postman Collection](server/src/docs/userManagement/user_Postman_Collection.json)
@@ -424,14 +516,24 @@ npm start
     -   Task Management(for ADMIN) → See detailed documentation: - [TaskManagement Postman Collection](server/src/docs/task-management/admin-task-management/Postman_Collection.json)
     -   Task Management(for NGO/VOLUNTEER) → See detailed documentation: - [TaskManagement Postman Collection](server/src/docs/task-management/ngo-task-management/Postman_Collection.json)
     -   Campaign Management → See detailed documentation: - [Campaign Postman Collection](server/src/docs/campaignsManagement/campaign_Postman_Collection.json)
- -  For run Test;
+
+### ⚙️ What We Test
+- HTTP methods (GET, POST, PUT, DELETE)
+- Request & response validation
+- Authentication & authorization
+- Error handling (4xx, 5xx responses)
+- Data validation
+
+---
+
+ ### For run Test;
     -  Run all the test `npm test`
     -  Run Unit test `npm test:unit`
     -  Run API test `npm test:api`
 
 ------------------------------------------------------------------------
 
-# 📚 Backend Documentation Links
+# 📚 Project Documentation Links
 
  #### 🔹 Authentication module → See detailed documentation: - [Authentication Module Documentation](server/src/docs/auth/auth.md)
  #### 🔹 UserManagement module → See detailed documentation: - [UserManagement Module Documentation](server/src/docs/userManagement/user-management.md)
