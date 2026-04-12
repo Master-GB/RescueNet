@@ -3,7 +3,6 @@ import { Navigate, Route } from "react-router-dom";
 import RoleRoute from "../components/authentication/RoleRoute";
 import VolunteerPendingApprovalPage from "../pages/auth/VolunteerPendingApprovalPage";
 import VolunteerProfileFormPage from "../pages/auth/VolunteerProfileFormPage";
-import VolunteerAlertsPage from "../pages/volunteer/VolunteerAlertsPage";
 import VolunteerDashboard from "../pages/volunteer/VolunteerDashboard";
 import VolunteerMapPage from "../pages/volunteer/VolunteerMapPage";
 import VolunteerTeamChatPage from "../pages/volunteer/VolunteerTeamChatPage";
@@ -66,7 +65,7 @@ export const renderVolunteerRoutes = () => (
 			path="/volunteer/alerts"
 			element={(
 				<RoleRoute allowedRoles={["VOLUNTEER"]} requireFullyOnboarded>
-					<VolunteerAlertsPage />
+					<VolunteerTeamChatPage />
 				</RoleRoute>
 			)}
 		/>
