@@ -78,7 +78,7 @@ const VolunteerBriefingBanner = () => {
           className="px-4 py-2 rounded-xl bg-white text-emerald-700 font-semibold hover:bg-emerald-50 transition inline-flex items-center gap-2"
         >
           <Siren className="w-4 h-4" />
-          Join Priority Channel
+          Open Team Channel
         </button>
         <button
           type="button"
