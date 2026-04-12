@@ -2,7 +2,10 @@
 
 ## Live Demo
 
-[https://rescue-net-8jet.vercel.app/](https://rescue-net-8jet.vercel.app/)
+> ### Live Application
+> **Open RescueNet:** [https://rescue-net-8jet.vercel.app/](https://rescue-net-8jet.vercel.app/)
+
+[![Live on Vercel](https://img.shields.io/badge/Live%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://rescue-net-8jet.vercel.app/)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg" width="80"/>
