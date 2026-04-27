@@ -158,17 +158,18 @@ const DonationDetailsPage = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("campaignId", id);
-    formData.append("donationType", donationType);
-    formData.append("declaredAmount", donationType === "Money" ? String(Number(declaredAmount)) : "0");
-    formData.append("donorMessage", buildDonationMessage());
-    formData.append("proofImage", proofImage);
+    const payload = {
+      campaignId: id,
+      donationType,
+      declaredAmount: donationType === "Money" ? String(Number(declaredAmount)) : "0",
+      donorMessage: buildDonationMessage(),
+      proofImage,
+    };
 
     setSubmitting(true);
 
     try {
-      await submitDonation(formData);
+      await submitDonation(payload);
       setShowSuccessModal(true);
       setDeclaredAmount("");
       setSuppliesDescription("");
